@@ -48,7 +48,6 @@ export default function DailyTable({ dailies, onEdit, onDelete }) {
         );
     }
 
-    let rowNumber = 0;
     const clientNames = Object.keys(groupedDailies);
 
     return (
@@ -71,19 +70,18 @@ export default function DailyTable({ dailies, onEdit, onDelete }) {
                 <tbody>
                     {clientNames.map((clientName, clientIndex) => {
                         const clientEntries = groupedDailies[clientName];
-                        rowNumber++;
                         // Alternate colors by CLIENT, not by row
                         const clientColorClass = clientIndex % 2 === 0 ? 'project-row-cream' : 'project-row-green';
 
                         return clientEntries.map((entry, entryIndex) => (
                             <tr key={entry._id} className={clientColorClass}>
-                                {/* Row Number - only show on first entry of group */}
+                                {/* Row Number - only show on first entry of group, using quarterSequence */}
                                 {entryIndex === 0 && (
                                     <td
                                         rowSpan={clientEntries.length}
                                         className="row-number-cell"
                                     >
-                                        {rowNumber}
+                                        {entry.quarterSequence || '-'}
                                     </td>
                                 )}
 

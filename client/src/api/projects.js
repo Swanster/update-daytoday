@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from './axiosConfig';
 
 const API_URL = '/api/projects';
 
@@ -10,25 +10,25 @@ export const projectsApi = {
             params.quarter = quarter;
             params.year = year;
         }
-        const response = await axios.get(API_URL, { params });
+        const response = await api.get(API_URL, { params });
         return response.data;
     },
 
     // Get available quarters
     getQuarters: async () => {
-        const response = await axios.get(`${API_URL}/quarters`);
+        const response = await api.get(`${API_URL}/quarters`);
         return response.data;
     },
 
     // Get grouped projects
     getGrouped: async () => {
-        const response = await axios.get(`${API_URL}/grouped`);
+        const response = await api.get(`${API_URL}/grouped`);
         return response.data;
     },
 
     // Get suggestions for autocomplete
     getSuggestions: async (query) => {
-        const response = await axios.get(`${API_URL}/suggestions`, {
+        const response = await api.get(`${API_URL}/suggestions`, {
             params: { q: query }
         });
         return response.data;
@@ -36,19 +36,30 @@ export const projectsApi = {
 
     // Create new project entry
     create: async (projectData) => {
-        const response = await axios.post(API_URL, projectData);
+        const response = await api.post(API_URL, projectData);
         return response.data;
     },
 
     // Update project entry
     update: async (id, projectData) => {
-        const response = await axios.put(`${API_URL}/${id}`, projectData);
+        const response = await api.put(`${API_URL}/${id}`, projectData);
         return response.data;
     },
 
     // Delete project entry
     delete: async (id) => {
-        const response = await axios.delete(`${API_URL}/${id}`);
+        const response = await api.delete(`${API_URL}/${id}`);
+        return response.data;
+    },
+
+    // Carry forward unfinished projects to new quarter
+    carryForward: async (fromQuarter, fromYear, toQuarter, toYear) => {
+        const response = await api.post(`${API_URL}/carry-forward`, {
+            fromQuarter,
+            fromYear,
+            toQuarter,
+            toYear
+        });
         return response.data;
     }
 };

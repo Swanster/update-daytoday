@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import SpreadsheetTable from './components/SpreadsheetTable';
 import DailyTable from './components/DailyTable';
 import EntryForm from './components/EntryForm';
@@ -6,6 +6,7 @@ import DailyEntryForm from './components/DailyEntryForm';
 import LoginForm from './components/LoginForm';
 import ActivityLog from './components/ActivityLog';
 import UserManagement from './components/UserManagement';
+import { useToast } from './components/ToastProvider';
 import { projectsApi } from './api/projects';
 import { dailiesApi } from './api/dailies';
 
@@ -22,9 +23,18 @@ function App() {
     const [editData, setEditData] = useState(null);
     const [error, setError] = useState(null);
 
-    // Quarterly state
-    const [quarters, setQuarters] = useState([]);
-    const [selectedQuarter, setSelectedQuarter] = useState(null);
+    // Quarterly state - separate for each tab
+    const [projectQuarters, setProjectQuarters] = useState([]);
+    const [dailyQuarters, setDailyQuarters] = useState([]);
+    const [projectSelectedQuarter, setProjectSelectedQuarter] = useState(null);
+    const [dailySelectedQuarter, setDailySelectedQuarter] = useState(null);
+
+    // Search and sort state
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortBy, setSortBy] = useState('sequence'); // sequence, name, date, status
+
+    // Toast notifications
+    const toast = useToast();
 
     // Check if user is admin or superuser
     const isAdminOrSuper = () => {
@@ -50,31 +60,54 @@ function App() {
         return { quarter: `Q${quarter}-${year}`, year };
     };
 
-    // Initialize current quarter
+    // Get previous quarter
+    const getPreviousQuarter = (currentQuarter, currentYear) => {
+        const qNum = parseInt(currentQuarter.charAt(1));
+        if (qNum === 1) {
+            return { quarter: `Q4-${currentYear - 1}`, year: currentYear - 1 };
+        }
+        return { quarter: `Q${qNum - 1}-${currentYear}`, year: currentYear };
+    };
+
+    // Initialize current quarter for both tabs
     useEffect(() => {
         const current = getCurrentQuarter();
-        setSelectedQuarter(current);
+        setProjectSelectedQuarter(current);
+        setDailySelectedQuarter(current);
     }, []);
+
+    // Get current quarter/quarters based on active tab
+    const selectedQuarter = activeTab === 'project' ? projectSelectedQuarter : dailySelectedQuarter;
+    const quarters = activeTab === 'project' ? projectQuarters : dailyQuarters;
 
     // Fetch data when tab or quarter changes
     useEffect(() => {
-        if (selectedQuarter && user) {
+        const quarter = activeTab === 'project' ? projectSelectedQuarter : dailySelectedQuarter;
+        if (quarter && user) {
             fetchData();
             fetchQuarters();
         }
-    }, [activeTab, selectedQuarter, user]);
+    }, [activeTab, projectSelectedQuarter, dailySelectedQuarter, user]);
 
     const fetchQuarters = async () => {
         try {
+            const currentQuarter = activeTab === 'project' ? projectSelectedQuarter : dailySelectedQuarter;
             const api = activeTab === 'project' ? projectsApi : dailiesApi;
-            const data = await api.getQuarters();
+            let data = await api.getQuarters();
+
+            // Filter out any invalid quarters (null or empty)
+            data = data.filter(q => q.quarter && q.year);
 
             const current = getCurrentQuarter();
             if (!data.find(q => q.quarter === current.quarter)) {
                 data.unshift(current);
             }
 
-            setQuarters(data);
+            if (activeTab === 'project') {
+                setProjectQuarters(data);
+            } else {
+                setDailyQuarters(data);
+            }
         } catch (err) {
             console.error('Error fetching quarters:', err);
         }
@@ -109,6 +142,7 @@ function App() {
     const handleLogin = (userData, authToken) => {
         setUser(userData);
         setToken(authToken);
+        toast.success(`Welcome back, ${userData.displayName || userData.username}!`);
     };
 
     const handleLogout = () => {
@@ -116,6 +150,7 @@ function App() {
         localStorage.removeItem('user');
         setUser(null);
         setToken(null);
+        toast.info('You have been logged out');
     };
 
     const handleAddClick = () => {
@@ -137,29 +172,38 @@ function App() {
                     await dailiesApi.delete(id);
                 }
                 await fetchData();
+                toast.success('Entry deleted successfully');
             } catch (err) {
                 console.error('Error deleting entry:', err);
-                alert('Failed to delete entry. Please try again.');
+                toast.error('Failed to delete entry. Please try again.');
             }
         }
     };
 
     const handleSave = async (formData) => {
-        if (activeTab === 'project') {
-            if (editData && editData._id) {
-                await projectsApi.update(editData._id, formData);
+        const isEdit = editData && editData._id;
+        try {
+            if (activeTab === 'project') {
+                if (isEdit) {
+                    await projectsApi.update(editData._id, formData);
+                } else {
+                    await projectsApi.create(formData);
+                }
             } else {
-                await projectsApi.create(formData);
+                if (isEdit) {
+                    await dailiesApi.update(editData._id, formData);
+                } else {
+                    await dailiesApi.create(formData);
+                }
             }
-        } else {
-            if (editData && editData._id) {
-                await dailiesApi.update(editData._id, formData);
-            } else {
-                await dailiesApi.create(formData);
-            }
+            await fetchData();
+            await fetchQuarters();
+            toast.success(isEdit ? 'Entry updated successfully!' : 'New entry created successfully!');
+        } catch (err) {
+            console.error('Error saving entry:', err);
+            toast.error('Failed to save entry. Please try again.');
+            throw err; // Re-throw to let form handle it
         }
-        await fetchData();
-        await fetchQuarters();
     };
 
     const handleFormClose = () => {
@@ -170,8 +214,104 @@ function App() {
     const handleQuarterChange = (e) => {
         const value = e.target.value;
         const [quarter, year] = value.split('|');
-        setSelectedQuarter({ quarter, year: parseInt(year) });
+        const newQuarter = { quarter, year: parseInt(year) };
+
+        if (activeTab === 'project') {
+            setProjectSelectedQuarter(newQuarter);
+        } else {
+            setDailySelectedQuarter(newQuarter);
+        }
     };
+
+    // Carry forward unfinished projects from previous quarter
+    const handleCarryForward = async () => {
+        if (!selectedQuarter) return;
+
+        const prev = getPreviousQuarter(selectedQuarter.quarter, selectedQuarter.year);
+
+        try {
+            const result = await projectsApi.carryForward(
+                prev.quarter,
+                prev.year,
+                selectedQuarter.quarter,
+                selectedQuarter.year
+            );
+
+            if (result.copied > 0) {
+                toast.success(`Carried forward ${result.copied} project(s): ${result.projects.join(', ')}`);
+                await fetchData();
+            } else {
+                toast.info('No unfinished projects to carry forward');
+            }
+        } catch (err) {
+            console.error('Carry forward error:', err);
+            toast.error('Failed to carry forward projects');
+        }
+    };
+
+    // Filter and sort data
+    const filteredProjects = useMemo(() => {
+        let result = [...projects];
+
+        // Filter by search term
+        if (searchTerm.trim()) {
+            const term = searchTerm.toLowerCase();
+            result = result.filter(p =>
+                p.projectName?.toLowerCase().includes(term) ||
+                p.services?.toLowerCase().includes(term) ||
+                p.picTeam?.some(pic => pic.toLowerCase().includes(term))
+            );
+        }
+
+        // Sort
+        result.sort((a, b) => {
+            switch (sortBy) {
+                case 'name':
+                    return (a.projectName || '').localeCompare(b.projectName || '');
+                case 'date':
+                    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+                case 'status':
+                    return (a.status || '').localeCompare(b.status || '');
+                case 'sequence':
+                default:
+                    return (a.quarterSequence || 0) - (b.quarterSequence || 0);
+            }
+        });
+
+        return result;
+    }, [projects, searchTerm, sortBy]);
+
+    const filteredDailies = useMemo(() => {
+        let result = [...dailies];
+
+        // Filter by search term
+        if (searchTerm.trim()) {
+            const term = searchTerm.toLowerCase();
+            result = result.filter(d =>
+                d.clientName?.toLowerCase().includes(term) ||
+                d.services?.toLowerCase().includes(term) ||
+                d.caseIssue?.toLowerCase().includes(term) ||
+                d.picTeam?.some(pic => pic.toLowerCase().includes(term))
+            );
+        }
+
+        // Sort
+        result.sort((a, b) => {
+            switch (sortBy) {
+                case 'name':
+                    return (a.clientName || '').localeCompare(b.clientName || '');
+                case 'date':
+                    return new Date(b.date || 0) - new Date(a.date || 0);
+                case 'status':
+                    return (a.status || '').localeCompare(b.status || '');
+                case 'sequence':
+                default:
+                    return (a.quarterSequence || 0) - (b.quarterSequence || 0);
+            }
+        });
+
+        return result;
+    }, [dailies, searchTerm, sortBy]);
 
     // Show login if not authenticated
     if (!user) {
@@ -181,7 +321,7 @@ function App() {
     return (
         <div className="app">
             <header className="app-header">
-                <h1>PROJECT SURVEY TRACKER</h1>
+                <h1>DAILY ACTIVITY INFRASTRUCTURE ENGINEER</h1>
 
                 <div className="header-controls">
                     {/* Quarter Selector */}
@@ -233,16 +373,47 @@ function App() {
             <div className="tab-navigation">
                 <button
                     className={`tab-btn ${activeTab === 'project' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('project')}
+                    onClick={() => { setActiveTab('project'); setSearchTerm(''); }}
                 >
                     📋 Project
                 </button>
                 <button
                     className={`tab-btn ${activeTab === 'daily' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('daily')}
+                    onClick={() => { setActiveTab('daily'); setSearchTerm(''); }}
                 >
                     📅 Daily
                 </button>
+            </div>
+
+            {/* Search and Sort Controls */}
+            <div className="search-sort-controls">
+                <div className="search-box">
+                    <span className="search-icon">🔍</span>
+                    <input
+                        type="text"
+                        placeholder={activeTab === 'project' ? 'Search projects...' : 'Search daily activities...'}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="search-input"
+                    />
+                    {searchTerm && (
+                        <button className="clear-search" onClick={() => setSearchTerm('')}>✕</button>
+                    )}
+                </div>
+                <div className="sort-box">
+                    <label>Sort by:</label>
+                    <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                        <option value="sequence">Sequence (No.)</option>
+                        <option value="name">{activeTab === 'project' ? 'Project Name' : 'Client Name'}</option>
+                        <option value="date">Date</option>
+                        <option value="status">Status</option>
+                    </select>
+                </div>
+                {activeTab === 'project' && (
+                    <button className="carry-forward-btn" onClick={handleCarryForward}>
+                        📥 Carry Forward
+                    </button>
+                )}
             </div>
 
             <main className="app-container">
@@ -263,13 +434,13 @@ function App() {
                     </div>
                 ) : activeTab === 'project' ? (
                     <SpreadsheetTable
-                        projects={projects}
+                        projects={filteredProjects}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                     />
                 ) : (
                     <DailyTable
-                        dailies={dailies}
+                        dailies={filteredDailies}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                     />

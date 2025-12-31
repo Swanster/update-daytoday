@@ -1,6 +1,6 @@
 # Deployment Guide for Ubuntu Server
 
-This guide describes how to deploy the Project Survey Tracker application on an Ubuntu server using Node.js, MongoDB, PM2, and Nginx.
+This guide describes how to deploy the Daily Activity Infrastructure Engineer application on an Ubuntu server using Node.js, MongoDB, PM2, and Nginx.
 
 ## Prerequisites
 
@@ -174,3 +174,35 @@ After deployment, accessing the site for the first time will allow you to regist
 - **Check Nginx Logs:** `sudo tail -f /var/log/nginx/error.log`
 - **Restart Nginx:** `sudo systemctl restart nginx`
 - **Check Open Ports:** `sudo lsof -i -P -n | grep LISTEN` or `sudo ss -tulpn`
+
+## 10. Updating the Application
+
+When you need to update the application with the latest changes:
+
+1.  **Pull the latest code:**
+    ```bash
+    cd /var/www/update-daytoday
+    git pull origin main
+    ```
+
+2.  **Update Backend:**
+    ```bash
+    cd server
+    npm install
+    
+    # Run database migration (Only needed for Carry Forward / Sequence Update)
+    node fix-sequences.js
+    
+    # Restart Backend
+    pm2 restart project-tracker-api
+    ```
+
+3.  **Update Frontend:**
+    ```bash
+    cd ../client
+    npm install
+    npm run build
+    ```
+
+4.  **Verify:**
+    Check `pm2 logs project-tracker-api` to ensure the server started correctly.

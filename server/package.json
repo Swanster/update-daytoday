@@ -1,7 +1,7 @@
 {
   "name": "project-tracker-server",
   "version": "1.0.0",
-  "description": "Backend server for Project Survey Tracker",
+  "description": "Backend server for Daily Activity Infrastructure Engineer",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

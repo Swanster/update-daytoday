@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from './axiosConfig';
 
 const API_URL = '/api/dailies';
 
@@ -10,19 +10,19 @@ export const dailiesApi = {
             params.quarter = quarter;
             params.year = year;
         }
-        const response = await axios.get(API_URL, { params });
+        const response = await api.get(API_URL, { params });
         return response.data;
     },
 
     // Get available quarters
     getQuarters: async () => {
-        const response = await axios.get(`${API_URL}/quarters`);
+        const response = await api.get(`${API_URL}/quarters`);
         return response.data;
     },
 
     // Get suggestions for autocomplete
     getSuggestions: async (query) => {
-        const response = await axios.get(`${API_URL}/suggestions`, {
+        const response = await api.get(`${API_URL}/suggestions`, {
             params: { q: query }
         });
         return response.data;
@@ -30,19 +30,19 @@ export const dailiesApi = {
 
     // Create new daily entry
     create: async (dailyData) => {
-        const response = await axios.post(API_URL, dailyData);
+        const response = await api.post(API_URL, dailyData);
         return response.data;
     },
 
     // Update daily entry
     update: async (id, dailyData) => {
-        const response = await axios.put(`${API_URL}/${id}`, dailyData);
+        const response = await api.put(`${API_URL}/${id}`, dailyData);
         return response.data;
     },
 
     // Delete daily entry
     delete: async (id) => {
-        const response = await axios.delete(`${API_URL}/${id}`);
+        const response = await api.delete(`${API_URL}/${id}`);
         return response.data;
     }
 };

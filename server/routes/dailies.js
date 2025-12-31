@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Daily = require('../models/Daily');
+const ActivityLog = require('../models/ActivityLog');
+const { auth } = require('../middleware/auth');
 
 // Helper function to get current quarter
 function getCurrentQuarter() {
@@ -21,7 +23,7 @@ router.get('/', async (req, res) => {
             query = { quarter, year: parseInt(year) };
         }
 
-        const dailies = await Daily.find(query).sort({ clientName: 1, createdAt: 1 });
+        const dailies = await Daily.find(query).sort({ quarterSequence: 1, createdAt: 1 });
         res.json(dailies);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -94,28 +96,61 @@ router.get('/suggestions', async (req, res) => {
 });
 
 // Create a new daily entry
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
     // Auto-assign quarter based on date or current date
     const entryDate = req.body.date ? new Date(req.body.date) : new Date();
     const month = entryDate.getMonth();
     const year = entryDate.getFullYear();
     const quarterNum = Math.floor(month / 3) + 1;
-
-    const daily = new Daily({
-        clientName: req.body.clientName,
-        services: req.body.services,
-        caseIssue: req.body.caseIssue,
-        action: req.body.action,
-        date: req.body.date,
-        picTeam: req.body.picTeam,
-        detailAction: req.body.detailAction,
-        status: req.body.status,
-        quarter: `Q${quarterNum}-${year}`,
-        year: year
-    });
+    const quarter = `Q${quarterNum}-${year}`;
 
     try {
+        let sequenceNumber;
+
+        // Check if this client already exists in this quarter
+        const existingClientEntry = await Daily.findOne({
+            quarter,
+            clientName: req.body.clientName
+        }).select('quarterSequence');
+
+        if (existingClientEntry) {
+            // Reuse the same sequence number for existing client
+            sequenceNumber = existingClientEntry.quarterSequence;
+        } else {
+            // New client - get the next sequence number
+            const maxSeqEntry = await Daily.findOne({ quarter })
+                .sort({ quarterSequence: -1 })
+                .select('quarterSequence');
+            sequenceNumber = (maxSeqEntry?.quarterSequence || 0) + 1;
+        }
+
+        const daily = new Daily({
+            clientName: req.body.clientName,
+            services: req.body.services,
+            caseIssue: req.body.caseIssue,
+            action: req.body.action,
+            date: req.body.date,
+            picTeam: req.body.picTeam,
+            detailAction: req.body.detailAction,
+            status: req.body.status,
+            quarter: quarter,
+            year: year,
+            quarterSequence: sequenceNumber
+        });
+
         const newDaily = await daily.save();
+
+        // Log activity
+        await ActivityLog.create({
+            action: 'CREATE',
+            entityType: 'DAILY',
+            entityId: newDaily._id,
+            entityName: newDaily.clientName,
+            userId: req.user._id,
+            username: req.user.username,
+            details: `Created daily entry for client: ${newDaily.clientName}`
+        });
+
         res.status(201).json(newDaily);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -123,7 +158,7 @@ router.post('/', async (req, res) => {
 });
 
 // Update a daily entry
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
     try {
         const daily = await Daily.findById(req.params.id);
 
@@ -148,6 +183,18 @@ router.put('/:id', async (req, res) => {
         });
 
         const updatedDaily = await daily.save();
+
+        // Log activity
+        await ActivityLog.create({
+            action: 'UPDATE',
+            entityType: 'DAILY',
+            entityId: updatedDaily._id,
+            entityName: updatedDaily.clientName,
+            userId: req.user._id,
+            username: req.user.username,
+            details: `Updated daily entry for client: ${updatedDaily.clientName}`
+        });
+
         res.json(updatedDaily);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -155,7 +202,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete a daily entry
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
     try {
         const daily = await Daily.findById(req.params.id);
 
@@ -163,7 +210,22 @@ router.delete('/:id', async (req, res) => {
             return res.status(404).json({ message: 'Daily entry not found' });
         }
 
+        const clientName = daily.clientName;
+        const dailyId = daily._id;
+
         await Daily.findByIdAndDelete(req.params.id);
+
+        // Log activity
+        await ActivityLog.create({
+            action: 'DELETE',
+            entityType: 'DAILY',
+            entityId: dailyId,
+            entityName: clientName,
+            userId: req.user._id,
+            username: req.user.username,
+            details: `Deleted daily entry for client: ${clientName}`
+        });
+
         res.json({ message: 'Daily entry deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });

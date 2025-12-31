@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Project = require('../models/Project');
+const ActivityLog = require('../models/ActivityLog');
+const { auth } = require('../middleware/auth');
 
 // Helper function to get current quarter
 function getCurrentQuarter() {
@@ -190,7 +192,7 @@ router.get('/grouped', async (req, res) => {
 });
 
 // Create a new project entry
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
     // Auto-assign quarter based on date or current date
     const entryDate = req.body.date ? new Date(req.body.date) : new Date();
     const month = entryDate.getMonth();
@@ -214,14 +216,113 @@ router.post('/', async (req, res) => {
 
     try {
         const newProject = await project.save();
+
+        // Log activity
+        await ActivityLog.create({
+            action: 'CREATE',
+            entityType: 'PROJECT',
+            entityId: newProject._id,
+            entityName: newProject.projectName,
+            userId: req.user._id,
+            username: req.user.username,
+            details: `Created project: ${newProject.projectName}`
+        });
+
         res.status(201).json(newProject);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 });
 
+// Carry forward unfinished projects to new quarter
+// NOTE: This route MUST be before /:id routes!
+router.post('/carry-forward', async (req, res) => {
+    try {
+        const { fromQuarter, fromYear, toQuarter, toYear } = req.body;
+
+        if (!fromQuarter || !fromYear || !toQuarter || !toYear) {
+            return res.status(400).json({ message: 'Missing required quarter information' });
+        }
+
+        // Find all unfinished projects from the source quarter (status != Done)
+        const sourceProjects = await Project.find({
+            quarter: fromQuarter,
+            year: parseInt(fromYear),
+            status: { $ne: 'Done' }
+        }).sort({ createdAt: -1 });
+
+        // Group by project name and get only the latest entry for each
+        const projectGroups = {};
+        sourceProjects.forEach(project => {
+            if (!projectGroups[project.projectName]) {
+                projectGroups[project.projectName] = project;
+            }
+        });
+
+        const latestEntries = Object.values(projectGroups);
+
+        if (latestEntries.length === 0) {
+            return res.json({
+                message: 'No unfinished projects to carry forward',
+                copied: 0
+            });
+        }
+
+        // Check which projects already exist in target quarter
+        const existingProjects = await Project.find({
+            quarter: toQuarter,
+            year: parseInt(toYear)
+        }).select('projectName');
+
+        const existingProjectNames = new Set(existingProjects.map(p => p.projectName));
+
+        // Get the max sequence number in target quarter
+        const maxSeqEntry = await Project.findOne({
+            quarter: toQuarter,
+            year: parseInt(toYear)
+        }).sort({ quarterSequence: -1 }).select('quarterSequence');
+
+        let nextSequence = (maxSeqEntry?.quarterSequence || 0) + 1;
+
+        // Copy projects that don't already exist in target quarter
+        const copiedProjects = [];
+        for (const project of latestEntries) {
+            if (!existingProjectNames.has(project.projectName)) {
+                const newProject = new Project({
+                    projectName: project.projectName,
+                    services: project.services,
+                    reportSurvey: project.reportSurvey,
+                    wo: project.wo,
+                    material: project.material,
+                    dueDate: project.dueDate,
+                    date: new Date(), // Set to today
+                    picTeam: project.picTeam,
+                    progress: project.progress,
+                    status: project.status,
+                    quarter: toQuarter,
+                    year: parseInt(toYear),
+                    quarterSequence: nextSequence
+                });
+
+                await newProject.save();
+                copiedProjects.push(project.projectName);
+                nextSequence++;
+            }
+        }
+
+        res.json({
+            message: `Carried forward ${copiedProjects.length} project(s)`,
+            copied: copiedProjects.length,
+            projects: copiedProjects
+        });
+    } catch (error) {
+        console.error('Carry forward error:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Update a project entry
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
     try {
         const project = await Project.findById(req.params.id);
 
@@ -247,6 +348,18 @@ router.put('/:id', async (req, res) => {
         });
 
         const updatedProject = await project.save();
+
+        // Log activity
+        await ActivityLog.create({
+            action: 'UPDATE',
+            entityType: 'PROJECT',
+            entityId: updatedProject._id,
+            entityName: updatedProject.projectName,
+            userId: req.user._id,
+            username: req.user.username,
+            details: `Updated project: ${updatedProject.projectName}`
+        });
+
         res.json(updatedProject);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -254,7 +367,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete a project entry
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
     try {
         const project = await Project.findById(req.params.id);
 
@@ -262,7 +375,22 @@ router.delete('/:id', async (req, res) => {
             return res.status(404).json({ message: 'Project not found' });
         }
 
+        const projectName = project.projectName;
+        const projectId = project._id;
+
         await Project.findByIdAndDelete(req.params.id);
+
+        // Log activity
+        await ActivityLog.create({
+            action: 'DELETE',
+            entityType: 'PROJECT',
+            entityId: projectId,
+            entityName: projectName,
+            userId: req.user._id,
+            username: req.user.username,
+            details: `Deleted project: ${projectName}`
+        });
+
         res.json({ message: 'Project deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });

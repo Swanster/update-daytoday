@@ -46,6 +46,11 @@ const dailySchema = new mongoose.Schema({
     year: {
         type: Number,
         required: true
+    },
+    // Auto-incrementing sequence number per quarter
+    quarterSequence: {
+        type: Number,
+        default: 0
     }
 }, {
     timestamps: true
@@ -54,5 +59,6 @@ const dailySchema = new mongoose.Schema({
 // Index for faster searches
 dailySchema.index({ clientName: 1 });
 dailySchema.index({ quarter: 1, year: 1 });
+dailySchema.index({ quarter: 1, quarterSequence: 1 });
 
 module.exports = mongoose.model('Daily', dailySchema);

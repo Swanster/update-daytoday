@@ -67,7 +67,7 @@ export default function LoginForm({ onLogin }) {
         <div className="login-container">
             <div className="login-card">
                 <div className="login-header">
-                    <h1>📊 Project Survey Tracker</h1>
+                    <h1>📊 Daily Activity Infrastructure Engineer</h1>
                     <p>{isRegister ? 'Create your account' : 'Sign in to continue'}</p>
                 </div>
 

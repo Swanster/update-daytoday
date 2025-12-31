@@ -55,6 +55,11 @@ const projectSchema = new mongoose.Schema({
   year: {
     type: Number,
     required: true
+  },
+  // Auto-incrementing sequence number per quarter
+  quarterSequence: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true
