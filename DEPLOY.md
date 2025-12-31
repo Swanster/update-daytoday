@@ -36,6 +36,22 @@ sudo systemctl start mongod
 sudo systemctl enable mongod
 ```
 
+### ⚠️ Troubleshooting: "signal=ILL" Error (Older CPUs)
+If `mongod` fails with `Active: failed (Result: core-dump)... (code=dumped, signal=ILL)`, your CPU is likely missing **AVX instructions** required by MongoDB 5.0+.
+
+**Solution: Install MongoDB 4.4 instead**
+```bash
+# Remove current mongodb
+sudo apt remove -y mongodb-org && sudo apt purge -y mongodb-org && sudo apt autoremove -y
+sudo rm /etc/apt/sources.list.d/mongodb-org-*.list
+
+# Install MongoDB 4.4 (Supports older CPUs)
+curl -fsSL https://www.mongodb.org/static/pgp/server-4.4.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-4.4.gpg --dearmor
+echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-4.4.gpg ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.4.list
+sudo apt update
+sudo apt install -y mongodb-org
+```
+
 ## 3. Install Node.js and Nginx
 
 ```bash
@@ -61,9 +77,14 @@ sudo npm install -g pm2
 ## 5. Clone and Setup Application
 
 ```bash
-# Clone repository
-git clone <YOUR_GITHUB_REPO_URL>
-cd project-01
+# Clone repository (assuming you are in /var/www or similar)
+cd /var/www
+git clone <YOUR_GITHUB_REPO_URL> update-daytoday
+cd update-daytoday
+
+# ⚠️ IMPORTANT: Fix Permissions
+# Ensure your current user owns the directory to avoid "EACCES: permission denied" errors
+sudo chown -R $USER:$USER /var/www/update-daytoday
 
 # Setup Backend
 cd server
@@ -152,3 +173,4 @@ After deployment, accessing the site for the first time will allow you to regist
 - **Check Backend Logs:** `pm2 logs project-tracker-api`
 - **Check Nginx Logs:** `sudo tail -f /var/log/nginx/error.log`
 - **Restart Nginx:** `sudo systemctl restart nginx`
+- **Check Open Ports:** `sudo lsof -i -P -n | grep LISTEN` or `sudo ss -tulpn`
