@@ -409,7 +409,7 @@ function App() {
                         <option value="status">Status</option>
                     </select>
                 </div>
-                {activeTab === 'project' && (
+                {activeTab === 'project' && isAdminOrSuper() && (
                     <button className="carry-forward-btn" onClick={handleCarryForward}>
                         📥 Carry Forward
                     </button>
