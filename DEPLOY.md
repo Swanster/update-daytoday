@@ -1,0 +1,154 @@
+# Deployment Guide for Ubuntu Server
+
+This guide describes how to deploy the Project Survey Tracker application on an Ubuntu server using Node.js, MongoDB, PM2, and Nginx.
+
+## Prerequisites
+
+- Ubuntu Server (20.04 or newer)
+- Root or sudo access
+- Domain name (optional, but recommended)
+
+## 1. Update System
+
+```bash
+sudo apt update && sudo apt upgrade -y
+```
+
+## 2. Install MongoDB
+
+Follow the official MongoDB installation guide for your specific Ubuntu version. For Ubuntu 22.04/24.04:
+
+```bash
+# Import Public Key
+curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor
+
+# Create list file
+echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+
+# Reload local package database
+sudo apt update
+
+# Install MongoDB
+sudo apt install -y mongodb-org
+
+# Start and Enable MongoDB
+sudo systemctl start mongod
+sudo systemctl enable mongod
+```
+
+## 3. Install Node.js and Nginx
+
+```bash
+# Install Node.js (using NVM is recommended, but apt is fine for production if version is recent enough)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# Install Nginx
+sudo apt install -y nginx
+
+# Verify installations
+node -v
+npm -v
+nginx -v
+```
+
+## 4. Install PM2 (Process Manager)
+
+```bash
+sudo npm install -g pm2
+```
+
+## 5. Clone and Setup Application
+
+```bash
+# Clone repository
+git clone <YOUR_GITHUB_REPO_URL>
+cd project-01
+
+# Setup Backend
+cd server
+npm install
+# Create .env file for production
+echo "PORT=5000" > .env
+echo "MONGODB_URI=mongodb://localhost:27017/project-tracker" >> .env
+echo "JWT_SECRET=your_super_secure_random_string_here" >> .env
+
+# Setup Frontend
+cd ../client
+npm install
+npm run build
+```
+
+## 6. Start Backend with PM2
+
+```bash
+cd ../server
+pm2 start index.js --name "project-tracker-api"
+pm2 save
+pm2 startup
+```
+
+## 7. Configure Nginx
+
+Create a new Nginx configuration file:
+
+```bash
+sudo nano /etc/nginx/sites-available/project-tracker
+```
+
+Add the following configuration (replace `your_domain_or_ip` with your actual domain or IP address):
+
+```nginx
+server {
+    listen 80;
+    server_name your_domain_or_ip;
+
+    # Frontend (Serve Static Files)
+    location / {
+        root /path/to/project-01/client/dist;
+        index index.html;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Backend API Proxy
+    location /api {
+        proxy_pass http://localhost:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+Enable the configuration:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/project-tracker /etc/nginx/sites-enabled/
+sudo nginx -t # Test configuration
+sudo systemctl restart nginx
+```
+
+## 8. Firewall Setup (UFW)
+
+```bash
+sudo ufw allow 'Nginx Full'
+sudo ufw allow OpenSSH
+sudo ufw enable
+```
+
+## 9. Create First Superuser
+
+After deployment, accessing the site for the first time will allow you to register. The **first registered user** automatically becomes the **Superuser**.
+
+1. Go to `http://your_domain_or_ip`
+2. Register a new account
+3. This account gets immediate Superuser access
+4. Use this account to approve subsequent user registrations
+
+## Troubleshooting
+
+- **Check Backend Logs:** `pm2 logs project-tracker-api`
+- **Check Nginx Logs:** `sudo tail -f /var/log/nginx/error.log`
+- **Restart Nginx:** `sudo systemctl restart nginx`
