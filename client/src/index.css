@@ -1584,3 +1584,138 @@ body {
 .btn-secondary:hover {
   background: #757575;
 }
+
+/* CSV Import Modal */
+.csv-import-modal {
+  max-width: 500px;
+}
+
+.csv-import-modal .modal-body {
+  padding: 1.5rem;
+}
+
+.drop-zone {
+  border: 3px dashed #ccc;
+  border-radius: 12px;
+  padding: 2.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #fafafa;
+  margin-bottom: 1rem;
+}
+
+.drop-zone:hover {
+  border-color: var(--accent-coral);
+  background: #fff5f2;
+}
+
+.drop-zone.dragging {
+  border-color: var(--accent-coral);
+  background: #fff5f2;
+  transform: scale(1.02);
+}
+
+.drop-zone.has-file {
+  border-color: #4caf50;
+  background: #e8f5e9;
+}
+
+.drop-zone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  opacity: 0.6;
+}
+
+.drop-zone p {
+  margin: 0;
+  font-size: 1rem;
+  color: #666;
+}
+
+.drop-zone-hint {
+  font-size: 0.85rem !important;
+  color: #999 !important;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+}
+
+.file-icon {
+  font-size: 1.5rem;
+}
+
+.file-name {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.file-size {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.import-error {
+  background: #ffebee;
+  color: #c62828;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.import-info {
+  background: #e3f2fd;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.import-info h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #1565c0;
+}
+
+.import-info ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.import-info li {
+  margin-bottom: 0.25rem;
+  color: #555;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: white;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+
+.close-btn:hover {
+  transform: scale(1.2);
+}

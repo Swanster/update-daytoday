@@ -1,0 +1,188 @@
+ACTIVITY QUARTAL IV - INFRASTRUCTURE ENGINEER									
+									
+									
+									Done
+					Onsite				Progress
+					Remote				Hold
+ACTIVITY QUARTAL - 4	No	CLIENT	SERVICE	CASE & ISSUE	ACTION	DATE	PIC TIM	DETAIL ACTION	STATUS
+									
+									
+	1	POP ZIZZ	Internet	Router Arah LV8 Down		13 Oktober 2025	Wawan, Angga	Update Troubleshoot Link Zizz > LV8 -Link radio sudah normal setelah dilakukan replacement kabel UTP ke Radio, UTP ke Router, dan pergantian PoE 	
+	2	POP Penida	Internet	Dismantle POP		10 Oktober 2025	Wawan, Artha	Update Dismantle POP Penida -Material dismantle sudah di titipkan di rumah Joni	
+	3	POP Lembongan	Internet	Troubleshoot Link FO		9 Oktober 2025	Wawan, Artha	Update Troubleshoot Link FO Lembongan -Kabel yang sebelumnya putus sudah diganti dengan kabel ADSS 24c dan jalur pipa baru mengikuti jalur pipa Existing	
+	4	Nulook Clinic	Internet	Survey		7 Oktober 2025	Wawan	Survey Kebutuhan FO Lastmile Nulook Clinic	
+	5	Alila Villa Uluwatu	Internet	Troubleshoot		3 Oktober 2025	artha, wawan, angga, joni, samudra	penarikan FO cut link Alila Uluwatu 5KM dari POP Jimbaran	
+				Troubleshoot		20 Oktober 2025	Jody, Wawan, Angga	- Penarikan kabel FO 24 core baru sepanjang 200m - Pasang JB 1 sisi dan sambung ulang tube biru (6 core) kedua sisi di JB	
+	6	The Place Retreat	Internet	Maintenance		7 Oktober 2025	Wawan	Update maintenance The Place Retreat  -Perangkat milik varnion dan patchcord di Villa Owner, Villa Sandat, dan Villa Risky sudah dipasang label 	
+	7	Omma Day Club	Internet	Dismantle		14 Oktober 2025	Wawan, Angga	Update Dismantle Omma Day Club -Perangkat OTB dan MC milik Vendor sudah di dismantle di sisi client	
+	8	Desa Swan Villas	Internet	Dismantle		14 Oktober 2025	Wawan, Angga	Update Dismantle Desa Swan Villas -Perangkat radio di restaurant sudah di lepas dan dititipkan ke PIC bpk Aria -Info terakhir dari logistik perangkat adalah milik Varnion sehingga akan diambil bersama dengan perangkat radio lain yang perlu didismantle setelah masa kontrak di 14 November	
+	9	Zumana beach club	Internet	Survey		15 Oktober 2025	Joni	-Done survey jalur kabel fo	
+	10	POP Siesta	Internet	Maintenance		15 Oktober 2025	Jody	- Pergantian Patch Panel	
+			Internet	Maintenance		16-17 Oktober 2025	Wawan, Pak Suan, Pak Gie	-Maintenance Pergantian Luminous dan 2 Unit Aki 	
+			Internet	Troubleshoot		18 Oktober 2025	ArthaK	- FO HSP Down action : penggantian Switch Milik HSP di pop Sista	
+			Internet	Maintenance		22 Oktober 2025	Beni	- Replacement Radio Link PTP to Discovery	
+	11	POP Amnaya Kuta	Internet	Survey		15 Oktober 2025	Jody	- Survey pemasangan box baru 	
+						9 November 2025	Wawan	- Troubleshoot Kelistrikan Amnaya Perangkat UPS rusak sehingga listrik saat ini langsung terhubung ke jaringan PLN	
+	12	The Colony Hotel	WAAS	Troubleshoot		11 Oktober 2025	Azlan	Troubleshoot AP room 38: - uplink ap dari switch port 14 rusak  - uplink pindah ke port 12 switch  - ap normal	
+			WAAS	Troubleshoot		18 oktober 2025	Samudra	Troubleshoot The Colony 18 Oktober 2025  Kendala : client tidak bisa akses internet via LAN  Action : crimping ulang & memperbaiki kuningan RJ45 switch client yang kendor	
+			WAAS	Troubleshoot		20 oktober 2025	Samudra	Troubleshoot The Colony 20 Oktober 2025  Kendala : client tidak bisa akses internet via LAN, swith eror  Action :  -Replacement swith  -Crimping ulang kabel UTP -reposisi switch	
+			WAAS	Visit		30 oktober 2025	Samudra	Technical visit perangkat varnion sebagai berikut : ● Jumlah access point ada 10 yang dimana 9 Access Point itu milik varnion dan 1 Access Point Depan Room 57 milik hotel ● Jumlah switch ada 3 yang dimana 2 milik varnion dan 1 milik client Detail : Milik Varnion : Access Point Lobby, Depan Room 36, Depan Room 32, Depan Room 38, Depan Room 50, Depan Room 51, Depan Room 55, Depan Room 60, Depan Room 62 & Switch Lobby, Switch timur bawah tangga. Milik Hotel : Access Point Depan Room 57 & Switch Server. Note : data ini dikumpulkan oleh engineering hotel dan saat ke lokasi tim tidak bisa masuk ke ruangan karena ada guest di room hingga dokumentasi menjadi terbatas tambahan juga kami melakukan Dismantle perangkat switch core lama milik varnion yang rusak dan sudah diserahkan ke logistik	
+	13	Lembongan Beach Club and Resort	WAAS	Survey		10 Oktober 2025	Azlan	- Survey WAAS	
+	14	The Luc Brawa	WAAS	Survey		15 Oktober 2025	Pak Gilang, Maul	- Pemasangan Switch Core BOH - Migrasi Jaringan Guest dan BOH untuk perubahan Skema Topology - Untuk WiFi setelah di monitoring sekitar 30 menit tidak ada kendala	
+				Technical Visit		22 Oktober 2025	Yogi 	1. Sudah melakukan setting Ulang SSID untuk di Tui Blue sebagai berikut :  - Group Public Area SSID : "Tui Blue" dan "TBB EDC"(Hidden).  - Group BOH SSID : "Tui Blue" dan "TBB BOH"(Hidden).  - Group Lobby SSID : "Tui Blue", "TBB EDC"(Hidden) dan "TBB BOH"(Hidden).  2. Pengecekan Room President Suite Rooftop di karenakan ada Special Guest(Wiz Khalifa) menginap di Tui Blue, untuk Hasil speedtest dan signal Normal.  3. Terdapat case sementara saat AP Lobby di masukkan ke Group Public area terjadi Blinking pada signal Wifi di HP Iphone, dikarenakan Radio 5 GHz di aktifkan pada Group Public_New pada Controller. Saat Frequency 5 Ghz di Non-aktifkan pada SSID kendala Blingking pada Bar Signal Iphone Normal. Saat ini kondisi AP Lobby sudah kembali Normal dengan Freq 5 GHz di Non-aktifkan.  4.Untuk kendala Room 238 saat ini belum ada response dari Tamu, tim sudah menunggu kurang Lebih 5 Jam menunggu di lokasi.  5. add dan Setting 1 Unit AP Peminjaman sebelumnya ke controller The Luc Berawa dengan menggunakan Channel 6 pada Frequency 2.4 GHz dengan Power 55%. Untuk AP sudah di pasang oleh Client di Courtyard sebelah RR Chocolate di Groundfloor.	
+			WAAS	Drop Barang		23 Oktober 2025	Gilang	- Drop Pipa Conduit 200 Batang - Sock 300 Pcs - Klem 1 Box	
+			WAAS	Instalasi dan Survey		29 Oktober 2025	Artha, Azlan	- perapian kabel Fo di Panel lantai 1 dan 2. - survey jalur kan untuk 15 ap public area bersama vendor - Drop barang perapian kabel	
+			WAAS	Visit		30 Oktober 2025	Yogi, Gilang	 1. Untuk PC BOH Lobby/Receptionist sekarang sudah menggunakan LAN karena sebelumnya sudah terdapat LAN pada PC tetapi tetap menggunakan Wifi. Saat ini connection PC sudah stabil.   2. Kendala pada iphone/device ios terjadi biasanya susah connect / roaming lama, sebelumnya sudah di test menggunakan Iphone jika di aktifkan Rotating pada private macc address di Iphone akan susah connect, saat fitur di off/matikan device Iphone langsung connect ke Wifi dan Roamingnya bagus.   3. Pengecekan salah satu kamar lantai 2 (Room 209) dan Lantai 3 ( Room 303 )  sebagai berikut :   ~ Signal test hasil dbm signal di -33 dbm sampai -60 dbm titik terjauh kamar.   ~ Hasil speedtest di Room sesuai limitasi.   4. Selanjutnya untuk AP di controller sedang di lakukan perapihan pada setiap AP Room untuk mematikan fitur Otomatis pada AP yaitu Self Organization  sehingga banyak AP-Room menjadi Master tersendiri di setiap kamar yang menjadi salah satu indikasi susah connect pada device.	
+				Instalasi dan Survey		31 Oktober 2025	Artha, Azlan	- perapian kabel Fo di Panel lantai 3 dan rooftop.	
+				Troubleshoot		3 November 2025	Yogi	- Room 233 done oleh IT informasi dari Receptionist AP sudah di Restart oleh IT dan tamu sudah bisa connect. Pengecekan hanya bisa di lakukan dari sisi luar kamar hasil speedtest sesuai limitasi dan signal di -56 dbm sampai -62 dbm. - Untuk room 233 sudah standby selama 1 jam 30 menit tidak ada kendala lagi atau complaint ke Front Office/ Receptionist  - Pengecekan Room 116 kendala device Iphone tamu tidak bisa connect, Acction : Disable private mac-address, HP tamu sudah bisa connect Wifi. - Kendala TV Stuck dekat lift lobby sudah Normal setelah di Clear data.	
+				Visit		7 November 2025	Yogi, Gilang M	- Pengecekan connection Wifi Area Lobby - Roaming dan Speestest Normal di area Lobby - Pengetesan di lokasi sudah di cek dari Jam 10.00 sampai jam 12.30 Wita tidak ada kendala atau issue dari Guest.	
+				VIsit		8 November 2025	Samudra	Issue : Roaming area lobby kurang bagus Action : atur roaming fitur di masing" Acess poin dan setelah di tes sambil keliling aman untuk android dan iphone.  Issue : guest pool wifi blinking Action : atur ulang power AP di pool, restart dan matikan Random mac pada device guest dan sudah aman  Issue : vlepo setelah update konten sering nge-freeze dan ngelag tadi juga saya ketemu dengan pak Anton dan didengar saat sedang mengobrol dengan it dan beliau meminta untuk di confirm Untuk masalah ini secepatnya agar tahu masalahnya ini di vlepo atau di internet Action : ketika ada masalah ini it restart STB dan setelah itu berjalan normal  Update Instalasi tidak bisa dilaksanakan dikarenakan vendor telat datang dan akan dilanjutkan kemungkinan besok dan Fyi vendor tadi tidak tau titik" access point dimana serta jalurnya karena beda orang.  Note : Pak Anton meminta untuk analisa untuk masalah vlepo apakah itu masalah di perangkat STB atau di internet. Minta tolong ketika ubah power, chanel dll di ruijie tolong konfirmasi agar tim teknis tidak bingung.	
+			WAAS	Maintenance LT3		23 Desember 2025	Yogi, Joni, Samudra	Action - penarikan mundur kabel fo kamar 306,307,308,309,310,311,312,313,314 ke arah posisi jb - trace kabel utp koridor dan tarik mundur ke titik jb - penarikan kabel 24 core dari jb ke titik odp - penarikan kabel BB dari shaft lt3 ke arah odp 	
+						24 Desember 2025	Samudra & Joni	Hasil hari ini :  -Penarikan FO Room 305, 303, 302, 301 Done di atas plafon  -Penarikan dari saf lantai 3 ke panel roof   -Penarikan UTP Pool bar, depan lift, koridor utara lantai 3  -Trace kabel UTP Kitchen, Gym, Resto 2, Pool bar, depan lift koridor lantai 2, koridor lantai 3	
+						25 Desember 2025	Samudra & Joni	Hasil Hari Ini : -Penarikan Kabel UTP Pool Bar, Kitchen, Resto, GYM  -Splicing JB distribusi room 306-317 -Trace kabel UTP Outdoor Pool	
+						26 Desember 2025	Samudra & Joni	Penarikan : -penarikan AP Outdoor Pool Done -Penarikan FO FB Store Done -Penarikan UTP AP koridor selatan lantai 3 Done -splicing room 302,303,305 -Pemasangan rak panel lantai 3 -Crimping UTP AP poolbar, outdoor pool, depan lift lantai 3,depan lift lantai 2, koridor lantai 2	
+						27 Desember 2025	Yogi	Update hari ini : - Penarikan FO ulang ke room 301 done - Crimping UTP sambungan done 10 titik.  Status Pengerjaan Penarikan : - Penarikan dan Penyambungan FO room di atas plafon (room 306-317 ). (Done) - Untuk Penarikan FO ke ruang FB Office Done, masih menunggu ruangan selesai untuk mengetahui posisi ONT nantinya. - Splacing room 301-305. (Done) - Pemasangan rak panel lantai 3 dan Switch Lantai 3. (Done) - Penyambungan 10 titik UTP dan Tarikan UTP baru 2 titik. (Done).	
+						28 Desember 2025	Samudra	Pengerjaan hari ini : -splicing JB saf lantai 3 (core yang berisikan redalam dari server 1, 3, 5, 12) : Done -splicing ODP lantai roof agar bisa up hari ini : Done -cek semua room lantai roof : Done	
+						29 Desember 2025	Samudra	Pengerjaan hari ini : -Pemasangan ODP lantai 3  -Pemasangan kabel duct -Penyambungan ODP yang mengarah ke room 306-317 -Perapian fo di panel lantai 3	
+						30 Desember 2025	Samudra & Beni	Pengerjaan Hari ini ; -crimping UTP panel lantai 3 -Pergantian Splitter panel lantai 1 karena kemarin ada down di lantai tersebut -perapian panel lantai 3 -vlepo lantai 111 bermasalah jadi ganti jadi stb yang sebelumnya inject	
+	15	Paradisus Melia Bali	Internet	Instalasi		17 Oktober 2025	Jody, Beni	- Penarikan kabel FO 24 core dari tower ke box panel	
+			internet	Troubleshoot		26 oktober 2025	samudra	Troubleshoot Paradisus Melia Bali 26 oktober 2025  Issue : radio offline  Action : kendala listrik di sisi radio yang dimana mcb di panel listrik keadaan off dan saya hidupkan lagi	
+			Internet	Instalasi		02 Oktober 2025	Jody, Wawan	- Instalasi Wireless - Penarikan kabel FO dari box panel ke ruang server	
+			Internet	Instalasi		03 Oktober 2025	Jody	- Pemasangan Box panel ke tembok	
+			Internet	Instalasi		30 Oktober 2025	Jody, Beni, Angga, Azlan	- Instalasi Wireless baru arah POP Imbo	
+			Internet	Dismantle		05 November 2025	Jody, Beni	- Dismantle Starlink	
+			Internet	Maintenance tower		25 November 2025	Jody, Beni	- Pergantian kawat seling tower - Pergantian Spanskru/spanner dan kuku macan	
+			Internet	Maintenance tower		26 November 2025	Jody, Beni, Wawan	- Pergantian kawat seling tower - Pergantian Spanskru/spanner dan kuku macan	
+			Internet	Maintenance tower		27 November 2025	Jody, Beni, Joni	- Pergantian kawat seling tower - Pergantian Spanskru/spanner dan kuku macan	
+	16	Lokha Ubud	Internet	Troubleshoot		17 Oktober 2025	Samudra	Troubleshoot Lokha Ubud 17 oktober 2025  Action : -ganti mc di sisi server yang mengarah ke area wantilan lokha ubud (ex radio varnion) -speedtest via lan aman  Kendala  -kerusakan kabel UTP yang mengarah ke access point balai bengong area wantilan (milik client)	
+	17	Amaris Dewi Sri	Internet	Instalasi		7 Oktober 2025	Samudra	 instalasi dan upgrade bandwith Amaris Dewi Sri 7 Oktober 2025 -penggantian perangkat router 750 ke 4011 -speedtest sesuai upgrade 70Mb Internet sudah normal dan bisa digunakan 	
+	18	Chatwood Coffee & Eatery	Internet	Dismantle		20 Oktober 2025	Joni	- RB 750 gr3 - MC tp link (CGS)	
+	19	The Anvaya Hotel and Resort	Internet	Dismantle		20 Oktober 2025	Gilang Maulana, Azlan	- All Perangkat Varnion	
+	20	The Legian Seminyak 	WAAS	Troubleshoot		20 Oktober 2025	Gilang Maulana, Azlan	- Troubleshoot AP Oceanbeach	
+			WAAS	Troubleshoot		16 Desember 2025	Gilang Maulana	Update Visit 16 Desember 2025 - Pemberian Penutup SFP  - Pengambilan AP Rusak (Restaurant Dan Blok E Lt. 2) - Membantu PIC memasang AP Concierge, Restaurant dan Koridor dikarenakan sebelumnya dilepas oleh IT dikarenakan terdapat Project di Lobby, Restaurant dan Blok E  Note: - Dikarenakan AP restaurant Rusak sementara menggunakan AP Koridor Blok E Lt. 1 - Next Visit Bapaknya minta untuk membawa isolasi kertas untuk menutup Port LAN pada setiap switch milik varnion	
+			WAAS	Troubleshoot		30 Desember 2025	Yogi	Update Visit The Legian Seminyak 30 Des 2025 : - AP Ocean Beach Sudah online kendala terdapat pada sambungan Barel Eksisting bermasalah. Saat ini sudah di sambung ulang menggunakan barel baru milik hotel. - Untuk room 221 dan 223 sudah di cek dan krimping ulang di panel tetapi kondisi port masih 100 M belum bisa dilakukan pengecekan di kamar karena saat ini masih ada tamu - Untuk kabel Patchcore sudah di serahkan ke IT sebagai spare. Untuk kabel Patchcore setelah di cek di panel yang putus tergigit tikus kabel patchcore switch CCTV bukan Switch Varnion.	
+	21	The Bandha Hotel & Suites	WAAS	Drop Barang		20 Oktober 2025	Gilang Maulana, Azlan	- Drop 4 unit AP RG RAP-2266	
+	22	Discovery Kartika Plasa Hotel	Internet	Maintenance		23 Oktober 2025	Jody, Azlan	- Pergantian Radio (sebelumnya menggunakan AF 5X diganti menggunakan PB 5AC)	
+	23	Pyramid Of Chi	WAAS	Troubleshoot		22 Oktober 2025	Gilang Maulana, Wawan	Update Troubleshoot tanggal 22 Oktober 2025: Kendala: - Switch BOH Offline Action: - Penarikan ulang kabel FO sejauh 50Meter dari Switch Kitchen - AP sudah Online semua dan speedtest area BOH normal	
+			Internet	Troubleshoot		5 November 2025	Joni	- supervisi troubleshoot link down dengan team iforte	
+			WAAS	Troubleshoot		10 November 2025	Wawan	Update Troubleshoot BB WAAS - FO Cut 90M dari Server -Penarikan ulang 20M ke arah panel Utama dan sambung ulang di OTP yang rusak -Kabel ke OTP sudah dipipa dan dipasang di 1,5M di tembok luar	
+	24	Greenfields Hotel Ubud	WAAS	Troubleshoot dan Visit		16 Oktober 2025	Yogi 	- untuk case Switch Resto Offline sudah di cek di lokasi terdapat kendala kabel Pacthcore tergigit tikus di panel resto - Patchcore sudah di ganti dan kondisi Switch dan AP Resto sudah online saat ini. - Akses lobang panel saat ini sudah di tutup menggunakan triplek oleh PIC.	
+			internet	Troubleshoot		24 oktober 2025	samudra, wawan	troubleshoot greenfield hotel 24 oktober 2025  Kendala : kamar di panel semampai 1-4 dan 407 offline  Action : setelah di cek putus kabel dari panel kemenyan menuju panel yang bermasalah yang kemungkinan besar karena mesin potong rumput milik warga jadi kami sambung kembali  Note : bisa minta tolong di info untuk posisi kabel ke bapaknya agar tim greenfield tau masalahnya ada dimana dan jikalau bisa warga atau karyawan diminta hati" saat menggunakan mesin potong rumput di dekat jalur kabel	
+			WAAS	VIsit		17 Desember 2025	samudra	Regular Technical Visit	
+	25	Draco Coffee and Etery	Internet	Troubleshoot		21 oktober 2025	 Samudra, Roy 	troubleshoot draco and etery 22 oktober 2025  Issue : tidak bisa dapat internet  Action : cek kabel di odp yang terjepit yang mengakibatkan redaman tinggi dan sudah solve	
+	26	Annora Villas Seminyak	internet	Troubleshoot		16 Oktober 2025	Wawan, Jony	Troubleshoot FO CUT Annora Villa   Issue : FO Cut 25M dari Server Annora dalam sambungan OTP Action : Sambung Ulang core yang putus 	
+	27	POP JIMBARAN	internet	Instalasi		16 Oktober 2025	Wawan	Penarikan Kabel ke arah POP Jimbaran oleh Vendor CGS	
+						17 Oktober 2025		Aktivasi Perangkat CGS di POP Jimbaran	
+	28	Pramana Giri Kusuma	Internet	Troubleshoot		19 Oktober 2025	Wawan, Angga	-Troubleshoot FO Cut Pramana Giri Kusuma Issue : FO Cut 120M dari Server  Action : Penarikan ulang kabel 200m dan penambahan 2 unit OTP	
+	29	Lyvin Melasti	Internet	Survey		21 Oktober 2025	Wawan	-Survey Kebutuhan FO Backup Lyvin Melasti bersama Vendor	
+	30	Murni Teguh Hospital Tuban	Internet	Survey		23 Oktober 2025	Wawan	-Survey Kebutuhan FO Lastmile Murni Teguh Hospital Tuban	
+	31	Abian Taksu By Jeevawasa	Internet	Survey		24 Oktober 2025	Wawan	-Survey Kebutuhan FO Backup Abian Taksu bersama iForte	
+				Instalasi		28 Oktober 2025	Wawan	-Supervisi instalasi link backup Vendor iForte  	
+	32	Rhea Hotels & Villas Management  Office	Internet	Survey		27 Oktober 2025	Joni	-Survey internet bandwidth	
+	33	Faithfull	WAAS	Instalasi		27 Oktober 2025	Gilang, Samudra	- Tarik kabel LAN ke Arah Gudang	
+			Internet	Instalasi		29 Oktober 2025	Gilang	- Supervisi Reposisi Kabel FO yang sebelumnya di tengah ruangan dipindahkan ke Gudang	
+			Internet	Instalasi		01 Desember 2025	Jody	- Pemasangan AP di ceiling	
+	34	Body Factory Lifestyle Residence	Internet	Instalasi		27 Oktober 2025	Azlan	- Survey Jalur FO bersama Tim CGS	
+						28 Oktober 2025	Azlan	Technical Meeting bersama klien dengan hasil: - varnion hanya untuk mainlink (bandwidth only)  - Router dan konfigurasi di provide oleh klien - Panthouse 1 dan panthouse 2 tetap menggunakan ap inwall dari varnion, req dari klien agar kedua ap inwall tersebut masuk ke cloud milik klien.  - managed waas akan dilaksanakan oleh klien.  - ip publik dari varnion sesuai dengan tm bersama tim technical support sebelumnya - jalur fo mengikuti survey sebelumnya dan sudah disampaikan ke tim CGS	
+	35	Saka Agung  Abadi Tabanan	Internet	Survey		28 Oktober 2025	Jody	- Survey FO	
+			Internet	Instalasi 		03 November 2025	Jody	- Aktivasi link internet (pemasangan RB PTP) - Tanda tangan BA dan TTB	
+	36	Prime Plaza Sanur	Internet	Maintenance		27 Oktober 2025	Wawan	- Pergantian 1 Unit MC yg Error di sisi server	
+	37	The Leaf Jimbaran	WAAS	Visit		31 oktober 2025	samudra	Technical Visit The Leaf Jimbaran 31 oktober 2025  Issue : kendala internet lambat pada lantai 3  Action: -Speedtest via lan di server dan panel : Bagus -Ping ke gateway dan dns : Bagus -Speedtest Via Wireless : Tidak Bagus  Penjelasan: Setelah saya melakukan tes dari ping dan speedtest setelah disimpulkan hasilnya sebagai berikut :  1. Access point dan switch milik klient itu sudah cukup berumur/perangkat lama 2. Untuk power dan frekuensi access point milik klien terlalu besar dan mengakibatkan interferensi yang berpengaruh pada kualitas jaringan internet 3. Access point Milik client single band 2,4 GHz saja 4.  Yang kendala lambat bukan hanya di lantai 3 saja tetapi di area yang menggunakan perangkat yang sama seperti di lantai 3 5. Rekomendasi mengenai masalah ini adalah penggantian perangkat internet ke yang terbaru dikarenakan kemungkinan perangkat lama tidak bisa menyalurkan internet dengan baik  Note : perangkat Access point dan Switch milik pihak Hotel	
+			WAAS	Troubleshoot		24 November 2025	samudra	Troubleshoot The Leaf Jimbaran 24 November 2025  -setting access point client dengan SSID : Normal -Speedtest SSID baru : Normal -Signal Test : Normal -pemindahal lokasi access point dari di luar kamar menjadi di bawah meja tv agar vlepo lancar  Note : merk Access Point adalah TP Link seri Deco yang perlu aplikasi, tadi sudah saya sempat kasih tau bapaknya cara setting SSID dan Password 	
+	38	Jewel Of Canggu	Internet	Survey		31 Oktober 2025	Joni	Done survey jalur kabel fo	
+	39	Alila Seminyak 	Internet	Survey		27 Oktober 2025	Yogi	- Survey kebutuhanan BOD - Done Report	
+				Drop Perangkat BOD		31 OKtober 2025	Yogi	- Untuk AP dan Switch BOD sudah diserahkan ke Pak Eka. - Vlan 40 BOD sudah tembus di test di Switch Office IT menggunakan AP BOD yang sudah di Drop hari ini - Informasi pak Eka untuk BW BOD di totalkan dengang BW Saat ini : 500Mbps + 150 Mbps - Permintaan untuk Vlan BOD ( Vlan 40 ) dilimit sama seperti Vlan Guest yaitu 50 Mbps/usernya - Permintaan untuk tgl 4 November untuk tim senior dari Varnion jam 7.30 untuk standby selama 2 jam untuk mendampingi EOS BOD. 	
+	40	El Roy Apartement	WAS	Survey		30 Oktober 2025	Yogi	- Survey Kebutuhan WAS di Lokasi. - Dibutuhkan survey kembali saat Floormap dan Bangunan sudah fix dari client, dikarenakan saat ini informasi dari client kebutuhan perangkat masi bisa berubah bentuk bangunannya	
+	41	POP Pak Nyoman	Internet	Instalasi 		31 Oktober 2025	Artha, Yogi, Azlan	- Instalasi Luminos dan Accu	
+	42	Ciputra Beach Resort	Internet	Maintenance		30 Oktober 2025	Gilang 	Kendala:  - Main Bedroom Lt. 1 Tamu sering complaint Wifi Putus nyambung  Action: - Pengecekan langsung menggunakan kabel LAN hasil nya normal - Pengecekan menggunakan WiFi dari Laptop dan Hp normal di area Living Room Lt. 1 - dari hasil pengecekan sinyal ke arah main Bedroom Lt. 1 dan sudah di rekomendasikan untuk menambah access point	
+	43	Handara Resort Bali	Vlepo	Troublesoot		2 November	Wawan	- kendala vlepo blank screen - kendala akun Video Logout - setelah debug realese account Video	
+			FTTR	Maintenance		31 October 2025	Joni	- Melakukan Penyambungan 2 Room 125 dan 126	
+			FTTR	Maintenance		18 November 2025	Joni	-penyambngan 2 Room 109 dan 110	
+			FTTR	Maintenance		25 November 2025	Joni	- kamar 201 dan 213 terkendala di device tamu tidak bisa connect setelah di cek dari indakator wlan tidak nyala action disable enable wlan di netcon, kembali normal untuk redaman aman di bawah-20dbm - maintenance penyambungan kabel fo di villa 111 dan 112 ont belum di pasang karena renov belum selesai -kamar 204 dan 215 belum bisa di cek karena masih isi tamu	
+	44	Sakti Garden	Internet	Maintenance		5 November 2025	Joni	- reposisi otb dengan team iforte	
+	45	Teras Sebali	Internet	Survey		6 November 2025	Joni	- done survey jalur kabel fo	
+	46	Raffles Bali	WAAS	Dismantle		4 November 2025	samudra	 Dismantle perangkat ruckus 4 unit raffless bali 4 november 2025 1. Loloan Bar - 2025 2. Gym - 2025 3. TWB - 2025 4. Left Wing - 2025  4 titik AP sudah kembali ke Varnion.	
+	47	Tuju Day Club	WAAS	Technical Visit		6 November 2025	samudra	Technical visit 6 november 2025  -speedtest via wireless dan kabel : Normal -Roaming Test: Normal -Signal Test : Normal -Ping DNS Varnion, Gateway Varnion, Gateway Client : Normal  Note : client rencana menjadikan varnion untuk backup jaringan BOH mereka dari isp blip bisa dibantu mengenai hal ini 	
+	48	Famous Hotel	Internet/WAAS	Dismantle		06 November 2025	Jody, Azlan	Pengambilan perangkat : RB750, AP Ruijie out door dan indoor, switch dan box panel	
+	49	Bintang Mandiri School	WAAS	Survery		6 November 2025	Azlan	- Survey WAAS Gedung 3 dan public area	
+	50	Lavaya Oakwood Nusa Dua Bali	WAAS	Troiubleshoot		10 November 2025	Azlan	- sudah di lakukan konfigurasi pada ap tp-link (signal dan channel) milik klien di room N-506 tapi signal ap masih tidak stabil  - terkait kendala di room sudah di sampaikan ke pic.	
+	51	Como Uma Canggu	Internet	Meeting jalur FO		10 November 2025	Jody, Arthak	- Meeting bersama dari beberapa ISP (Varnion, Velo, Doel sumbang) dengan IT Perihal jalur kabel dari depan menuju ke server. - Info dari IT bahwa GM menyuruh agar jalur kabelnya menggunakan trai kabel mulai dari depan (tiang) sampai ke arah belakang (engineering). karena keadaan jalur kabel saat ini dirasa kurang rapih dan mengganggu lahan orang jika pipa clipsalnya lepas dari tembok. - IT menyarankan agar dari beberapa ISP yang saat ini bekerjasama untuk perihal tersebut.	
+	52	Hilton Garden Inn	Internet	Troubleshoot		8 Noveber 2025	Joni, Angga	case: main link down karena bending action: sambung ulang di JB dan Ganti patchord sisi holiday inn	
+	53	POP Imbo	Internet	Instalasi 		5 November	Wawan, Artha, Angga	Update Instalasi BB IMBO>P.Supiori -Penarikan Kabel 24C ADSS 1,4KM -Pelurusan JB POP Imbo	
+						7 November	Wawan, Angga	Update Instalasi ODP Kertapura - Penarikan 12C Fig 8 350M -Pelurusan JB (Seberang Babi Gulung), Instalasi Splitter 1:4 -Instalasi ODP 24 Core	
+	54	d'primahotel Petitenget Seminyak	Internet	Dismantle		10 November 2025	Wawan	Dismantle Perangkat Varnion di sisi Client -RB750Gr3 -RB1100AHX4 -OTB 12 PORT -OTP 4 PORT -Unifi Cloud Key	
+	55	The Seminyak	Project	Instalasi		12 November 2025	Jody, Arthak, Beni, Wawan, Angga	- Penarikan kabel UTP Lantai 2 kamar 3209, 3208, 3207, 3202, 3205	
+						13 November 2025	Jody, Beni, Angga, Artha	- Penarikan kabel UTP Lantai 2 kamar 3201, 3203.	
+									
+						14 November 2025	Jody, Beni, Wawan	- Penarikan kabel UTP Lantai 2 kamar 3206	
+	56	POP Upaasha 	Internet	Troubleshoot		16 November 2025	Azlan	- Supervisi troubleshoot FO Cut by CGS tim	
+	57	POP Liberta	Internet	Maintenance		15 November 2025	Jody, Artha, Beni	- Pergantian Luminous dan Aki - Pengetesan melalui Luminous, Aki selama 45 menit	
+	58	CV. Bali Bisa Mandiri (AITI)	Internet	Instalasi		17 November 2025	Jody, Beni, Angga	- Penarikan kabel FO dari ODP (pertigaan imbo-nakula) ke user.	
+	59	Visesa Ubud	Internet	Maintenance		20 November 2025	Jody	- Perapihan kabel FO di tiang pintu masuk Visesa (belakang papan nama Visesa.	
+	60	Regent Canggu	Listrik	Troubleshoot		21 November 2025	Beni	Luminos Eror	
+	61	BIMC	Vlepo	Instalasi		21 November 2025	Joni	- inject 5 unit tv	
+	62	Balquisse Heritage	Internet	Survey		26 November 2025	Wawan, Azlan	Survey Kebutuhan FO Lastmile dan WAAS	
+	63	Desa Kitsune	Internet	Survey		01 Desember 2025	Jody	- Survey FO dari server utama ke server baru	
+	64	Uncle Jo Market	Internet	Survey		02 Desember 2025	Jody	- Survey area pemasangan tower backbone	
+	65	Sanggraloka Ubud	Internet	Instalasi		04 Desember 2025	Beni	- Supervisi team iforte melakukan penarikan FO dari sisi luar sampai depan user akan di lanjut tanggal 5 desember	
+	66	The Edge	Internet	Survey		04 Desember 2025	Jody	- Survey Jalur kabel FO backup bersama vendor CGS	
+	67	TS Suite	Internet	Troubleshoot		08 Desember 2025	Jody, Samudra	- Penarikan kabel UTP yang baru menggantikan kabel LAN lama karena putus dari switch Lt.2 ke room 166 Lt.1	
+			Internet	Instalasi		23 Desember 2025	Gilang Maulana	Update Relokasi Kabel IFORTE TS SUITES: - Penarikan Kabel sudah sampai titik JB sesuai Survey - Untuk Penyambungan nanti di update jadwal nya oleh IFORTE karna hari ini tim splicing sudah habis - Untuk jalur dan titik JB sudah oke dari IT  	
+			WAAS	Troubleshoot		27 Desember 2025	Gilang Maulana	Update Troubleshoot 27 Desember 2025: - Replacement AP 126. Speedtest Normal - Untuk AP 123 yang Offline tidak bisa dilakukan pengecekan dikarenakan Tamu DND	
+	68	Soori Bali	Internet	Maintenance		10 Desember 2025	Jody, Beni	- Maintenance tower pergantian seling dan spanskrup. - Maintenance pergantian bracket antenna AF - Pointing radio arah Anantara Uluwatu	
+			WAAS	Troubleshoot		6 Desember 2025	samudra	troubleshoot soori bali 6 desember 2025  -Membantu it memasang mc di panel 504 -membantu it mamasang sfp untuk keperluan switch di panel 502  Note : tidak ada alat yang terpakai dikarenakan mc dan sfp sudah di sediakan oleh it   Terima kasih	
+	69	Rumah Pak Dwi (FC Alila)	Internet	Troubleshoot		11 Desember 2025	Jody	- Reset radio dan konfig ulang radionya, dan konekin kembali SSID sebelumnya, signal -52/-65. Btest download 16M, upload 12M.	
+	70	MATHIS Retreat Ubud	Internet	Survey		9 Desember 2025	Wawan, Gilang	-Survey Kebutuhan FO Lastmile dan WAAS	
+	71	Lv8 Resort Hotel	Internet	Maintenance		12 Desember 2025	Wawan	-replacement MC LV8	
+	72	Rejuvo Life	Internet	Survey		12 Desember 2025	Jody	- Survey pemindahan perangkat dari rak ke office sementara sebelah gang karena bangunannya dipindah ke jln tegal sari tibubeneng.	
+				Maintenance		29 Desember 2025	Jody & Joni	Pemindahan jalur kabel FO dan perangkat router ke bangunan baru Pindah bangunan, bangunan Rejuvo yang lama tidak digunakan dan sementara pindah di bangunan kost 2 kamar di sebelah gang Rejuvo, Karena masih menunggu bangunan yang baru selesai.	
+	73	Radisson Blu 	internet	Survey		13 November 2025	Samudra	Survey keburuhan WAAS area villa bayuh 	
+	74	BIMC Nusa Dua	IPTV	Instalasi vlepo		21 November 2025	Joni, samudra	inject vlepo di room 211, 210, 220, 215, 209	
+	75	Hujan Locale	WAAS	Troubleshoot		31 November 2025	Samudra	troubleshoot hujan locale 30 november 2025 (pending)  -server berada di lantai 1 -routerboard aman dikarenakan wireless bisa dipakai  -POE AP lantai 1 berada di lantai 2 -ada AP unify, switch, AP tp link di lantai 2 (masih belum diketahui milik siapa dikarenakan jam oprasional jadi tidak bisa cek lebih lanjut) -uplink AP lantai 1 dan 2 belum diketahui    Note : bapaknya minta agar di lanjutkan besok karena sudah jam operasional dan jikalau bisa pagi sebelum jam 12	
+	76		WAAS	Troubleshoot		1 Desember 2025	Samudra	troubleshoot hujan locale 1 desember 2025  Kendala : tidak bisa akses internet via wireless dan Kabel  Analisa kendala : switch existing lantai 2 milik client mati sehingga semua yang tersambung kesana tidak dapat internet beserta AP milik varnion lantai 1  Action : dikarenakan ada access point tp link milik client di lantai 2 saya memanfaatkan port AP tersebut untuk menyalurkan jaringan ke AP lantai 1 agar bisa dapat internet, Karena port cuma ada 4 di AP device lainya tidak dapat intenet dan harus ganti switch baru agar bisa di colok kabek LAN nya. Dan untuk saat ini internet via wireless bisa digunakan dengan normal  Note : -port AP TP-Link milik client Port 1 : uplink from server  port 2 : link to Access Point lantai 1 Port 3 : komputer lantai 2 Port 4 : sound server -perlu pergantian switch di lantai 2 agar semua bisa mendapatkan internet secara rata -perlu peremajaan kabel uplink dikarenakan kabel sudah banyak luka"	
+	77	Bali Safari	waAS	visit		22 Desember 2025	Samudra	Troubleshoot & Technical Visit Bali safari 22 Desember 2025  -issue : room 225 ketika dipindah ke grup hotel tidak bisa terhubung ke ssid Mara River dan ada masalah vlepo pada semua kamar  -analisa :  -room 225 access point bermasalah saat dipindah ke sub grup hotel dan SSID IPTV untuk vlepo bermalasah di Room 227 -seluruh vlepo di bali safari blank setelah update versi terbaru  -Action :  -Reset dan konfig ulang AP room 225 dan 227 dan saat ini sudah bisa di gunakan secara normal -vlepo harus restart agar layar tidak blank hitam  Note : dari it dan teknisi minta ketika rencana update vlepo agar di info karena setelah update semua stb blank warna hitam  Terima Kasih	
+	78	Alila Ubud	Internet	Troubleshoot		15 Desember 2025	Gilang, Leo	Action : - Melakukan pengecekan kabel Uplink Panel - Melakukan Krimping kabel uplink di sisi Panel - Melakukan setting 3 AP Tplink Omada  Hasil : - Terdapat kabel uplink yang putus, pin yang hidup hanya 4,5,7,8 - Setting 3 AP Omada done  Note : - Dari IT meminta bantu untuk settingkan 3 AP Omada, untuk akses AP sudah kita berikan dan kita hanya membantu one time setting untuk 3 AP tersebut	
+				Troubleshoot		30 Desember 2025	Gilang, Joni	Update Troubleshoot 30 Desember 2025: - Setting AP Omada Milik Client Done - Untuk AP Outdoor tidak jadi dikarenakan dikira IT Outdoor nya kecil dan peruntukan buat indoor di kamar maka diganti dengan 4 AP Celling + Adaptor dan sudah diantarkan oleh logistik	
+	79	Rumah Pak Artika EAM Ubud	Internet	Troubleshoot		22 Desember 2025	Gilang Maulana	Update ts 22 Desember 2025: - Pergantian Adaptor RB dan Radio - Hasil Speedtest normal	
+	81	Rumah Pak Kicuk	Internet	Troubleshoot		29 Desember 2025	Beni	Radio Down - ganti adaptor dan POE radio	
+	82								
+	83								
+	84								
+	85								
+	86								
+	87								
+	88								
+	89								
+	90								
+	91								
+	92								
+	93								
+	94								
+	95								
+	96								
+	97								
+	98								
+	99								
+	100								
+	101								
+	102								
+	103								
+	104								
+	105								
+	106								
+	107								
+	108								
+	109								
+	110								
+	111								
+	112								
+	113								
+	114								
+	115								
+	116								
+	117								
+	118								
+	119								
+	120								
+	121								
+	122								

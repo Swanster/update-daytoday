@@ -6,6 +6,7 @@ import DailyEntryForm from './components/DailyEntryForm';
 import LoginForm from './components/LoginForm';
 import ActivityLog from './components/ActivityLog';
 import UserManagement from './components/UserManagement';
+import CSVImportModal from './components/CSVImportModal';
 import { useToast } from './components/ToastProvider';
 import { projectsApi } from './api/projects';
 import { dailiesApi } from './api/dailies';
@@ -20,6 +21,7 @@ function App() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isActivityOpen, setIsActivityOpen] = useState(false);
     const [isUserMgmtOpen, setIsUserMgmtOpen] = useState(false);
+    const [isCSVImportOpen, setIsCSVImportOpen] = useState(false);
     const [editData, setEditData] = useState(null);
     const [error, setError] = useState(null);
 
@@ -249,6 +251,13 @@ function App() {
         }
     };
 
+    // Handle CSV import success
+    const handleCSVImportSuccess = async (result) => {
+        toast.success(result.message);
+        await fetchData();
+        await fetchQuarters();
+    };
+
     // Filter and sort data
     const filteredProjects = useMemo(() => {
         let result = [...projects];
@@ -410,8 +419,18 @@ function App() {
                     </select>
                 </div>
                 {activeTab === 'project' && isAdminOrSuper() && (
-                    <button className="carry-forward-btn" onClick={handleCarryForward}>
-                        📥 Carry Forward
+                    <>
+                        <button className="carry-forward-btn" onClick={handleCarryForward}>
+                            📥 Carry Forward
+                        </button>
+                        <button className="carry-forward-btn" onClick={() => setIsCSVImportOpen(true)}>
+                            📤 Import TSV
+                        </button>
+                    </>
+                )}
+                {activeTab === 'daily' && isAdminOrSuper() && (
+                    <button className="carry-forward-btn" onClick={() => setIsCSVImportOpen(true)}>
+                        📤 Import TSV
                     </button>
                 )}
             </div>
@@ -485,6 +504,14 @@ function App() {
                     currentUser={user}
                 />
             )}
+
+            {/* TSV Import Modal */}
+            <CSVImportModal
+                isOpen={isCSVImportOpen}
+                onClose={() => setIsCSVImportOpen(false)}
+                onSuccess={handleCSVImportSuccess}
+                apiType={activeTab}
+            />
         </div>
     );
 }

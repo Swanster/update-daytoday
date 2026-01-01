@@ -1,8 +1,13 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const { parse } = require('csv-parse/sync');
 const Daily = require('../models/Daily');
 const ActivityLog = require('../models/ActivityLog');
 const { auth } = require('../middleware/auth');
+
+// Configure multer for file upload
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Helper function to get current quarter
 function getCurrentQuarter() {
@@ -228,6 +233,211 @@ router.delete('/:id', auth, async (req, res) => {
 
         res.json({ message: 'Daily entry deleted successfully' });
     } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// TSV Import endpoint
+router.post('/import', auth, upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+
+        const tsvContent = req.file.buffer.toString('utf-8');
+
+        // Parse TSV manually (simple tab split to avoid quote issues)
+        const lines = tsvContent.replace(/\r\n/g, '\n').split('\n');
+        const records = lines.map(line => line.split('\t'));
+
+        // Find header row (contains "No", "CLIENT", "SERVICE", etc.)
+        let headerIndex = -1;
+        for (let i = 0; i < Math.min(records.length, 15); i++) {
+            const row = records[i];
+            if (row && row[1]?.trim() === 'No' && row[2]?.trim()?.includes('CLIENT')) {
+                headerIndex = i;
+                break;
+            }
+        }
+
+        if (headerIndex === -1) {
+            return res.status(400).json({ message: 'Could not find header row in TSV' });
+        }
+
+        // Parse date helper
+        const parseDate = (dateStr) => {
+            if (!dateStr || dateStr.trim() === '') return null;
+
+            // Handle formats like "13 Oktober 2025", "16-17 Oktober 2025"
+            const monthMap = {
+                'januari': 0, 'februari': 1, 'maret': 2, 'april': 3,
+                'mei': 4, 'juni': 5, 'juli': 6, 'agustus': 7,
+                'september': 8, 'oktober': 9, 'november': 10, 'desember': 11,
+                'january': 0, 'february': 1, 'march': 2, 'may': 4,
+                'june': 5, 'july': 6, 'august': 7, 'october': 9,
+                'december': 11
+            };
+
+            // Handle date ranges like "16-17 Oktober 2025" - take the first date
+            const rangeMatch = dateStr.trim().match(/(\d{1,2})[-–]\d{1,2}\s+(\w+)\s+(\d{4})/i);
+            if (rangeMatch) {
+                const day = parseInt(rangeMatch[1]);
+                const month = monthMap[rangeMatch[2].toLowerCase()];
+                const year = parseInt(rangeMatch[3]);
+                if (month !== undefined) {
+                    return new Date(year, month, day);
+                }
+            }
+
+            const match = dateStr.trim().match(/(\d{1,2})\s+(\w+)\s+(\d{4})/i);
+            if (match) {
+                const day = parseInt(match[1]);
+                const month = monthMap[match[2].toLowerCase()];
+                const year = parseInt(match[3]);
+                if (month !== undefined) {
+                    return new Date(year, month, day);
+                }
+            }
+
+            // Try standard date parsing
+            const d = new Date(dateStr);
+            return isNaN(d.getTime()) ? null : d;
+        };
+
+        // Map status values
+        const mapStatus = (status) => {
+            if (!status) return '';
+            const s = status.trim().toLowerCase();
+            if (s === 'done') return 'Done';
+            if (s === 'progress') return 'Progress';
+            if (s === 'hold') return 'Hold';
+            return '';
+        };
+
+        // Parse PIC Team
+        const parsePicTeam = (picStr) => {
+            if (!picStr || picStr.trim() === '') return [];
+            return picStr.split(/[,&]/).map(p => p.trim()).filter(p => p.length > 0);
+        };
+
+        // Track sequence numbers per quarter per client
+        const sequenceMap = {};
+        const getSequenceNumber = async (quarter, clientName) => {
+            const key = `${quarter}:${clientName}`;
+            if (sequenceMap[key]) {
+                return sequenceMap[key];
+            }
+
+            // Check if client exists in DB
+            const existing = await Daily.findOne({ quarter, clientName }).select('quarterSequence');
+            if (existing) {
+                sequenceMap[key] = existing.quarterSequence;
+                return existing.quarterSequence;
+            }
+
+            // Get next sequence
+            if (!sequenceMap[quarter]) {
+                const max = await Daily.findOne({ quarter }).sort({ quarterSequence: -1 }).select('quarterSequence');
+                sequenceMap[quarter] = (max?.quarterSequence || 0);
+            }
+            sequenceMap[quarter]++;
+            sequenceMap[key] = sequenceMap[quarter];
+            return sequenceMap[quarter];
+        };
+
+        const entries = [];
+        let currentClientName = '';
+        let currentServices = '';
+
+        // Process data rows (skip header and empty rows after it)
+        for (let i = headerIndex + 1; i < records.length; i++) {
+            const row = records[i];
+            if (!row || row.length < 7) continue;
+
+            // Column mapping based on Daily Activity TSV structure:
+            // 0: (empty/ACTIVITY), 1: No, 2: CLIENT, 3: SERVICE, 4: CASE & ISSUE
+            // 5: ACTION, 6: DATE, 7: PIC TIM, 8: DETAIL ACTION, 9: STATUS
+
+            const rowNo = row[1]?.trim();
+            const clientName = row[2]?.trim();
+            const services = row[3]?.trim();
+            const caseIssue = row[4]?.trim() || '';
+            const action = row[5]?.trim() || '';
+            const dateStr = row[6]?.trim() || '';
+            const picTeam = row[7]?.trim() || '';
+            const detailAction = row[8]?.trim() || '';
+            const status = row[9]?.trim() || '';
+
+            // Update current client if this row has a client name
+            if (clientName && clientName.length > 0) {
+                currentClientName = clientName;
+            }
+            if (services && services.length > 0) {
+                currentServices = services;
+            }
+
+            // Skip if no client name and no detail action/date (empty row)
+            if (!currentClientName || (!dateStr && !detailAction)) continue;
+
+            // Skip summary rows (rows that start with numbers like "20", "21", "22" with empty data)
+            if (rowNo && !clientName && !services && !dateStr && !detailAction) continue;
+
+            const date = parseDate(dateStr);
+
+            // Determine quarter from date
+            let quarter, year;
+            if (date) {
+                const month = date.getMonth();
+                year = date.getFullYear();
+                const quarterNum = Math.floor(month / 3) + 1;
+                quarter = `Q${quarterNum}-${year}`;
+            } else {
+                // Default to Q4-2025 based on TSV name
+                quarter = 'Q4-2025';
+                year = 2025;
+            }
+
+            const sequenceNumber = await getSequenceNumber(quarter, currentClientName);
+
+            entries.push({
+                clientName: currentClientName,
+                services: currentServices,
+                caseIssue,
+                action,
+                date,
+                picTeam: parsePicTeam(picTeam),
+                detailAction,
+                status: mapStatus(status),
+                quarter,
+                year,
+                quarterSequence: sequenceNumber
+            });
+        }
+
+        if (entries.length === 0) {
+            return res.status(400).json({ message: 'No valid entries found in TSV' });
+        }
+
+        // Insert all entries
+        const inserted = await Daily.insertMany(entries);
+
+        // Log activity
+        await ActivityLog.create({
+            action: 'IMPORT',
+            entityType: 'DAILY',
+            entityId: null,
+            entityName: `TSV Import (${inserted.length} entries)`,
+            userId: req.user._id,
+            username: req.user.username,
+            details: `Imported ${inserted.length} daily entries from TSV`
+        });
+
+        res.json({
+            message: `Successfully imported ${inserted.length} entries`,
+            count: inserted.length
+        });
+    } catch (error) {
+        console.error('TSV import error:', error);
         res.status(500).json({ message: error.message });
     }
 });

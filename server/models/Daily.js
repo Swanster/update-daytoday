@@ -38,6 +38,26 @@ const dailySchema = new mongoose.Schema({
         enum: ['Progress', 'Done', 'Hold', ''],
         default: ''
     },
+    // New fields from CSV import
+    reportSurvey: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+    workOrder: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+    material: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+    dueDate: {
+        type: Date,
+        default: null
+    },
     // Quarterly tracking
     quarter: {
         type: String,  // Format: "Q1-2025", "Q2-2025", etc.

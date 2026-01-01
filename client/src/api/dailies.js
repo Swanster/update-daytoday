@@ -44,5 +44,17 @@ export const dailiesApi = {
     delete: async (id) => {
         const response = await api.delete(`${API_URL}/${id}`);
         return response.data;
+    },
+
+    // Import TSV file
+    importTSV: async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const response = await api.post(`${API_URL}/import`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return response.data;
     }
 };
