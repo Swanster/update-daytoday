@@ -7,6 +7,7 @@ import LoginForm from './components/LoginForm';
 import ActivityLog from './components/ActivityLog';
 import UserManagement from './components/UserManagement';
 import CSVImportModal from './components/CSVImportModal';
+import ReportModal from './components/ReportModal';
 import { useToast } from './components/ToastProvider';
 import { projectsApi } from './api/projects';
 import { dailiesApi } from './api/dailies';
@@ -22,8 +23,13 @@ function App() {
     const [isActivityOpen, setIsActivityOpen] = useState(false);
     const [isUserMgmtOpen, setIsUserMgmtOpen] = useState(false);
     const [isCSVImportOpen, setIsCSVImportOpen] = useState(false);
+    const [isReportOpen, setIsReportOpen] = useState(false);
     const [editData, setEditData] = useState(null);
     const [error, setError] = useState(null);
+
+    // Selection state for batch operations
+    const [selectedProjectIds, setSelectedProjectIds] = useState([]);
+    const [selectedDailyIds, setSelectedDailyIds] = useState([]);
 
     // Quarterly state - separate for each tab
     const [projectQuarters, setProjectQuarters] = useState([]);
@@ -258,6 +264,36 @@ function App() {
         await fetchQuarters();
     };
 
+    // Handle batch status update
+    const handleBatchStatusUpdate = async (status) => {
+        if (selectedProjectIds.length === 0) return;
+
+        try {
+            const result = await projectsApi.batchUpdateStatus(selectedProjectIds, status);
+            toast.success(result.message);
+            setSelectedProjectIds([]);
+            await fetchData();
+        } catch (err) {
+            console.error('Batch status update error:', err);
+            toast.error('Failed to update status. Please try again.');
+        }
+    };
+
+    // Handle daily batch status update
+    const handleDailyBatchStatusUpdate = async (status) => {
+        if (selectedDailyIds.length === 0) return;
+
+        try {
+            const result = await dailiesApi.batchUpdateStatus(selectedDailyIds, status);
+            toast.success(result.message);
+            setSelectedDailyIds([]);
+            await fetchData();
+        } catch (err) {
+            console.error('Batch status update error:', err);
+            toast.error('Failed to update status. Please try again.');
+        }
+    };
+
     // Filter and sort data
     const filteredProjects = useMemo(() => {
         let result = [...projects];
@@ -433,6 +469,11 @@ function App() {
                         📤 Import TSV
                     </button>
                 )}
+                {isAdminOrSuper() && (
+                    <button className="carry-forward-btn" onClick={() => setIsReportOpen(true)}>
+                        📊 Report
+                    </button>
+                )}
             </div>
 
             <main className="app-container">
@@ -456,12 +497,18 @@ function App() {
                         projects={filteredProjects}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
+                        selectedIds={selectedProjectIds}
+                        onSelectionChange={setSelectedProjectIds}
+                        onBatchStatusUpdate={handleBatchStatusUpdate}
                     />
                 ) : (
                     <DailyTable
                         dailies={filteredDailies}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
+                        selectedIds={selectedDailyIds}
+                        onSelectionChange={setSelectedDailyIds}
+                        onBatchStatusUpdate={handleDailyBatchStatusUpdate}
                     />
                 )}
             </main>
@@ -511,6 +558,14 @@ function App() {
                 onClose={() => setIsCSVImportOpen(false)}
                 onSuccess={handleCSVImportSuccess}
                 apiType={activeTab}
+            />
+
+            {/* Report Modal */}
+            <ReportModal
+                isOpen={isReportOpen}
+                onClose={() => setIsReportOpen(false)}
+                apiType={activeTab}
+                quarters={activeTab === 'project' ? projectQuarters : dailyQuarters}
             />
         </div>
     );

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-export default function SpreadsheetTable({ projects, onEdit, onDelete }) {
+export default function SpreadsheetTable({ projects, onEdit, onDelete, selectedIds = [], onSelectionChange, onBatchStatusUpdate }) {
     // Group projects by name for merged cell display
     const groupedProjects = useMemo(() => {
         const groups = {};
@@ -31,6 +31,28 @@ export default function SpreadsheetTable({ projects, onEdit, onDelete }) {
         return `status-badge ${statusLower}`;
     };
 
+    // Check if all projects are selected
+    const allSelected = projects.length > 0 && selectedIds.length === projects.length;
+    const someSelected = selectedIds.length > 0 && selectedIds.length < projects.length;
+
+    // Handle select all checkbox
+    const handleSelectAll = () => {
+        if (allSelected) {
+            onSelectionChange([]);
+        } else {
+            onSelectionChange(projects.map(p => p._id));
+        }
+    };
+
+    // Handle individual checkbox
+    const handleSelectOne = (id) => {
+        if (selectedIds.includes(id)) {
+            onSelectionChange(selectedIds.filter(i => i !== id));
+        } else {
+            onSelectionChange([...selectedIds, id]);
+        }
+    };
+
     if (projects.length === 0) {
         return (
             <div className="spreadsheet-container">
@@ -48,9 +70,52 @@ export default function SpreadsheetTable({ projects, onEdit, onDelete }) {
 
     return (
         <div className="spreadsheet-container">
+            {/* Batch Action Bar */}
+            {selectedIds.length > 0 && (
+                <div className="batch-action-bar">
+                    <span className="selected-count">{selectedIds.length} selected</span>
+                    <div className="batch-buttons">
+                        <span className="batch-label">Set Status:</span>
+                        <button
+                            className="batch-btn batch-done"
+                            onClick={() => onBatchStatusUpdate('Done')}
+                        >
+                            ✓ Done
+                        </button>
+                        <button
+                            className="batch-btn batch-progress"
+                            onClick={() => onBatchStatusUpdate('Progress')}
+                        >
+                            ⏳ Progress
+                        </button>
+                        <button
+                            className="batch-btn batch-hold"
+                            onClick={() => onBatchStatusUpdate('Hold')}
+                        >
+                            ⏸ Hold
+                        </button>
+                    </div>
+                    <button
+                        className="batch-btn batch-clear"
+                        onClick={() => onSelectionChange([])}
+                    >
+                        ✕ Clear
+                    </button>
+                </div>
+            )}
+
             <table className="spreadsheet-table">
                 <thead>
                     <tr>
+                        <th className="checkbox-cell">
+                            <input
+                                type="checkbox"
+                                checked={allSelected}
+                                ref={el => { if (el) el.indeterminate = someSelected; }}
+                                onChange={handleSelectAll}
+                                title="Select all"
+                            />
+                        </th>
                         <th>No</th>
                         <th>Survey Project<br />(Name Client)</th>
                         <th>Service</th>
@@ -73,7 +138,19 @@ export default function SpreadsheetTable({ projects, onEdit, onDelete }) {
                         const projectColorClass = projectIndex % 2 === 0 ? 'project-row-cream' : 'project-row-green';
 
                         return projectEntries.map((entry, entryIndex) => (
-                            <tr key={entry._id} className={projectColorClass}>
+                            <tr
+                                key={entry._id}
+                                className={`${projectColorClass} ${selectedIds.includes(entry._id) ? 'row-selected' : ''}`}
+                            >
+                                {/* Checkbox */}
+                                <td className="checkbox-cell">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedIds.includes(entry._id)}
+                                        onChange={() => handleSelectOne(entry._id)}
+                                    />
+                                </td>
+
                                 {/* Row Number - only show on first entry of group */}
                                 {entryIndex === 0 && (
                                     <td

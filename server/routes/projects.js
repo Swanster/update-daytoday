@@ -66,6 +66,52 @@ router.get('/quarters', async (req, res) => {
     }
 });
 
+// Get report data (quarterly or yearly)
+router.get('/report', async (req, res) => {
+    try {
+        const { quarter, year, yearly } = req.query;
+        let query = {};
+
+        if (yearly === 'true' && year) {
+            // Get all data for the year
+            query = { year: parseInt(year) };
+        } else if (quarter && year) {
+            query = { quarter, year: parseInt(year) };
+        }
+
+        const projects = await Project.find(query).sort({ quarterSequence: 1, date: 1 });
+
+        // Calculate summary stats
+        const summary = {
+            total: projects.length,
+            done: projects.filter(p => p.status === 'Done').length,
+            progress: projects.filter(p => p.status === 'Progress').length,
+            hold: projects.filter(p => p.status === 'Hold').length,
+            noStatus: projects.filter(p => !p.status || p.status === '').length
+        };
+
+        // Group by project name for cleaner report
+        const grouped = {};
+        projects.forEach(p => {
+            if (!grouped[p.projectName]) {
+                grouped[p.projectName] = [];
+            }
+            grouped[p.projectName].push(p);
+        });
+
+        res.json({
+            reportType: yearly === 'true' ? 'yearly' : 'quarterly',
+            period: yearly === 'true' ? year : quarter,
+            year: parseInt(year),
+            summary,
+            projects,
+            grouped
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Get project name suggestions for autocomplete
 router.get('/suggestions', async (req, res) => {
     try {
@@ -236,6 +282,50 @@ router.post('/', auth, async (req, res) => {
         res.status(201).json(newProject);
     } catch (error) {
         res.status(400).json({ message: error.message });
+    }
+});
+
+// Batch update status for multiple projects
+router.patch('/batch-status', auth, async (req, res) => {
+    try {
+        const { ids, status } = req.body;
+
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ message: 'No project IDs provided' });
+        }
+
+        if (!['Done', 'Progress', 'Hold'].includes(status)) {
+            return res.status(400).json({ message: 'Invalid status value. Must be Done, Progress, or Hold.' });
+        }
+
+        // Update all projects with the given IDs
+        const result = await Project.updateMany(
+            { _id: { $in: ids } },
+            { $set: { status: status } }
+        );
+
+        // Get project names for logging
+        const updatedProjects = await Project.find({ _id: { $in: ids } }).select('projectName');
+        const projectNames = updatedProjects.map(p => p.projectName);
+
+        // Log activity
+        await ActivityLog.create({
+            action: 'BATCH_UPDATE',
+            entityType: 'PROJECT',
+            entityId: null,
+            entityName: `Batch Status Update (${ids.length} projects)`,
+            userId: req.user._id,
+            username: req.user.username,
+            details: `Updated ${result.modifiedCount} project(s) to status "${status}": ${projectNames.join(', ')}`
+        });
+
+        res.json({
+            message: `Successfully updated ${result.modifiedCount} project(s) to ${status}`,
+            modifiedCount: result.modifiedCount
+        });
+    } catch (error) {
+        console.error('Batch status update error:', error);
+        res.status(500).json({ message: error.message });
     }
 });
 

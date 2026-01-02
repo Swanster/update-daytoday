@@ -63,6 +63,13 @@ export const projectsApi = {
         return response.data;
     },
 
+    // Get report data
+    getReport: async (quarter, year, yearly = false) => {
+        const params = { quarter, year, yearly: yearly.toString() };
+        const response = await api.get(`${API_URL}/report`, { params });
+        return response.data;
+    },
+
     // Import TSV file
     importTSV: async (file) => {
         const formData = new FormData();
@@ -72,6 +79,12 @@ export const projectsApi = {
                 'Content-Type': 'multipart/form-data'
             }
         });
+        return response.data;
+    },
+
+    // Batch update status for multiple projects
+    batchUpdateStatus: async (ids, status) => {
+        const response = await api.patch(`${API_URL}/batch-status`, { ids, status });
         return response.data;
     }
 };

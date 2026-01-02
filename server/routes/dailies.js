@@ -66,6 +66,52 @@ router.get('/quarters', async (req, res) => {
     }
 });
 
+// Get report data (quarterly or yearly)
+router.get('/report', async (req, res) => {
+    try {
+        const { quarter, year, yearly } = req.query;
+        let query = {};
+
+        if (yearly === 'true' && year) {
+            // Get all data for the year
+            query = { year: parseInt(year) };
+        } else if (quarter && year) {
+            query = { quarter, year: parseInt(year) };
+        }
+
+        const dailies = await Daily.find(query).sort({ quarterSequence: 1, date: 1 });
+
+        // Calculate summary stats
+        const summary = {
+            total: dailies.length,
+            done: dailies.filter(d => d.status === 'Done').length,
+            progress: dailies.filter(d => d.status === 'Progress').length,
+            hold: dailies.filter(d => d.status === 'Hold').length,
+            noStatus: dailies.filter(d => !d.status || d.status === '').length
+        };
+
+        // Group by client name for cleaner report
+        const grouped = {};
+        dailies.forEach(d => {
+            if (!grouped[d.clientName]) {
+                grouped[d.clientName] = [];
+            }
+            grouped[d.clientName].push(d);
+        });
+
+        res.json({
+            reportType: yearly === 'true' ? 'yearly' : 'quarterly',
+            period: yearly === 'true' ? year : quarter,
+            year: parseInt(year),
+            summary,
+            dailies,
+            grouped
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Get client name suggestions
 router.get('/suggestions', async (req, res) => {
     try {
@@ -159,6 +205,50 @@ router.post('/', auth, async (req, res) => {
         res.status(201).json(newDaily);
     } catch (error) {
         res.status(400).json({ message: error.message });
+    }
+});
+
+// Batch update status for multiple daily entries
+router.patch('/batch-status', auth, async (req, res) => {
+    try {
+        const { ids, status } = req.body;
+
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ message: 'No daily entry IDs provided' });
+        }
+
+        if (!['Done', 'Progress', 'Hold'].includes(status)) {
+            return res.status(400).json({ message: 'Invalid status value. Must be Done, Progress, or Hold.' });
+        }
+
+        // Update all dailies with the given IDs
+        const result = await Daily.updateMany(
+            { _id: { $in: ids } },
+            { $set: { status: status } }
+        );
+
+        // Get client names for logging
+        const updatedDailies = await Daily.find({ _id: { $in: ids } }).select('clientName');
+        const clientNames = [...new Set(updatedDailies.map(d => d.clientName))];
+
+        // Log activity
+        await ActivityLog.create({
+            action: 'BATCH_UPDATE',
+            entityType: 'DAILY',
+            entityId: null,
+            entityName: `Batch Status Update (${ids.length} entries)`,
+            userId: req.user._id,
+            username: req.user.username,
+            details: `Updated ${result.modifiedCount} daily entry(s) to status "${status}": ${clientNames.join(', ')}`
+        });
+
+        res.json({
+            message: `Successfully updated ${result.modifiedCount} entry(s) to ${status}`,
+            modifiedCount: result.modifiedCount
+        });
+    } catch (error) {
+        console.error('Batch status update error:', error);
+        res.status(500).json({ message: error.message });
     }
 });
 

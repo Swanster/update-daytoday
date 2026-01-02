@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-export default function DailyTable({ dailies, onEdit, onDelete }) {
+export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = [], onSelectionChange, onBatchStatusUpdate }) {
     // Group by client name for display
     const groupedDailies = useMemo(() => {
         const groups = {};
@@ -36,6 +36,28 @@ export default function DailyTable({ dailies, onEdit, onDelete }) {
         return `status-badge ${action.toLowerCase()}`;
     };
 
+    // Check if all dailies are selected
+    const allSelected = dailies.length > 0 && selectedIds.length === dailies.length;
+    const someSelected = selectedIds.length > 0 && selectedIds.length < dailies.length;
+
+    // Handle select all checkbox
+    const handleSelectAll = () => {
+        if (allSelected) {
+            onSelectionChange([]);
+        } else {
+            onSelectionChange(dailies.map(d => d._id));
+        }
+    };
+
+    // Handle individual checkbox
+    const handleSelectOne = (id) => {
+        if (selectedIds.includes(id)) {
+            onSelectionChange(selectedIds.filter(i => i !== id));
+        } else {
+            onSelectionChange([...selectedIds, id]);
+        }
+    };
+
     if (dailies.length === 0) {
         return (
             <div className="spreadsheet-container">
@@ -52,9 +74,52 @@ export default function DailyTable({ dailies, onEdit, onDelete }) {
 
     return (
         <div className="spreadsheet-container">
+            {/* Batch Action Bar */}
+            {selectedIds.length > 0 && (
+                <div className="batch-action-bar">
+                    <span className="selected-count">{selectedIds.length} selected</span>
+                    <div className="batch-buttons">
+                        <span className="batch-label">Set Status:</span>
+                        <button
+                            className="batch-btn batch-done"
+                            onClick={() => onBatchStatusUpdate('Done')}
+                        >
+                            ✓ Done
+                        </button>
+                        <button
+                            className="batch-btn batch-progress"
+                            onClick={() => onBatchStatusUpdate('Progress')}
+                        >
+                            ⏳ Progress
+                        </button>
+                        <button
+                            className="batch-btn batch-hold"
+                            onClick={() => onBatchStatusUpdate('Hold')}
+                        >
+                            ⏸ Hold
+                        </button>
+                    </div>
+                    <button
+                        className="batch-btn batch-clear"
+                        onClick={() => onSelectionChange([])}
+                    >
+                        ✕ Clear
+                    </button>
+                </div>
+            )}
+
             <table className="spreadsheet-table daily-table">
                 <thead>
                     <tr>
+                        <th className="checkbox-cell">
+                            <input
+                                type="checkbox"
+                                checked={allSelected}
+                                ref={el => { if (el) el.indeterminate = someSelected; }}
+                                onChange={handleSelectAll}
+                                title="Select all"
+                            />
+                        </th>
                         <th>No</th>
                         <th>Client Name</th>
                         <th>Services</th>
@@ -74,7 +139,19 @@ export default function DailyTable({ dailies, onEdit, onDelete }) {
                         const clientColorClass = clientIndex % 2 === 0 ? 'project-row-cream' : 'project-row-green';
 
                         return clientEntries.map((entry, entryIndex) => (
-                            <tr key={entry._id} className={clientColorClass}>
+                            <tr
+                                key={entry._id}
+                                className={`${clientColorClass} ${selectedIds.includes(entry._id) ? 'row-selected' : ''}`}
+                            >
+                                {/* Checkbox */}
+                                <td className="checkbox-cell">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedIds.includes(entry._id)}
+                                        onChange={() => handleSelectOne(entry._id)}
+                                    />
+                                </td>
+
                                 {/* Row Number - only show on first entry of group, using quarterSequence */}
                                 {entryIndex === 0 && (
                                     <td
