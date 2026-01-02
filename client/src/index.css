@@ -447,7 +447,8 @@ body {
   background: white;
   border-radius: 12px;
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: auto;
+  max-height: calc(100vh - 220px);
   box-shadow: var(--shadow);
   -webkit-overflow-scrolling: touch;
 }
@@ -458,57 +459,74 @@ body {
   font-size: 0.9rem;
 }
 
-/* Batch Action Bar */
+/* Batch Action Bar - Floating Bottom Bar */
 .batch-action-bar {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 1rem;
-  background: linear-gradient(135deg, var(--primary-dark) 0%, #4a4a4a 100%);
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 1rem 2rem;
+  background: rgba(57, 57, 57, 0.95);
+  backdrop-filter: blur(10px);
   color: white;
-  border-bottom: 2px solid var(--accent-coral);
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  border-radius: 50px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 .selected-count {
-  font-weight: 600;
-  font-size: 0.9rem;
+  font-weight: 700;
+  font-size: 0.95rem;
   background: var(--accent-coral);
-  padding: 0.35rem 0.75rem;
-  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  white-space: nowrap;
 }
 
 .batch-buttons {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  flex: 1;
+  gap: 0.75rem;
 }
 
 .batch-label {
-  font-size: 0.85rem;
-  opacity: 0.9;
-  margin-right: 0.5rem;
+  display: none;
 }
 
 .batch-btn {
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.25rem;
   border: none;
-  border-radius: 6px;
-  font-size: 0.85rem;
+  border-radius: 25px;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
+  white-space: nowrap;
 }
 
 .batch-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
 }
 
 .batch-done {
@@ -529,7 +547,7 @@ body {
 .batch-clear {
   background: rgba(255, 255, 255, 0.15);
   color: white;
-  margin-left: auto;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .batch-clear:hover {
@@ -560,6 +578,7 @@ body {
   background: var(--primary-dark);
 }
 
+/* Sticky Table Header */
 .spreadsheet-table th {
   color: var(--text-light);
   font-weight: 600;
@@ -569,7 +588,9 @@ body {
   white-space: nowrap;
   position: sticky;
   top: 0;
+  z-index: 50;
   font-size: 0.85rem;
+  background: var(--primary-dark);
 }
 
 .spreadsheet-table th:first-child {

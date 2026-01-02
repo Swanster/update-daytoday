@@ -272,10 +272,17 @@ function App() {
             const result = await projectsApi.batchUpdateStatus(selectedProjectIds, status);
             toast.success(result.message);
             setSelectedProjectIds([]);
-            await fetchData();
         } catch (err) {
             console.error('Batch status update error:', err);
             toast.error('Failed to update status. Please try again.');
+            return;
+        }
+
+        // Refresh data after success
+        try {
+            await fetchData();
+        } catch (err) {
+            console.error('Error refreshing data:', err);
         }
     };
 
@@ -287,10 +294,17 @@ function App() {
             const result = await dailiesApi.batchUpdateStatus(selectedDailyIds, status);
             toast.success(result.message);
             setSelectedDailyIds([]);
-            await fetchData();
         } catch (err) {
             console.error('Batch status update error:', err);
             toast.error('Failed to update status. Please try again.');
+            return;
+        }
+
+        // Refresh data after success
+        try {
+            await fetchData();
+        } catch (err) {
+            console.error('Error refreshing data:', err);
         }
     };
 
