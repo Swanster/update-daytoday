@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { dailiesApi } from '../api/dailies';
+import FileUpload from './FileUpload';
 
 export default function DailyEntryForm({ isOpen, onClose, onSave, editData }) {
     const [formData, setFormData] = useState({
@@ -10,7 +11,8 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData }) {
         date: '',
         picTeam: [],
         detailAction: '',
-        status: ''
+        status: '',
+        attachments: []
     });
 
     const [suggestions, setSuggestions] = useState({ exact: [], similar: [] });
@@ -24,7 +26,8 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData }) {
             setFormData({
                 ...editData,
                 date: editData.date ? new Date(editData.date).toISOString().split('T')[0] : '',
-                picTeam: editData.picTeam || []
+                picTeam: editData.picTeam || [],
+                attachments: editData.attachments || []
             });
         } else {
             setFormData({
@@ -35,7 +38,8 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData }) {
                 date: '',
                 picTeam: [],
                 detailAction: '',
-                status: ''
+                status: '',
+                attachments: []
             });
         }
         setTagInput('');
@@ -104,6 +108,10 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData }) {
             ...prev,
             picTeam: prev.picTeam.filter(tag => tag !== tagToRemove)
         }));
+    };
+
+    const handleFilesChange = (files) => {
+        setFormData(prev => ({ ...prev, attachments: files }));
     };
 
     const handleSubmit = async (e) => {
@@ -256,6 +264,14 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData }) {
                                     onChange={handleInputChange}
                                     placeholder="Enter detailed action/progress notes..."
                                     rows={4}
+                                />
+                            </div>
+
+                            {/* File Attachments */}
+                            <div className="form-group full-width">
+                                <FileUpload
+                                    existingFiles={editData?.attachments || []}
+                                    onFilesChange={handleFilesChange}
                                 />
                             </div>
                         </div>

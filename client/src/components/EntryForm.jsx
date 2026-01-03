@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { projectsApi } from '../api/projects';
+import FileUpload from './FileUpload';
 
 export default function EntryForm({ isOpen, onClose, onSave, editData }) {
     const [formData, setFormData] = useState({
@@ -12,7 +13,8 @@ export default function EntryForm({ isOpen, onClose, onSave, editData }) {
         date: '',
         picTeam: [],
         progress: '',
-        status: ''
+        status: '',
+        attachments: []
     });
 
     const [suggestions, setSuggestions] = useState({ exact: [], similar: [] });
@@ -28,7 +30,8 @@ export default function EntryForm({ isOpen, onClose, onSave, editData }) {
                 ...editData,
                 dueDate: editData.dueDate ? new Date(editData.dueDate).toISOString().split('T')[0] : '',
                 date: editData.date ? new Date(editData.date).toISOString().split('T')[0] : '',
-                picTeam: editData.picTeam || []
+                picTeam: editData.picTeam || [],
+                attachments: editData.attachments || []
             });
         } else {
             setFormData({
@@ -41,7 +44,8 @@ export default function EntryForm({ isOpen, onClose, onSave, editData }) {
                 date: '',
                 picTeam: [],
                 progress: '',
-                status: ''
+                status: '',
+                attachments: []
             });
         }
         setTagInput('');
@@ -120,6 +124,10 @@ export default function EntryForm({ isOpen, onClose, onSave, editData }) {
             ...prev,
             picTeam: prev.picTeam.filter(tag => tag !== tagToRemove)
         }));
+    };
+
+    const handleFilesChange = (files) => {
+        setFormData(prev => ({ ...prev, attachments: files }));
     };
 
     const handleSubmit = async (e) => {
@@ -309,6 +317,14 @@ export default function EntryForm({ isOpen, onClose, onSave, editData }) {
                                     onChange={handleInputChange}
                                     placeholder="Enter progress notes..."
                                     rows={4}
+                                />
+                            </div>
+
+                            {/* File Attachments */}
+                            <div className="form-group full-width">
+                                <FileUpload
+                                    existingFiles={editData?.attachments || []}
+                                    onFilesChange={handleFilesChange}
                                 />
                             </div>
                         </div>

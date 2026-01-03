@@ -185,6 +185,63 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
                     .status-done { color: #28a745; font-weight: 600; }
                     .status-progress { color: #ffc107; font-weight: 600; }
                     .status-hold { color: #dc3545; font-weight: 600; }
+                    .report-group {
+                        margin-bottom: 20px;
+                        border: 1px solid #e0e0e0;
+                        border-radius: 8px;
+                        overflow: hidden;
+                        page-break-inside: avoid;
+                    }
+                    .report-group-header {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        padding: 10px 15px;
+                        background: #1a1a2e;
+                        color: white;
+                    }
+                    .group-number {
+                        width: 24px;
+                        height: 24px;
+                        background: #FF6347;
+                        color: white;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: bold;
+                        font-size: 12px;
+                    }
+                    .group-name {
+                        flex: 1;
+                        font-weight: 600;
+                        font-size: 14px;
+                    }
+                    .group-count {
+                        font-size: 11px;
+                        opacity: 0.8;
+                    }
+                    .report-group-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        font-size: 10px;
+                    }
+                    .report-group-table th {
+                        background: #f1f5f9;
+                        color: #475569;
+                        padding: 8px 6px;
+                        text-align: left;
+                        font-weight: 600;
+                        border-bottom: 2px solid #e2e8f0;
+                    }
+                    .report-group-table td {
+                        padding: 6px;
+                        border-bottom: 1px solid #e5e7eb;
+                        vertical-align: top;
+                    }
+                    .report-group-table tr:nth-child(even) {
+                        background: #fafafa;
+                    }
                     .footer {
                         margin-top: 30px;
                         text-align: center;
@@ -196,6 +253,7 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
                     @media print {
                         body { padding: 20px; }
                         .summary-box { page-break-inside: avoid; }
+                        .report-group { page-break-inside: avoid; }
                     }
                 </style>
             </head>
@@ -318,32 +376,51 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
                                     </div>
                                 </div>
 
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>No</th>
-                                            <th>{apiType === 'daily' ? 'Client' : 'Project'}</th>
-                                            <th>Service</th>
-                                            <th>Date</th>
-                                            <th>PIC</th>
-                                            <th>{apiType === 'daily' ? 'Detail Action' : 'Progress'}</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {items.map((item, idx) => (
-                                            <tr key={item._id || idx}>
-                                                <td>{idx + 1}</td>
-                                                <td>{apiType === 'daily' ? item.clientName : item.projectName}</td>
-                                                <td>{item.services}</td>
-                                                <td>{formatDate(item.date)}</td>
-                                                <td>{Array.isArray(item.picTeam) ? item.picTeam.join(', ') : item.picTeam}</td>
-                                                <td>{apiType === 'daily' ? item.detailAction : item.progress}</td>
-                                                <td className={getStatusClass(item.status)}>{item.status || '-'}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                {/* Grouped by Site/Client Name */}
+                                {(() => {
+                                    // Group items by name
+                                    const nameKey = apiType === 'daily' ? 'clientName' : 'projectName';
+                                    const grouped = {};
+                                    items.forEach(item => {
+                                        const name = item[nameKey] || 'Unknown';
+                                        if (!grouped[name]) grouped[name] = [];
+                                        grouped[name].push(item);
+                                    });
+
+                                    return Object.entries(grouped).map(([siteName, siteItems], groupIdx) => (
+                                        <div key={siteName} className="report-group">
+                                            <div className="report-group-header">
+                                                <span className="group-number">{groupIdx + 1}</span>
+                                                <span className="group-name">{siteName}</span>
+                                                <span className="group-count">{siteItems.length} entries</span>
+                                            </div>
+                                            <table className="report-group-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th style={{ width: '40px' }}>No</th>
+                                                        <th>Service</th>
+                                                        <th>Date</th>
+                                                        <th>PIC</th>
+                                                        <th>{apiType === 'daily' ? 'Detail Action' : 'Progress'}</th>
+                                                        <th style={{ width: '80px' }}>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {siteItems.map((item, idx) => (
+                                                        <tr key={item._id || idx}>
+                                                            <td>{idx + 1}</td>
+                                                            <td>{item.services || '-'}</td>
+                                                            <td>{formatDate(item.date)}</td>
+                                                            <td>{Array.isArray(item.picTeam) ? item.picTeam.join(', ') : item.picTeam || '-'}</td>
+                                                            <td>{apiType === 'daily' ? item.detailAction : item.progress || '-'}</td>
+                                                            <td className={getStatusClass(item.status)}>{item.status || '-'}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    ));
+                                })()}
 
                                 <div className="footer">
                                     <p>Daily Activity Infrastructure Engineer - Report generated by system</p>

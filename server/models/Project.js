@@ -60,7 +60,15 @@ const projectSchema = new mongoose.Schema({
   quarterSequence: {
     type: Number,
     default: 0
-  }
+  },
+  // File attachments
+  attachments: [{
+    filename: String,
+    originalName: String,
+    mimetype: String,
+    size: Number,
+    uploadedAt: { type: Date, default: Date.now }
+  }]
 }, {
   timestamps: true
 });

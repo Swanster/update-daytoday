@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import AttachmentViewer from './AttachmentViewer';
 
 export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = [], onSelectionChange, onBatchStatusUpdate }) {
     // Group by client name for display
@@ -57,6 +58,9 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
             onSelectionChange([...selectedIds, id]);
         }
     };
+
+    // Attachment viewer state
+    const [viewingAttachments, setViewingAttachments] = useState(null);
 
     if (dailies.length === 0) {
         return (
@@ -230,6 +234,15 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
                                 {/* Actions */}
                                 <td>
                                     <div className="action-buttons">
+                                        {entry.attachments && entry.attachments.length > 0 && (
+                                            <button
+                                                className="attachment-indicator"
+                                                title={`${entry.attachments.length} file(s) attached - Click to view`}
+                                                onClick={() => setViewingAttachments(entry)}
+                                            >
+                                                📎{entry.attachments.length}
+                                            </button>
+                                        )}
                                         <button
                                             className="action-btn edit"
                                             onClick={() => onEdit(entry)}
@@ -251,6 +264,14 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
                     })}
                 </tbody>
             </table>
+
+            {/* Attachment Viewer Modal */}
+            <AttachmentViewer
+                isOpen={!!viewingAttachments}
+                onClose={() => setViewingAttachments(null)}
+                attachments={viewingAttachments?.attachments || []}
+                entryName={viewingAttachments?.clientName || ''}
+            />
         </div>
     );
 }

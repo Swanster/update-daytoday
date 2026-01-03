@@ -124,11 +124,23 @@ server {
     listen 80;
     server_name your_domain_or_ip;
 
+    # Allow large file uploads (50MB max)
+    client_max_body_size 50M;
+
     # Frontend (Serve Static Files)
     location / {
         root /path/to/project-01/client/dist;
         index index.html;
         try_files $uri $uri/ /index.html;
+    }
+
+    # Uploaded files
+    location /uploads {
+        proxy_pass http://localhost:5000/uploads;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
     }
 
     # Backend API Proxy
@@ -139,6 +151,10 @@ server {
         proxy_set_header Connection 'upgrade';
         proxy_set_header Host $host;
         proxy_cache_bypass $http_upgrade;
+        
+        # Timeout for large file uploads
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
     }
 }
 ```
