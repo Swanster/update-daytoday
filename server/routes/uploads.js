@@ -2,11 +2,23 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
+const rateLimit = require('express-rate-limit');
 const { upload, uploadsDir } = require('../middleware/upload');
-const { auth } = require('../middleware/auth');
+const { auth, adminOrSuperuser } = require('../middleware/auth');
+
+// Rate limiter for uploads: 20 uploads per 15 minutes per user
+const uploadLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 20, // 20 uploads per window
+    message: { message: 'Too many uploads. Please try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => req.user?._id?.toString() || 'anonymous',
+    validate: false // Disable IPv6 validation since we use user ID
+});
 
 // Upload a single file
-router.post('/', auth, upload.single('file'), async (req, res) => {
+router.post('/', auth, uploadLimiter, upload.single('file'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded' });
@@ -28,7 +40,7 @@ router.post('/', auth, upload.single('file'), async (req, res) => {
 });
 
 // Upload multiple files (up to 10)
-router.post('/multiple', auth, upload.array('files', 10), async (req, res) => {
+router.post('/multiple', auth, uploadLimiter, upload.array('files', 10), async (req, res) => {
     try {
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ message: 'No files uploaded' });
@@ -49,8 +61,8 @@ router.post('/multiple', auth, upload.array('files', 10), async (req, res) => {
     }
 });
 
-// Delete a file
-router.delete('/:filename', auth, async (req, res) => {
+// Delete a file (admin or superuser only)
+router.delete('/:filename', auth, adminOrSuperuser, async (req, res) => {
     try {
         const filename = req.params.filename;
         const filePath = path.join(uploadsDir, filename);

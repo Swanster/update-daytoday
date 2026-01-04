@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { dailiesApi } from '../api/dailies';
 import FileUpload from './FileUpload';
 
-export default function DailyEntryForm({ isOpen, onClose, onSave, editData }) {
+export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user }) {
     const [formData, setFormData] = useState({
         clientName: '',
         services: '',
@@ -272,6 +272,7 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData }) {
                                 <FileUpload
                                     existingFiles={editData?.attachments || []}
                                     onFilesChange={handleFilesChange}
+                                    canDelete={user?.role === 'admin' || user?.role === 'superuser'}
                                 />
                             </div>
                         </div>

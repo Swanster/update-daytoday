@@ -20,7 +20,7 @@ const formatFileSize = (bytes) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-export default function FileUpload({ existingFiles = [], onFilesChange, disabled = false }) {
+export default function FileUpload({ existingFiles = [], onFilesChange, disabled = false, canDelete = true }) {
     const [files, setFiles] = useState([]);
     const [uploading, setUploading] = useState(false);
     const [dragActive, setDragActive] = useState(false);
@@ -185,7 +185,7 @@ export default function FileUpload({ existingFiles = [], onFilesChange, disabled
                                 {file.originalName}
                             </a>
                             <span className="file-size">{formatFileSize(file.size)}</span>
-                            {!disabled && (
+                            {!disabled && canDelete && (
                                 <button
                                     type="button"
                                     className="file-remove"
@@ -208,7 +208,7 @@ export default function FileUpload({ existingFiles = [], onFilesChange, disabled
                             <span className="file-icon">{getFileIcon(file.mimetype)}</span>
                             <span className="file-name">{file.originalName}</span>
                             <span className="file-size">{formatFileSize(file.size)}</span>
-                            {!disabled && (
+                            {!disabled && canDelete && (
                                 <button
                                     type="button"
                                     className="file-remove"

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { projectsApi } from '../api/projects';
 import FileUpload from './FileUpload';
 
-export default function EntryForm({ isOpen, onClose, onSave, editData }) {
+export default function EntryForm({ isOpen, onClose, onSave, editData, user }) {
     const [formData, setFormData] = useState({
         projectName: '',
         services: '',
@@ -325,6 +325,7 @@ export default function EntryForm({ isOpen, onClose, onSave, editData }) {
                                 <FileUpload
                                     existingFiles={editData?.attachments || []}
                                     onFilesChange={handleFilesChange}
+                                    canDelete={user?.role === 'admin' || user?.role === 'superuser'}
                                 />
                             </div>
                         </div>

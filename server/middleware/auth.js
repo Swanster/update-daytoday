@@ -55,4 +55,12 @@ const adminOnly = (req, res, next) => {
     next();
 };
 
-module.exports = { auth, optionalAuth, adminOnly, JWT_SECRET };
+// Admin or Superuser middleware
+const adminOrSuperuser = (req, res, next) => {
+    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'superuser')) {
+        return res.status(403).json({ message: 'Admin or Superuser access required' });
+    }
+    next();
+};
+
+module.exports = { auth, optionalAuth, adminOnly, adminOrSuperuser, JWT_SECRET };

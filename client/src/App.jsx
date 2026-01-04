@@ -534,6 +534,7 @@ function App() {
                     onClose={handleFormClose}
                     onSave={handleSave}
                     editData={editData}
+                    user={user}
                 />
             )}
 
@@ -544,6 +545,7 @@ function App() {
                     onClose={handleFormClose}
                     onSave={handleSave}
                     editData={editData}
+                    user={user}
                 />
             )}
 
