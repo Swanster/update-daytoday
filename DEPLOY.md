@@ -222,3 +222,65 @@ When you need to update the application with the latest changes:
 
 4.  **Verify:**
     Check `pm2 logs project-tracker-api` to ensure the server started correctly.
+
+## 12. Backup System
+
+### Setting Up Automated Backups
+
+1. **Create backup directory:**
+   ```bash
+   sudo mkdir -p /var/backups/mongodb/{daily,weekly,manual}
+   sudo chown -R $USER:$USER /var/backups/mongodb
+   ```
+
+2. **Make backup scripts executable:**
+   ```bash
+   cd /var/www/update-daytoday/server
+   chmod +x backup.sh restore.sh
+   ```
+
+3. **Test manual backup:**
+   ```bash
+   ./backup.sh manual
+   ```
+
+4. **Setup automated cron jobs:**
+   ```bash
+   # Edit crontab
+   crontab -e
+   
+   # Add these lines:
+   # Daily backup at 2 AM
+   0 2 * * * /var/www/update-daytoday/server/backup.sh daily >> /var/log/mongodb-backup.log 2>&1
+   
+   # Weekly backup on Sunday at 3 AM
+   0 3 * * 0 /var/www/update-daytoday/server/backup.sh weekly >> /var/log/mongodb-backup.log 2>&1
+   ```
+
+### Manual Backup Commands
+
+```bash
+# Create a manual backup
+./backup.sh manual
+
+# Create a daily backup
+./backup.sh daily
+
+# Create a weekly backup
+./backup.sh weekly
+```
+
+### Restore from Backup
+
+```bash
+# List available backups
+ls -la /var/backups/mongodb/*/*.tar.gz
+
+# Restore from a backup file
+./restore.sh /var/backups/mongodb/daily/backup_project-tracker_daily_20260104_020000.tar.gz
+```
+
+### Retention Policy
+- **Daily backups:** Kept for 7 days
+- **Weekly backups:** Kept for 30 days
+- **Manual backups:** Kept for 90 days
