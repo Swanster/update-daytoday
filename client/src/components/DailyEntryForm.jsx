@@ -232,7 +232,7 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user
 
                             {/* Category (Multi-select) */}
                             <div className="form-group full-width" ref={categoryDropdownRef}>
-                                <label>Category</label>
+                                <label>Services</label>
                                 <div className="multi-select-wrapper">
                                     <div
                                         className="multi-select-trigger"
