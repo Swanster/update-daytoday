@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { dailiesApi } from '../api/dailies';
 import { categoriesApi } from '../api/categories';
+import { caseTypesApi } from '../api/caseTypes';
 import FileUpload from './FileUpload';
 
 export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user }) {
     const [formData, setFormData] = useState({
         clientName: '',
         services: [],
-        caseIssue: '',
+        caseIssue: [],
         action: '',
         date: '',
         picTeam: [],
@@ -22,9 +23,12 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user
     const suggestionsRef = useRef(null);
     const clientNameRef = useRef(null);
     const categoryDropdownRef = useRef(null);
+    const caseTypeDropdownRef = useRef(null);
 
     const [categories, setCategories] = useState([]);
     const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+    const [caseTypes, setCaseTypes] = useState([]);
+    const [showCaseTypeDropdown, setShowCaseTypeDropdown] = useState(false);
 
     useEffect(() => {
         if (editData) {
@@ -33,9 +37,15 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user
             if (typeof services === 'string') {
                 services = services ? [services] : [];
             }
+            // Handle legacy string caseIssue data
+            let caseIssue = editData.caseIssue || [];
+            if (typeof caseIssue === 'string') {
+                caseIssue = caseIssue ? [caseIssue] : [];
+            }
             setFormData({
                 ...editData,
                 services: services,
+                caseIssue: caseIssue,
                 date: editData.date ? new Date(editData.date).toISOString().split('T')[0] : '',
                 picTeam: editData.picTeam || [],
                 attachments: editData.attachments || []
@@ -44,7 +54,7 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user
             setFormData({
                 clientName: '',
                 services: [],
-                caseIssue: '',
+                caseIssue: [],
                 action: '',
                 date: '',
                 picTeam: [],
@@ -83,6 +93,21 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user
         }
     }, [isOpen]);
 
+    // Fetch case types on mount
+    useEffect(() => {
+        const fetchCaseTypes = async () => {
+            try {
+                const data = await caseTypesApi.getAll();
+                setCaseTypes(data);
+            } catch (error) {
+                console.error('Error fetching case types:', error);
+            }
+        };
+        if (isOpen) {
+            fetchCaseTypes();
+        }
+    }, [isOpen]);
+
     // Handle clicks outside category dropdown
     useEffect(() => {
         const handleClickOutsideCategory = (event) => {
@@ -92,6 +117,17 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user
         };
         document.addEventListener('mousedown', handleClickOutsideCategory);
         return () => document.removeEventListener('mousedown', handleClickOutsideCategory);
+    }, []);
+
+    // Handle clicks outside case type dropdown
+    useEffect(() => {
+        const handleClickOutsideCaseType = (event) => {
+            if (caseTypeDropdownRef.current && !caseTypeDropdownRef.current.contains(event.target)) {
+                setShowCaseTypeDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutsideCaseType);
+        return () => document.removeEventListener('mousedown', handleClickOutsideCaseType);
     }, []);
 
     const handleClientNameChange = async (e) => {
@@ -137,6 +173,24 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user
         setFormData(prev => ({
             ...prev,
             services: (prev.services || []).filter(s => s !== categoryName)
+        }));
+    };
+
+    const toggleCaseType = (caseTypeName) => {
+        setFormData(prev => {
+            const caseIssue = prev.caseIssue || [];
+            if (caseIssue.includes(caseTypeName)) {
+                return { ...prev, caseIssue: caseIssue.filter(c => c !== caseTypeName) };
+            } else {
+                return { ...prev, caseIssue: [...caseIssue, caseTypeName] };
+            }
+        });
+    };
+
+    const removeCaseType = (caseTypeName) => {
+        setFormData(prev => ({
+            ...prev,
+            caseIssue: (prev.caseIssue || []).filter(c => c !== caseTypeName)
         }));
     };
 
@@ -281,16 +335,55 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user
                                 </div>
                             </div>
 
-                            {/* Case & Issue */}
-                            <div className="form-group full-width">
+                            {/* Case & Issue (Multi-select) */}
+                            <div className="form-group full-width" ref={caseTypeDropdownRef}>
                                 <label>Case & Issue</label>
-                                <textarea
-                                    name="caseIssue"
-                                    value={formData.caseIssue}
-                                    onChange={handleInputChange}
-                                    placeholder="Describe the case and issue..."
-                                    rows={3}
-                                />
+                                <div className="multi-select-wrapper">
+                                    <div
+                                        className="multi-select-trigger"
+                                        onClick={() => setShowCaseTypeDropdown(!showCaseTypeDropdown)}
+                                    >
+                                        {formData.caseIssue && formData.caseIssue.length > 0 ? (
+                                            <div className="selected-categories">
+                                                {formData.caseIssue.map((ct, idx) => (
+                                                    <span key={idx} className="category-tag">
+                                                        {ct}
+                                                        <button
+                                                            type="button"
+                                                            className="category-tag-remove"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                removeCaseType(ct);
+                                                            }}
+                                                        >
+                                                            &times;
+                                                        </button>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <span className="placeholder">Select case types...</span>
+                                        )}
+                                        <span className="dropdown-arrow">▼</span>
+                                    </div>
+                                    {showCaseTypeDropdown && (
+                                        <div className="multi-select-dropdown">
+                                            {caseTypes.map((ct) => (
+                                                <label key={ct._id} className="category-option">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={(formData.caseIssue || []).includes(ct.name)}
+                                                        onChange={() => toggleCaseType(ct.name)}
+                                                    />
+                                                    <span>{ct.name}</span>
+                                                </label>
+                                            ))}
+                                            {caseTypes.length === 0 && (
+                                                <div className="no-categories">No case types available</div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Action */}

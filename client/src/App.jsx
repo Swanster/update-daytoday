@@ -9,6 +9,7 @@ import UserManagement from './components/UserManagement';
 import CSVImportModal from './components/CSVImportModal';
 import ReportModal from './components/ReportModal';
 import CategoryManagement from './components/CategoryManagement';
+import CaseTypeManagement from './components/CaseTypeManagement';
 import Dashboard from './components/Dashboard';
 import ClientTab from './components/ClientTab';
 import { useToast } from './components/ToastProvider';
@@ -29,6 +30,7 @@ function App() {
     const [isCSVImportOpen, setIsCSVImportOpen] = useState(false);
     const [isReportOpen, setIsReportOpen] = useState(false);
     const [isCategoryMgmtOpen, setIsCategoryMgmtOpen] = useState(false);
+    const [isCaseTypeMgmtOpen, setIsCaseTypeMgmtOpen] = useState(false);
     const [editData, setEditData] = useState(null);
     const [error, setError] = useState(null);
 
@@ -531,10 +533,15 @@ function App() {
                             📊 Report
                         </button>
                     )}
-                    {user.role === 'superuser' && (
-                        <button className="manage-categories-btn" onClick={() => setIsCategoryMgmtOpen(true)}>
-                            🏷️ Manage Categories
-                        </button>
+                    {isAdminOrSuper() && (
+                        <>
+                            <button className="manage-categories-btn" onClick={() => setIsCategoryMgmtOpen(true)}>
+                                🏷️ Manage Categories
+                            </button>
+                            <button className="manage-categories-btn" onClick={() => setIsCaseTypeMgmtOpen(true)}>
+                                📋 Manage Case Types
+                            </button>
+                        </>
                     )}
                 </div>
             )}
@@ -642,10 +649,18 @@ function App() {
             />
 
             {/* Category Management Modal - Superuser only */}
-            {user.role === 'superuser' && (
+            {isAdminOrSuper() && (
                 <CategoryManagement
                     isOpen={isCategoryMgmtOpen}
                     onClose={() => setIsCategoryMgmtOpen(false)}
+                />
+            )}
+
+            {/* Case Type Management Modal - Admin and Superuser only */}
+            {isAdminOrSuper() && (
+                <CaseTypeManagement
+                    isOpen={isCaseTypeMgmtOpen}
+                    onClose={() => setIsCaseTypeMgmtOpen(false)}
                 />
             )}
         </div>

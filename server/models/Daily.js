@@ -11,9 +11,8 @@ const dailySchema = new mongoose.Schema({
         default: []
     },
     caseIssue: {
-        type: String,
-        trim: true,
-        default: ''
+        type: [String],
+        default: []
     },
     action: {
         type: String,

@@ -189,8 +189,12 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
 
                                 {/* Case & Issue */}
                                 <td>
-                                    <div className="progress-text">
-                                        {entry.caseIssue || '-'}
+                                    <div className="category-tags">
+                                        {entry.caseIssue && (Array.isArray(entry.caseIssue) ? entry.caseIssue.length > 0 : entry.caseIssue) ? (
+                                            (Array.isArray(entry.caseIssue) ? entry.caseIssue : [entry.caseIssue]).map((ct, idx) => (
+                                                <span key={idx} className="category-badge">{ct}</span>
+                                            ))
+                                        ) : '-'}
                                     </div>
                                 </td>
 
