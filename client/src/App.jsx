@@ -9,6 +9,8 @@ import UserManagement from './components/UserManagement';
 import CSVImportModal from './components/CSVImportModal';
 import ReportModal from './components/ReportModal';
 import CategoryManagement from './components/CategoryManagement';
+import Dashboard from './components/Dashboard';
+import ClientTab from './components/ClientTab';
 import { useToast } from './components/ToastProvider';
 import { projectsApi } from './api/projects';
 import { dailiesApi } from './api/dailies';
@@ -16,7 +18,8 @@ import { dailiesApi } from './api/dailies';
 function App() {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(null);
-    const [activeTab, setActiveTab] = useState('project');
+    const [activeTab, setActiveTab] = useState(null); // Will be set after login based on role
+    const [selectedClientName, setSelectedClientName] = useState(null); // For Client tab navigation
     const [projects, setProjects] = useState([]);
     const [dailies, setDailies] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -56,8 +59,17 @@ function App() {
         const savedToken = localStorage.getItem('token');
         const savedUser = localStorage.getItem('user');
         if (savedToken && savedUser) {
+            const parsedUser = JSON.parse(savedUser);
             setToken(savedToken);
-            setUser(JSON.parse(savedUser));
+            setUser(parsedUser);
+            // Set default tab based on role
+            if (parsedUser.role === 'admin' || parsedUser.role === 'superuser') {
+                setActiveTab('dashboard');
+            } else {
+                setActiveTab('project');
+            }
+        } else {
+            setActiveTab('project');
         }
     }, []);
 
@@ -152,6 +164,12 @@ function App() {
     const handleLogin = (userData, authToken) => {
         setUser(userData);
         setToken(authToken);
+        // Set default tab based on role
+        if (userData.role === 'admin' || userData.role === 'superuser') {
+            setActiveTab('dashboard');
+        } else {
+            setActiveTab('project');
+        }
         toast.success(`Welcome back, ${userData.displayName || userData.username}!`);
     };
 
@@ -310,6 +328,12 @@ function App() {
         }
     };
 
+    // Handle client click from dashboard - navigate to Client tab
+    const handleClientClick = (clientName) => {
+        setSelectedClientName(clientName);
+        setActiveTab('client');
+    };
+
     // Filter and sort data
     const filteredProjects = useMemo(() => {
         let result = [...projects];
@@ -432,6 +456,22 @@ function App() {
 
             {/* Tab Navigation */}
             <div className="tab-navigation">
+                {isAdminOrSuper() && (
+                    <button
+                        className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+                        onClick={() => { setActiveTab('dashboard'); setSearchTerm(''); }}
+                    >
+                        📊 Dashboard
+                    </button>
+                )}
+                {isAdminOrSuper() && (
+                    <button
+                        className={`tab-btn ${activeTab === 'client' ? 'active' : ''}`}
+                        onClick={() => { setActiveTab('client'); setSearchTerm(''); setSelectedClientName(null); }}
+                    >
+                        🏢 Client
+                    </button>
+                )}
                 <button
                     className={`tab-btn ${activeTab === 'project' ? 'active' : ''}`}
                     onClick={() => { setActiveTab('project'); setSearchTerm(''); }}
@@ -446,59 +486,69 @@ function App() {
                 </button>
             </div>
 
-            {/* Search and Sort Controls */}
-            <div className="search-sort-controls">
-                <div className="search-box">
-                    <span className="search-icon">🔍</span>
-                    <input
-                        type="text"
-                        placeholder={activeTab === 'project' ? 'Search projects...' : 'Search daily activities...'}
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="search-input"
-                    />
-                    {searchTerm && (
-                        <button className="clear-search" onClick={() => setSearchTerm('')}>✕</button>
+            {/* Search and Sort Controls - hide on dashboard and client tab */}
+            {activeTab !== 'dashboard' && activeTab !== 'client' && (
+                <div className="search-sort-controls">
+                    <div className="search-box">
+                        <span className="search-icon">🔍</span>
+                        <input
+                            type="text"
+                            placeholder={activeTab === 'project' ? 'Search projects...' : 'Search daily activities...'}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="search-input"
+                        />
+                        {searchTerm && (
+                            <button className="clear-search" onClick={() => setSearchTerm('')}>✕</button>
+                        )}
+                    </div>
+                    <div className="sort-box">
+                        <label>Sort by:</label>
+                        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                            <option value="sequence">Sequence (No.)</option>
+                            <option value="name">{activeTab === 'project' ? 'Project Name' : 'Client Name'}</option>
+                            <option value="date">Date</option>
+                            <option value="status">Status</option>
+                        </select>
+                    </div>
+                    {activeTab === 'project' && isAdminOrSuper() && (
+                        <>
+                            <button className="carry-forward-btn" onClick={handleCarryForward}>
+                                📥 Carry Forward
+                            </button>
+                            <button className="carry-forward-btn" onClick={() => setIsCSVImportOpen(true)}>
+                                📤 Import TSV
+                            </button>
+                        </>
                     )}
-                </div>
-                <div className="sort-box">
-                    <label>Sort by:</label>
-                    <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                        <option value="sequence">Sequence (No.)</option>
-                        <option value="name">{activeTab === 'project' ? 'Project Name' : 'Client Name'}</option>
-                        <option value="date">Date</option>
-                        <option value="status">Status</option>
-                    </select>
-                </div>
-                {activeTab === 'project' && isAdminOrSuper() && (
-                    <>
-                        <button className="carry-forward-btn" onClick={handleCarryForward}>
-                            📥 Carry Forward
-                        </button>
+                    {activeTab === 'daily' && isAdminOrSuper() && (
                         <button className="carry-forward-btn" onClick={() => setIsCSVImportOpen(true)}>
                             📤 Import TSV
                         </button>
-                    </>
-                )}
-                {activeTab === 'daily' && isAdminOrSuper() && (
-                    <button className="carry-forward-btn" onClick={() => setIsCSVImportOpen(true)}>
-                        📤 Import TSV
-                    </button>
-                )}
-                {isAdminOrSuper() && (
-                    <button className="carry-forward-btn" onClick={() => setIsReportOpen(true)}>
-                        📊 Report
-                    </button>
-                )}
-                {user.role === 'superuser' && (
-                    <button className="manage-categories-btn" onClick={() => setIsCategoryMgmtOpen(true)}>
-                        🏷️ Manage Categories
-                    </button>
-                )}
-            </div>
+                    )}
+                    {isAdminOrSuper() && (
+                        <button className="carry-forward-btn" onClick={() => setIsReportOpen(true)}>
+                            📊 Report
+                        </button>
+                    )}
+                    {user.role === 'superuser' && (
+                        <button className="manage-categories-btn" onClick={() => setIsCategoryMgmtOpen(true)}>
+                            🏷️ Manage Categories
+                        </button>
+                    )}
+                </div>
+            )}
 
             <main className="app-container">
-                {loading ? (
+                {activeTab === 'dashboard' ? (
+                    <Dashboard user={user} onClientClick={handleClientClick} />
+                ) : activeTab === 'client' ? (
+                    <ClientTab
+                        user={user}
+                        selectedClientName={selectedClientName}
+                        onClientSelect={setSelectedClientName}
+                    />
+                ) : loading ? (
                     <div className="loading">
                         <div className="loading-spinner"></div>
                     </div>
