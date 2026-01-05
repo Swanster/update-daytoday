@@ -7,9 +7,8 @@ const dailySchema = new mongoose.Schema({
         trim: true
     },
     services: {
-        type: String,
-        trim: true,
-        default: ''
+        type: [String],
+        default: []
     },
     caseIssue: {
         type: String,

@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { dailiesApi } from '../api/dailies';
+import { categoriesApi } from '../api/categories';
 import FileUpload from './FileUpload';
 
 export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user }) {
     const [formData, setFormData] = useState({
         clientName: '',
-        services: '',
+        services: [],
         caseIssue: '',
         action: '',
         date: '',
@@ -20,11 +21,21 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user
     const [tagInput, setTagInput] = useState('');
     const suggestionsRef = useRef(null);
     const clientNameRef = useRef(null);
+    const categoryDropdownRef = useRef(null);
+
+    const [categories, setCategories] = useState([]);
+    const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
     useEffect(() => {
         if (editData) {
+            // Handle legacy string services data
+            let services = editData.services || [];
+            if (typeof services === 'string') {
+                services = services ? [services] : [];
+            }
             setFormData({
                 ...editData,
+                services: services,
                 date: editData.date ? new Date(editData.date).toISOString().split('T')[0] : '',
                 picTeam: editData.picTeam || [],
                 attachments: editData.attachments || []
@@ -32,7 +43,7 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user
         } else {
             setFormData({
                 clientName: '',
-                services: '',
+                services: [],
                 caseIssue: '',
                 action: '',
                 date: '',
@@ -55,6 +66,32 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user
 
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Fetch categories on mount
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const data = await categoriesApi.getAll();
+                setCategories(data);
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            }
+        };
+        if (isOpen) {
+            fetchCategories();
+        }
+    }, [isOpen]);
+
+    // Handle clicks outside category dropdown
+    useEffect(() => {
+        const handleClickOutsideCategory = (event) => {
+            if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target)) {
+                setShowCategoryDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutsideCategory);
+        return () => document.removeEventListener('mousedown', handleClickOutsideCategory);
     }, []);
 
     const handleClientNameChange = async (e) => {
@@ -83,6 +120,24 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const toggleCategory = (categoryName) => {
+        setFormData(prev => {
+            const services = prev.services || [];
+            if (services.includes(categoryName)) {
+                return { ...prev, services: services.filter(s => s !== categoryName) };
+            } else {
+                return { ...prev, services: [...services, categoryName] };
+            }
+        });
+    };
+
+    const removeCategory = (categoryName) => {
+        setFormData(prev => ({
+            ...prev,
+            services: (prev.services || []).filter(s => s !== categoryName)
+        }));
     };
 
     const handleTagKeyDown = (e) => {
@@ -175,16 +230,55 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user
                                 </div>
                             </div>
 
-                            {/* Services */}
-                            <div className="form-group full-width">
-                                <label>Services</label>
-                                <input
-                                    type="text"
-                                    name="services"
-                                    value={formData.services}
-                                    onChange={handleInputChange}
-                                    placeholder="Enter services..."
-                                />
+                            {/* Category (Multi-select) */}
+                            <div className="form-group full-width" ref={categoryDropdownRef}>
+                                <label>Category</label>
+                                <div className="multi-select-wrapper">
+                                    <div
+                                        className="multi-select-trigger"
+                                        onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                                    >
+                                        {formData.services && formData.services.length > 0 ? (
+                                            <div className="selected-categories">
+                                                {formData.services.map((cat, idx) => (
+                                                    <span key={idx} className="category-tag">
+                                                        {cat}
+                                                        <button
+                                                            type="button"
+                                                            className="category-tag-remove"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                removeCategory(cat);
+                                                            }}
+                                                        >
+                                                            &times;
+                                                        </button>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <span className="placeholder">Select categories...</span>
+                                        )}
+                                        <span className="dropdown-arrow">▼</span>
+                                    </div>
+                                    {showCategoryDropdown && (
+                                        <div className="multi-select-dropdown">
+                                            {categories.map((cat) => (
+                                                <label key={cat._id} className="category-option">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={(formData.services || []).includes(cat.name)}
+                                                        onChange={() => toggleCategory(cat.name)}
+                                                    />
+                                                    <span>{cat.name}</span>
+                                                </label>
+                                            ))}
+                                            {categories.length === 0 && (
+                                                <div className="no-categories">No categories available</div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Case & Issue */}

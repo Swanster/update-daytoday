@@ -8,6 +8,7 @@ import ActivityLog from './components/ActivityLog';
 import UserManagement from './components/UserManagement';
 import CSVImportModal from './components/CSVImportModal';
 import ReportModal from './components/ReportModal';
+import CategoryManagement from './components/CategoryManagement';
 import { useToast } from './components/ToastProvider';
 import { projectsApi } from './api/projects';
 import { dailiesApi } from './api/dailies';
@@ -24,6 +25,7 @@ function App() {
     const [isUserMgmtOpen, setIsUserMgmtOpen] = useState(false);
     const [isCSVImportOpen, setIsCSVImportOpen] = useState(false);
     const [isReportOpen, setIsReportOpen] = useState(false);
+    const [isCategoryMgmtOpen, setIsCategoryMgmtOpen] = useState(false);
     const [editData, setEditData] = useState(null);
     const [error, setError] = useState(null);
 
@@ -317,7 +319,7 @@ function App() {
             const term = searchTerm.toLowerCase();
             result = result.filter(p =>
                 p.projectName?.toLowerCase().includes(term) ||
-                p.services?.toLowerCase().includes(term) ||
+                (Array.isArray(p.services) && p.services.some(s => s.toLowerCase().includes(term))) ||
                 p.picTeam?.some(pic => pic.toLowerCase().includes(term))
             );
         }
@@ -348,7 +350,7 @@ function App() {
             const term = searchTerm.toLowerCase();
             result = result.filter(d =>
                 d.clientName?.toLowerCase().includes(term) ||
-                d.services?.toLowerCase().includes(term) ||
+                (Array.isArray(d.services) && d.services.some(s => s.toLowerCase().includes(term))) ||
                 d.caseIssue?.toLowerCase().includes(term) ||
                 d.picTeam?.some(pic => pic.toLowerCase().includes(term))
             );
@@ -488,6 +490,11 @@ function App() {
                         📊 Report
                     </button>
                 )}
+                {user.role === 'superuser' && (
+                    <button className="manage-categories-btn" onClick={() => setIsCategoryMgmtOpen(true)}>
+                        🏷️ Manage Categories
+                    </button>
+                )}
             </div>
 
             <main className="app-container">
@@ -583,6 +590,14 @@ function App() {
                 apiType={activeTab}
                 quarters={activeTab === 'project' ? projectQuarters : dailyQuarters}
             />
+
+            {/* Category Management Modal - Superuser only */}
+            {user.role === 'superuser' && (
+                <CategoryManagement
+                    isOpen={isCategoryMgmtOpen}
+                    onClose={() => setIsCategoryMgmtOpen(false)}
+                />
+            )}
         </div>
     );
 }

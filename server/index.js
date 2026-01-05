@@ -7,6 +7,7 @@ const dailyRoutes = require('./routes/dailies');
 const authRoutes = require('./routes/auth');
 const activityLogRoutes = require('./routes/activityLogs');
 const uploadRoutes = require('./routes/uploads');
+const categoryRoutes = require('./routes/categories');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -25,6 +26,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/dailies', dailyRoutes);
 app.use('/api/activity-logs', activityLogRoutes);
 app.use('/api/uploads', uploadRoutes);
+app.use('/api/categories', categoryRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

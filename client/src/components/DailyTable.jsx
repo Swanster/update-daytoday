@@ -176,8 +176,16 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
                                     </td>
                                 )}
 
-                                {/* Services */}
-                                <td>{entry.services || '-'}</td>
+                                {/* Services/Categories */}
+                                <td>
+                                    <div className="category-tags">
+                                        {entry.services && entry.services.length > 0 ? (
+                                            (Array.isArray(entry.services) ? entry.services : [entry.services]).map((cat, idx) => (
+                                                <span key={idx} className="category-badge">{cat}</span>
+                                            ))
+                                        ) : '-'}
+                                    </div>
+                                </td>
 
                                 {/* Case & Issue */}
                                 <td>

@@ -284,3 +284,117 @@ ls -la /var/backups/mongodb/*/*.tar.gz
 - **Daily backups:** Kept for 7 days
 - **Weekly backups:** Kept for 30 days
 - **Manual backups:** Kept for 90 days
+
+---
+
+## 13. Cloud Backup (Google Drive)
+
+Protect your data by automatically uploading backups to Google Drive using `rclone`.
+
+### Step 1: Install rclone
+
+```bash
+curl https://rclone.org/install.sh | sudo bash
+```
+
+### Step 2: Configure Google Drive
+
+```bash
+rclone config
+```
+
+Follow the interactive prompts:
+1. `n` - New remote
+2. Name: `gdrive` (must match the name in backup.sh)
+3. Storage type: Choose `drive` (Google Drive)
+4. Leave client_id and client_secret blank (press Enter)
+5. Scope: `1` (Full access)
+6. Leave root_folder_id blank
+7. Leave service_account_file blank
+8. `n` - No advanced config
+9. `y` - Auto config (will open browser for OAuth)
+10. Log into your Google account and authorize rclone
+11. `n` - Not a team drive
+12. `y` - Confirm settings
+
+### Step 3: Test the Connection
+
+```bash
+# List files in your Google Drive
+rclone ls gdrive:
+
+# Test upload
+echo "test" > /tmp/test.txt
+rclone copy /tmp/test.txt gdrive:NUC-Backups/
+rclone ls gdrive:NUC-Backups/
+rm /tmp/test.txt
+```
+
+### Step 4: Test Cloud Backup
+
+```bash
+cd /var/www/update-daytoday/server
+./backup.sh manual
+# Should show "✅ Uploaded to Google Drive"
+```
+
+### Cloud Backup Commands
+
+```bash
+# Backup with cloud upload (default)
+./backup.sh manual
+
+# Backup without cloud upload (local only)
+./backup.sh manual --no-cloud
+
+# List cloud backups
+rclone ls gdrive:NUC-Backups/mongodb/
+```
+
+---
+
+## 14. Disaster Recovery (New Machine Restore)
+
+If your NUC dies and you need to restore to a new machine:
+
+### Step 1: Setup New Server
+
+Follow steps 1-6 of this guide to install MongoDB, Node.js, etc.
+
+### Step 2: Install and Configure rclone
+
+```bash
+curl https://rclone.org/install.sh | sudo bash
+rclone config
+# Configure the same Google Drive remote as before
+```
+
+### Step 3: Download Latest Backup
+
+```bash
+# List available cloud backups
+rclone ls gdrive:NUC-Backups/mongodb/
+
+# Download the latest backup
+mkdir -p /tmp/restore
+rclone copy gdrive:NUC-Backups/mongodb/manual/ /tmp/restore/ --include "*.tar.gz"
+
+# Or download a specific backup
+rclone copy "gdrive:NUC-Backups/mongodb/weekly/backup_project-tracker_weekly_20260105_030000.tar.gz" /tmp/restore/
+```
+
+### Step 4: Restore the Database
+
+```bash
+cd /var/www/update-daytoday/server
+./restore.sh /tmp/restore/backup_project-tracker_*.tar.gz
+```
+
+### Step 5: Restart Services
+
+```bash
+pm2 restart project-tracker-api
+```
+
+Your data is now restored! 🎉
+
