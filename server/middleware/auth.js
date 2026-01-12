@@ -1,7 +1,13 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'project-tracker-secret-key-2024';
+// JWT Secret - MUST be set in .env file for production
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+    console.warn('⚠️  WARNING: JWT_SECRET not set in environment variables!');
+    console.warn('   Using a default development secret. DO NOT use in production!');
+}
+const SECRET = JWT_SECRET || 'dev-only-secret-do-not-use-in-production';
 
 // Authentication middleware
 const auth = async (req, res, next) => {
@@ -12,7 +18,7 @@ const auth = async (req, res, next) => {
             return res.status(401).json({ message: 'Authentication required' });
         }
 
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = jwt.verify(token, SECRET);
         const user = await User.findById(decoded.userId);
 
         if (!user) {
@@ -33,7 +39,7 @@ const optionalAuth = async (req, res, next) => {
         const token = req.header('Authorization')?.replace('Bearer ', '');
 
         if (token) {
-            const decoded = jwt.verify(token, JWT_SECRET);
+            const decoded = jwt.verify(token, SECRET);
             const user = await User.findById(decoded.userId);
             if (user) {
                 req.user = user;
@@ -63,4 +69,4 @@ const adminOrSuperuser = (req, res, next) => {
     next();
 };
 
-module.exports = { auth, optionalAuth, adminOnly, adminOrSuperuser, JWT_SECRET };
+module.exports = { auth, optionalAuth, adminOnly, adminOrSuperuser, JWT_SECRET: SECRET };

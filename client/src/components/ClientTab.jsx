@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { clientsApi } from '../api/clients';
+import './ClientTab.css';
 
 function ClientTab({ user, selectedClientName, onClientSelect }) {
     const [clients, setClients] = useState([]);

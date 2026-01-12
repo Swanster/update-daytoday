@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { dashboardApi } from '../api/dashboard';
+import './Dashboard.css';
 
 const REFRESH_INTERVAL = 30000; // 30 seconds
 

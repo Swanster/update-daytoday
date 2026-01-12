@@ -5,6 +5,12 @@ const { parse } = require('csv-parse/sync');
 const Project = require('../models/Project');
 const ActivityLog = require('../models/ActivityLog');
 const { auth } = require('../middleware/auth');
+const {
+    projectValidation,
+    mongoIdParam,
+    quarterQueryValidation,
+    batchStatusValidation
+} = require('../middleware/validation');
 
 // Configure multer for file upload
 const upload = multer({ storage: multer.memoryStorage() });
@@ -19,7 +25,7 @@ function getCurrentQuarter() {
 }
 
 // Get all projects (optionally filtered by quarter)
-router.get('/', async (req, res) => {
+router.get('/', quarterQueryValidation, async (req, res) => {
     try {
         const { quarter, year } = req.query;
         let query = {};
@@ -28,7 +34,7 @@ router.get('/', async (req, res) => {
             query = { quarter, year: parseInt(year) };
         }
 
-        const projects = await Project.find(query).sort({ projectName: 1, createdAt: 1 });
+        const projects = await Project.find(query).sort({ quarterSequence: 1, createdAt: 1 });
         res.json(projects);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -225,7 +231,7 @@ function levenshteinDistance(str1, str2) {
 // Get grouped projects for display
 router.get('/grouped', async (req, res) => {
     try {
-        const projects = await Project.find().sort({ projectName: 1, createdAt: 1 });
+        const projects = await Project.find().sort({ quarterSequence: 1, createdAt: 1 });
 
         // Group by project name
         const grouped = {};
@@ -243,12 +249,19 @@ router.get('/grouped', async (req, res) => {
 });
 
 // Create a new project entry
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, projectValidation, async (req, res) => {
     // Auto-assign quarter based on date or current date
     const entryDate = req.body.date ? new Date(req.body.date) : new Date();
     const month = entryDate.getMonth();
     const year = entryDate.getFullYear();
     const quarterNum = Math.floor(month / 3) + 1;
+    const quarter = `Q${quarterNum}-${year}`;
+
+    // Get the next sequence number for this quarter
+    const maxSeqEntry = await Project.findOne({ quarter, year })
+        .sort({ quarterSequence: -1 })
+        .select('quarterSequence');
+    const nextSequence = (maxSeqEntry?.quarterSequence || 0) + 1;
 
     const project = new Project({
         projectName: req.body.projectName,
@@ -261,8 +274,9 @@ router.post('/', auth, async (req, res) => {
         picTeam: req.body.picTeam,
         progress: req.body.progress,
         status: req.body.status,
-        quarter: `Q${quarterNum}-${year}`,
-        year: year
+        quarter: quarter,
+        year: year,
+        quarterSequence: nextSequence
     });
 
     try {
@@ -286,17 +300,9 @@ router.post('/', auth, async (req, res) => {
 });
 
 // Batch update status for multiple projects
-router.patch('/batch-status', auth, async (req, res) => {
+router.patch('/batch-status', auth, batchStatusValidation, async (req, res) => {
     try {
         const { ids, status } = req.body;
-
-        if (!ids || !Array.isArray(ids) || ids.length === 0) {
-            return res.status(400).json({ message: 'No project IDs provided' });
-        }
-
-        if (!['Done', 'Progress', 'Hold'].includes(status)) {
-            return res.status(400).json({ message: 'Invalid status value. Must be Done, Progress, or Hold.' });
-        }
 
         // Update all projects with the given IDs
         const result = await Project.updateMany(
@@ -417,7 +423,7 @@ router.post('/carry-forward', async (req, res) => {
 });
 
 // Update a project entry
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, mongoIdParam, projectValidation, async (req, res) => {
     try {
         const project = await Project.findById(req.params.id);
 
@@ -462,7 +468,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // Delete a project entry
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, mongoIdParam, async (req, res) => {
     try {
         const project = await Project.findById(req.params.id);
 

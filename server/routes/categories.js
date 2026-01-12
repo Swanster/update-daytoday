@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Category = require('../models/Category');
 const { auth } = require('../middleware/auth');
+const { categoryValidation, mongoIdParam } = require('../middleware/validation');
 
 // Default categories to seed
 const DEFAULT_CATEGORIES = [
@@ -39,7 +40,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Create a new category (superuser only)
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, categoryValidation, async (req, res) => {
     try {
         // Check if user is superuser
         if (req.user.role !== 'superuser') {
@@ -47,10 +48,6 @@ router.post('/', auth, async (req, res) => {
         }
 
         const { name, order } = req.body;
-
-        if (!name || !name.trim()) {
-            return res.status(400).json({ message: 'Category name is required' });
-        }
 
         // Check for duplicate name
         const existing = await Category.findOne({ name: name.trim() });
@@ -78,7 +75,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // Update a category (superuser only)
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, mongoIdParam, async (req, res) => {
     try {
         // Check if user is superuser
         if (req.user.role !== 'superuser') {
@@ -115,7 +112,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // Delete a category (soft delete, superuser only)
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, mongoIdParam, async (req, res) => {
     try {
         // Check if user is superuser
         if (req.user.role !== 'superuser') {

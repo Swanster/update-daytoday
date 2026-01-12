@@ -4,6 +4,13 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const ActivityLog = require('../models/ActivityLog');
 const { auth, JWT_SECRET } = require('../middleware/auth');
+const {
+    registerValidation,
+    loginValidation,
+    userIdParam,
+    roleValidation,
+    passwordResetValidation
+} = require('../middleware/validation');
 
 // Check if user is admin or superuser
 const isAdminOrSuper = (user) => {
@@ -11,7 +18,7 @@ const isAdminOrSuper = (user) => {
 };
 
 // Register new user (pending approval)
-router.post('/register', async (req, res) => {
+router.post('/register', registerValidation, async (req, res) => {
     try {
         const { username, password, displayName } = req.body;
 
@@ -67,7 +74,7 @@ router.post('/register', async (req, res) => {
 });
 
 // Login
-router.post('/login', async (req, res) => {
+router.post('/login', loginValidation, async (req, res) => {
     try {
         const { username, password } = req.body;
 
@@ -144,7 +151,7 @@ router.get('/pending', auth, async (req, res) => {
 });
 
 // Approve user (admin/superuser only)
-router.post('/approve/:userId', auth, async (req, res) => {
+router.post('/approve/:userId', auth, userIdParam, async (req, res) => {
     try {
         if (!isAdminOrSuper(req.user)) {
             return res.status(403).json({ message: 'Admin access required' });
@@ -176,7 +183,7 @@ router.post('/approve/:userId', auth, async (req, res) => {
 });
 
 // Reject user (admin/superuser only)
-router.delete('/reject/:userId', auth, async (req, res) => {
+router.delete('/reject/:userId', auth, userIdParam, async (req, res) => {
     try {
         if (!isAdminOrSuper(req.user)) {
             return res.status(403).json({ message: 'Admin access required' });
@@ -208,16 +215,13 @@ router.delete('/reject/:userId', auth, async (req, res) => {
 });
 
 // Update user role (superuser only)
-router.patch('/role/:userId', auth, async (req, res) => {
+router.patch('/role/:userId', auth, userIdParam, roleValidation, async (req, res) => {
     try {
         if (req.user.role !== 'superuser') {
             return res.status(403).json({ message: 'Superuser access required' });
         }
 
         const { role } = req.body;
-        if (!['superuser', 'admin', 'user'].includes(role)) {
-            return res.status(400).json({ message: 'Invalid role' });
-        }
 
         const user = await User.findById(req.params.userId);
         if (!user) {
@@ -245,7 +249,7 @@ router.patch('/role/:userId', auth, async (req, res) => {
 });
 
 // Delete user (superuser only)
-router.delete('/user/:userId', auth, async (req, res) => {
+router.delete('/user/:userId', auth, userIdParam, async (req, res) => {
     try {
         if (req.user.role !== 'superuser') {
             return res.status(403).json({ message: 'Superuser access required' });
@@ -282,16 +286,13 @@ router.delete('/user/:userId', auth, async (req, res) => {
 });
 
 // Reset user password (superuser only)
-router.post('/reset-password/:userId', auth, async (req, res) => {
+router.post('/reset-password/:userId', auth, userIdParam, passwordResetValidation, async (req, res) => {
     try {
         if (req.user.role !== 'superuser') {
             return res.status(403).json({ message: 'Superuser access required' });
         }
 
         const { newPassword } = req.body;
-        if (!newPassword || newPassword.length < 6) {
-            return res.status(400).json({ message: 'Password must be at least 6 characters' });
-        }
 
         const user = await User.findById(req.params.userId);
         if (!user) {

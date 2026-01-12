@@ -1,0 +1,58 @@
+/*
+ * CSS Variables and Base Styles
+ * Core design tokens used across the application
+ */
+
+:root {
+  /* Color Palette */
+  --primary-dark: #393939;
+  --primary-accent: #FF7F5B;
+  --header-bg: #393939;
+  --bg-cream: #FFFCEF;
+  --bg-green: #D2EBCD;
+  --row-primary: #FFFCEF;
+  --row-secondary: #D2EBCD;
+  --row-hover: #e8f5e9;
+  --border-color: #393939;
+  --text-dark: #393939;
+  --text-light: #FFFCEF;
+  --accent-coral: #FF7F5B;
+  
+  /* Status Colors */
+  --status-done: #4caf50;
+  --status-progress: #FF7F5B;
+  --status-hold: #ffa726;
+  
+  /* Shadows */
+  --shadow: 0 4px 20px rgba(57, 57, 57, 0.2);
+  --shadow-sm: 0 2px 8px rgba(57, 57, 57, 0.15);
+  
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-cream);
+  min-height: 100vh;
+  color: var(--text-dark);
+}
+
+/* Utility Classes */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}

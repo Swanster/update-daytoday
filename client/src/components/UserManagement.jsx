@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { authApi } from '../api/auth';
+import './UserManagement.css';
 
 export default function UserManagement({ token, isOpen, onClose, currentUser }) {
     const [pendingUsers, setPendingUsers] = useState([]);

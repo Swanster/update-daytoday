@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const CaseType = require('../models/CaseType');
 const { auth } = require('../middleware/auth');
+const { categoryValidation, mongoIdParam } = require('../middleware/validation');
 
 // Default case types to seed
 const DEFAULT_CASE_TYPES = [
@@ -40,7 +41,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Create a new case type (superuser and admin only)
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, categoryValidation, async (req, res) => {
     try {
         // Check if user is superuser or admin
         if (req.user.role !== 'superuser' && req.user.role !== 'admin') {
@@ -48,10 +49,6 @@ router.post('/', auth, async (req, res) => {
         }
 
         const { name, order } = req.body;
-
-        if (!name || !name.trim()) {
-            return res.status(400).json({ message: 'Case type name is required' });
-        }
 
         // Check for duplicate name
         const existing = await CaseType.findOne({ name: name.trim() });
@@ -79,7 +76,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // Update a case type (superuser and admin only)
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, mongoIdParam, async (req, res) => {
     try {
         // Check if user is superuser or admin
         if (req.user.role !== 'superuser' && req.user.role !== 'admin') {
@@ -116,7 +113,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // Delete a case type (soft delete, superuser and admin only)
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, mongoIdParam, async (req, res) => {
     try {
         // Check if user is superuser or admin
         if (req.user.role !== 'superuser' && req.user.role !== 'admin') {

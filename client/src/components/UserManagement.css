@@ -1,0 +1,190 @@
+/*
+ * User Management Styles
+ * Used by UserManagement.jsx
+ */
+
+.user-management {
+  padding: 1.5rem;
+}
+
+.user-management h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary-dark);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.users-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.user-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s;
+}
+
+.user-card:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+}
+
+.user-card.pending {
+  border-left: 4px solid #ff9800;
+  background: #fff8e1;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-coral) 0%, #ff6b47 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.user-username {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.user-role {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-top: 0.25rem;
+}
+
+.user-role.superuser {
+  background: #673ab7;
+  color: white;
+}
+
+.user-role.admin {
+  background: #2196f3;
+  color: white;
+}
+
+.user-role.user {
+  background: #e0e0e0;
+  color: #666;
+}
+
+.user-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.user-action-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.user-action-btn.approve {
+  background: #4caf50;
+  color: white;
+}
+
+.user-action-btn.reject,
+.user-action-btn.delete {
+  background: #f44336;
+  color: white;
+}
+
+.user-action-btn.reset {
+  background: #ff9800;
+  color: white;
+}
+
+.user-action-btn:hover {
+  transform: scale(1.05);
+}
+
+.role-select {
+  padding: 0.5rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.role-select:focus {
+  outline: none;
+  border-color: var(--accent-coral);
+}
+
+.no-users {
+  text-align: center;
+  padding: 2rem;
+  color: #999;
+}
+
+/* Password Reset Modal */
+.password-reset-modal .modal-content {
+  max-width: 400px;
+}
+
+.password-reset-form {
+  padding: 1.5rem;
+}
+
+.password-reset-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.password-reset-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.password-reset-form input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.password-reset-form input:focus {
+  outline: none;
+  border-color: var(--accent-coral);
+}

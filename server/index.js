@@ -1,6 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const helmet = require('helmet');
 const path = require('path');
 const projectRoutes = require('./routes/projects');
 const dailyRoutes = require('./routes/dailies');
@@ -16,9 +18,17 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/project-tracker';
 
-// Middleware
+// Security middleware
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' }, // Allow cross-origin for uploads
+    contentSecurityPolicy: false // Disable CSP for API (frontend handles this)
+}));
+
+// CORS middleware
 app.use(cors());
-app.use(express.json());
+
+// Body parser
+app.use(express.json({ limit: '10mb' })); // Limit payload size
 
 // Serve uploaded files statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

@@ -72,7 +72,10 @@ const projectSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index for faster project name searches
+// Index for faster searches
 projectSchema.index({ projectName: 1 });
+projectSchema.index({ quarter: 1, year: 1 });
+projectSchema.index({ quarter: 1, quarterSequence: 1 });
+projectSchema.index({ status: 1 });
 
 module.exports = mongoose.model('Project', projectSchema);

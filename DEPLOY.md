@@ -89,12 +89,45 @@ sudo chown -R $USER:$USER /var/www/update-daytoday
 # Setup Backend
 cd server
 npm install
-# Create .env file for production
-echo "PORT=5000" > .env
-echo "MONGODB_URI=mongodb://localhost:27017/project-tracker" >> .env
-echo "JWT_SECRET=your_super_secure_random_string_here" >> .env
+```
 
-# Setup Frontend
+### Environment Variables Setup
+
+Create a `.env` file for production:
+
+```bash
+nano .env
+```
+
+Add the following configuration:
+
+```env
+# Server Configuration
+PORT=5000
+
+# MongoDB Connection
+MONGODB_URI=mongodb://localhost:27017/project-tracker
+
+# JWT Secret - IMPORTANT: Use a strong, unique secret!
+# Generate a secure secret with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+JWT_SECRET=your_generated_64_byte_hex_secret_here
+```
+
+> ⚠️ **SECURITY NOTES:**
+> - **Never commit `.env` to version control** (it's already in `.gitignore`)
+> - **Use a strong JWT_SECRET** - Generate it using the command above (128 characters)
+> - **Keep backups** of your `.env` file in a secure location
+> - For cloud deployments, use the platform's environment variable management instead of a `.env` file
+
+Example of generating a secure secret:
+```bash
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+# Output: 8870b314cb7c00eaf0e27f8b812e300ee64d3d5d2f0d258243fc797efa962d17...
+```
+
+### Build Frontend
+
+```bash
 cd ../client
 npm install
 npm run build
@@ -397,4 +430,25 @@ pm2 restart project-tracker-api
 ```
 
 Your data is now restored! 🎉
+
+---
+
+## Appendix: Environment Variables Reference
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `PORT` | No | `5000` | Port for the backend API server |
+| `MONGODB_URI` | No | `mongodb://localhost:27017/project-tracker` | MongoDB connection string |
+| `JWT_SECRET` | **Yes** | None (dev fallback) | Secret key for JWT token signing. **Must be set in production!** |
+
+### Generating a Secure JWT_SECRET
+
+```bash
+# Generate a cryptographically secure 128-character secret
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+```
+
+### Example `.env` File
+
+See `.env.example` in the `/server` directory for a complete template.
 

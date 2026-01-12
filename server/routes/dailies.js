@@ -5,6 +5,12 @@ const { parse } = require('csv-parse/sync');
 const Daily = require('../models/Daily');
 const ActivityLog = require('../models/ActivityLog');
 const { auth } = require('../middleware/auth');
+const {
+    dailyValidation,
+    mongoIdParam,
+    quarterQueryValidation,
+    batchStatusValidation
+} = require('../middleware/validation');
 
 // Configure multer for file upload
 const upload = multer({ storage: multer.memoryStorage() });
@@ -19,7 +25,7 @@ function getCurrentQuarter() {
 }
 
 // Get all daily entries (optionally filtered by quarter)
-router.get('/', async (req, res) => {
+router.get('/', quarterQueryValidation, async (req, res) => {
     try {
         const { quarter, year } = req.query;
         let query = {};
@@ -147,7 +153,7 @@ router.get('/suggestions', async (req, res) => {
 });
 
 // Create a new daily entry
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, dailyValidation, async (req, res) => {
     // Auto-assign quarter based on date or current date
     const entryDate = req.body.date ? new Date(req.body.date) : new Date();
     const month = entryDate.getMonth();
@@ -209,17 +215,9 @@ router.post('/', auth, async (req, res) => {
 });
 
 // Batch update status for multiple daily entries
-router.patch('/batch-status', auth, async (req, res) => {
+router.patch('/batch-status', auth, batchStatusValidation, async (req, res) => {
     try {
         const { ids, status } = req.body;
-
-        if (!ids || !Array.isArray(ids) || ids.length === 0) {
-            return res.status(400).json({ message: 'No daily entry IDs provided' });
-        }
-
-        if (!['Done', 'Progress', 'Hold'].includes(status)) {
-            return res.status(400).json({ message: 'Invalid status value. Must be Done, Progress, or Hold.' });
-        }
 
         // Update all dailies with the given IDs
         const result = await Daily.updateMany(
@@ -253,7 +251,7 @@ router.patch('/batch-status', auth, async (req, res) => {
 });
 
 // Update a daily entry
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, mongoIdParam, dailyValidation, async (req, res) => {
     try {
         const daily = await Daily.findById(req.params.id);
 
@@ -297,7 +295,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // Delete a daily entry
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, mongoIdParam, async (req, res) => {
     try {
         const daily = await Daily.findById(req.params.id);
 
