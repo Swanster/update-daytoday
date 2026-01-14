@@ -12,6 +12,7 @@ import CategoryManagement from './components/CategoryManagement';
 import CaseTypeManagement from './components/CaseTypeManagement';
 import Dashboard from './components/Dashboard';
 import ClientTab from './components/ClientTab';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 import { useToast } from './components/ToastProvider';
 import { projectsApi } from './api/projects';
 import { dailiesApi } from './api/dailies';
@@ -345,8 +346,8 @@ function App() {
             const term = searchTerm.toLowerCase();
             result = result.filter(p =>
                 p.projectName?.toLowerCase().includes(term) ||
-                (Array.isArray(p.services) && p.services.some(s => s.toLowerCase().includes(term))) ||
-                p.picTeam?.some(pic => pic.toLowerCase().includes(term))
+                (Array.isArray(p.services) && p.services.some(s => typeof s === 'string' && s.toLowerCase().includes(term))) ||
+                (Array.isArray(p.picTeam) && p.picTeam.some(pic => typeof pic === 'string' && pic.toLowerCase().includes(term)))
             );
         }
 
@@ -376,9 +377,9 @@ function App() {
             const term = searchTerm.toLowerCase();
             result = result.filter(d =>
                 d.clientName?.toLowerCase().includes(term) ||
-                (Array.isArray(d.services) && d.services.some(s => s.toLowerCase().includes(term))) ||
-                d.caseIssue?.toLowerCase().includes(term) ||
-                d.picTeam?.some(pic => pic.toLowerCase().includes(term))
+                (Array.isArray(d.services) && d.services.some(s => typeof s === 'string' && s.toLowerCase().includes(term))) ||
+                (Array.isArray(d.caseIssue) ? d.caseIssue.some(c => typeof c === 'string' && c.toLowerCase().includes(term)) : (typeof d.caseIssue === 'string' && d.caseIssue.toLowerCase().includes(term))) ||
+                (Array.isArray(d.picTeam) && d.picTeam.some(pic => typeof pic === 'string' && pic.toLowerCase().includes(term)))
             );
         }
 
@@ -663,6 +664,9 @@ function App() {
                     onClose={() => setIsCaseTypeMgmtOpen(false)}
                 />
             )}
+
+            {/* PWA Install Prompt */}
+            <PWAInstallPrompt />
         </div>
     );
 }
