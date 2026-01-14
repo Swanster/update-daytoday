@@ -10,6 +10,7 @@ import CSVImportModal from './components/CSVImportModal';
 import ReportModal from './components/ReportModal';
 import CategoryManagement from './components/CategoryManagement';
 import CaseTypeManagement from './components/CaseTypeManagement';
+import PicMemberManagement from './components/PicMemberManagement';
 import Dashboard from './components/Dashboard';
 import ClientTab from './components/ClientTab';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
@@ -32,6 +33,7 @@ function App() {
     const [isReportOpen, setIsReportOpen] = useState(false);
     const [isCategoryMgmtOpen, setIsCategoryMgmtOpen] = useState(false);
     const [isCaseTypeMgmtOpen, setIsCaseTypeMgmtOpen] = useState(false);
+    const [isPicMemberMgmtOpen, setIsPicMemberMgmtOpen] = useState(false);
     const [editData, setEditData] = useState(null);
     const [error, setError] = useState(null);
 
@@ -542,6 +544,11 @@ function App() {
                             <button className="manage-categories-btn" onClick={() => setIsCaseTypeMgmtOpen(true)}>
                                 📋 Manage Case Types
                             </button>
+                            {user?.role === 'superuser' && (
+                                <button className="manage-categories-btn" onClick={() => setIsPicMemberMgmtOpen(true)}>
+                                    👥 Manage PIC Members
+                                </button>
+                            )}
                         </>
                     )}
                 </div>
@@ -662,6 +669,14 @@ function App() {
                 <CaseTypeManagement
                     isOpen={isCaseTypeMgmtOpen}
                     onClose={() => setIsCaseTypeMgmtOpen(false)}
+                />
+            )}
+
+            {/* PIC Member Management Modal - Superuser only */}
+            {user?.role === 'superuser' && (
+                <PicMemberManagement
+                    isOpen={isPicMemberMgmtOpen}
+                    onClose={() => setIsPicMemberMgmtOpen(false)}
                 />
             )}
 

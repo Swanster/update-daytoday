@@ -11,6 +11,7 @@ const activityLogRoutes = require('./routes/activityLogs');
 const uploadRoutes = require('./routes/uploads');
 const categoryRoutes = require('./routes/categories');
 const caseTypeRoutes = require('./routes/caseTypes');
+const picMemberRoutes = require('./routes/picMembers');
 const dashboardRoutes = require('./routes/dashboard');
 const clientRoutes = require('./routes/clients');
 
@@ -41,6 +42,7 @@ app.use('/api/activity-logs', activityLogRoutes);
 app.use('/api/uploads', uploadRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/case-types', caseTypeRoutes);
+app.use('/api/pic-members', picMemberRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/clients', clientRoutes);
 

@@ -439,7 +439,7 @@ body {
 .app-container {
   padding: 2rem;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: auto; /* Changed from hidden to allow horizontal scroll for tables on mobile */
 }
 
 /* Table Styles */
@@ -3904,5 +3904,361 @@ button,
 
   .breakdown-item {
     grid-template-columns: 100px 1fr 35px;
+  }
+}
+
+/* ========== ENHANCED MOBILE VIEW FOR PROJECT & DAILY TABLES ========== */
+
+/* Mobile Table Improvements - 768px and below */
+@media (max-width: 768px) {
+  /* Ensure horizontal scrolling works smoothly */
+  .spreadsheet-container {
+    overflow-x: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    max-height: calc(100vh - 280px);
+    scroll-behavior: smooth;
+  }
+
+  /* Use auto layout with minimum width to ensure horizontal scroll works */
+  .spreadsheet-table {
+    min-width: 1100px; /* Ensure table is wide enough to show all columns */
+    table-layout: auto;
+    width: 100%;
+  }
+  
+  /* Daily table needs more width due to more columns */
+  .daily-table {
+    min-width: 1200px;
+  }
+
+  /* Column widths - ensure all headers and data cells match */
+  .spreadsheet-table th,
+  .spreadsheet-table td {
+    white-space: nowrap;
+    padding: 0.5rem 0.4rem;
+  }
+
+  /* Checkbox column */
+  .spreadsheet-table th:first-child,
+  .spreadsheet-table td:first-child {
+    width: 40px;
+    min-width: 40px;
+    max-width: 40px;
+  }
+
+  /* No column */
+  .spreadsheet-table th:nth-child(2),
+  .spreadsheet-table td:nth-child(2) {
+    width: 45px;
+    min-width: 45px;
+  }
+
+  /* Client/Project Name column */
+  .spreadsheet-table th:nth-child(3),
+  .spreadsheet-table td:nth-child(3) {
+    min-width: 130px;
+  }
+
+  /* Allow text to wrap in progress/detail action columns */
+  .progress-text {
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-width: 150px;
+    max-width: 200px;
+  }
+
+  /* Improve touch targets */
+  .action-btn {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.85rem;
+    min-width: 36px;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .checkbox-cell input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+  }
+
+  /* Improve status badges readability */
+  .status-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+    white-space: nowrap;
+  }
+
+  /* PIC tags styling for mobile */
+  .pic-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+  }
+
+  .pic-tag {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.65rem;
+    white-space: nowrap;
+  }
+
+  /* Progress text mobile optimization */
+  .progress-text {
+    font-size: 0.7rem;
+    max-height: 60px;
+    line-height: 1.3;
+  }
+
+  /* Batch action bar - more compact on mobile */
+  .batch-action-bar {
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    transform: none;
+    border-radius: 16px;
+    max-width: calc(100% - 20px);
+  }
+
+  .selected-count {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .batch-buttons {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .batch-btn {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  /* Attachment indicator */
+  .attachment-indicator {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  /* Search sort controls on mobile */
+  .search-sort-controls {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .search-box {
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
+  }
+
+  .sort-box {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .sort-box select {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  /* Buttons in search-sort-controls */
+  .carry-forward-btn,
+  .manage-categories-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+}
+
+/* Small Mobile - 480px and below */
+@media (max-width: 480px) {
+  .spreadsheet-container {
+    max-height: calc(100vh - 320px);
+    border-radius: 8px;
+  }
+
+  .spreadsheet-table {
+    min-width: 1000px;
+  }
+  
+  /* Daily table needs more width due to more columns */
+  .daily-table {
+    min-width: 1150px;
+  }
+
+  /* Even more compact table cells */
+  .spreadsheet-table th {
+    padding: 0.35rem 0.25rem;
+    font-size: 0.65rem;
+  }
+
+  .spreadsheet-table td {
+    padding: 0.3rem 0.25rem;
+    font-size: 0.65rem;
+  }
+
+  /* Smaller action buttons */
+  .action-btn {
+    padding: 0.35rem 0.4rem;
+    font-size: 0.75rem;
+    min-width: 30px;
+    min-height: 30px;
+  }
+
+  .action-buttons {
+    flex-direction: row;
+    gap: 0.2rem;
+  }
+
+  /* Batch action bar even more compact */
+  .batch-action-bar {
+    padding: 0.5rem 0.75rem;
+    gap: 0.4rem;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .selected-count {
+    text-align: center;
+    font-size: 0.8rem;
+  }
+
+  .batch-buttons {
+    justify-content: center;
+  }
+
+  .batch-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* Search sort controls */  
+  .carry-forward-btn,
+  .manage-categories-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  /* Category tags wrap better on mobile */
+  .category-tags {
+    flex-wrap: wrap;
+    gap: 0.15rem;
+  }
+
+  .category-badge {
+    font-size: 0.6rem;
+    padding: 0.15rem 0.35rem;
+  }
+
+  /* Row number and project name cells */
+  .row-number-cell,
+  .project-name-cell {
+    font-size: 0.7rem;
+  }
+}
+
+/* Very small screens - 360px and below */
+@media (max-width: 360px) {
+  .spreadsheet-table {
+    min-width: 700px;
+  }
+
+  .app-header h1 {
+    font-size: 0.85rem;
+  }
+
+  .tab-btn {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .batch-action-bar {
+    bottom: 5px;
+    left: 5px;
+    right: 5px;
+    padding: 0.4rem 0.5rem;
+  }
+}
+
+/* Modal improvements for mobile */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-start;
+  }
+
+  .modal-content {
+    margin: 0;
+    max-width: 100%;
+    min-height: 100vh;
+    border-radius: 0;
+  }
+
+  .modal-header {
+    border-radius: 0;
+    padding: 0.75rem 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .modal-body {
+    padding: 1rem;
+    padding-bottom: 100px; /* Space for form actions */
+  }
+
+  .form-actions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 1rem;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .form-actions .btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  /* Multi-select dropdowns on mobile */
+  .multi-select-dropdown {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .category-option {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .category-option:last-child {
+    border-bottom: none;
+  }
+
+  .category-option input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
   }
 }

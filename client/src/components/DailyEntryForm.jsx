@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { dailiesApi } from '../api/dailies';
 import { categoriesApi } from '../api/categories';
 import { caseTypesApi } from '../api/caseTypes';
+import { picMembersApi } from '../api/picMembers';
 import FileUpload from './FileUpload';
 
 export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user }) {
@@ -24,11 +25,14 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user
     const clientNameRef = useRef(null);
     const categoryDropdownRef = useRef(null);
     const caseTypeDropdownRef = useRef(null);
+    const picDropdownRef = useRef(null);
 
     const [categories, setCategories] = useState([]);
     const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
     const [caseTypes, setCaseTypes] = useState([]);
     const [showCaseTypeDropdown, setShowCaseTypeDropdown] = useState(false);
+    const [picMembers, setPicMembers] = useState([]);
+    const [showPicDropdown, setShowPicDropdown] = useState(false);
 
     useEffect(() => {
         if (editData) {
@@ -108,6 +112,21 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user
         }
     }, [isOpen]);
 
+    // Fetch PIC members on mount
+    useEffect(() => {
+        const fetchPicMembers = async () => {
+            try {
+                const data = await picMembersApi.getAll();
+                setPicMembers(data);
+            } catch (error) {
+                console.error('Error fetching PIC members:', error);
+            }
+        };
+        if (isOpen) {
+            fetchPicMembers();
+        }
+    }, [isOpen]);
+
     // Handle clicks outside category dropdown
     useEffect(() => {
         const handleClickOutsideCategory = (event) => {
@@ -128,6 +147,17 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user
         };
         document.addEventListener('mousedown', handleClickOutsideCaseType);
         return () => document.removeEventListener('mousedown', handleClickOutsideCaseType);
+    }, []);
+
+    // Handle clicks outside PIC dropdown
+    useEffect(() => {
+        const handleClickOutsidePic = (event) => {
+            if (picDropdownRef.current && !picDropdownRef.current.contains(event.target)) {
+                setShowPicDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutsidePic);
+        return () => document.removeEventListener('mousedown', handleClickOutsidePic);
     }, []);
 
     const handleClientNameChange = async (e) => {
@@ -194,28 +224,21 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user
         }));
     };
 
-    const handleTagKeyDown = (e) => {
-        if (e.key === 'Enter' || e.key === ',') {
-            e.preventDefault();
-            addTag();
-        }
+    const togglePicMember = (memberName) => {
+        setFormData(prev => {
+            const picTeam = prev.picTeam || [];
+            if (picTeam.includes(memberName)) {
+                return { ...prev, picTeam: picTeam.filter(m => m !== memberName) };
+            } else {
+                return { ...prev, picTeam: [...picTeam, memberName] };
+            }
+        });
     };
 
-    const addTag = () => {
-        const tag = tagInput.trim();
-        if (tag && !formData.picTeam.includes(tag)) {
-            setFormData(prev => ({
-                ...prev,
-                picTeam: [...prev.picTeam, tag]
-            }));
-        }
-        setTagInput('');
-    };
-
-    const removeTag = (tagToRemove) => {
+    const removePicMember = (memberName) => {
         setFormData(prev => ({
             ...prev,
-            picTeam: prev.picTeam.filter(tag => tag !== tagToRemove)
+            picTeam: (prev.picTeam || []).filter(m => m !== memberName)
         }));
     };
 
@@ -418,27 +441,54 @@ export default function DailyEntryForm({ isOpen, onClose, onSave, editData, user
                                 />
                             </div>
 
-                            {/* PIC Team */}
-                            <div className="form-group">
-                                <label>PIC Team (Press Enter to add)</label>
-                                <div className="tag-input-wrapper">
-                                    {formData.picTeam.map((tag, index) => (
-                                        <div key={index} className="tag-item">
-                                            {tag}
-                                            <button type="button" className="tag-remove" onClick={() => removeTag(tag)}>
-                                                &times;
-                                            </button>
+                            {/* PIC Team (Multi-select) */}
+                            <div className="form-group" ref={picDropdownRef}>
+                                <label>PIC Team</label>
+                                <div className="multi-select-wrapper">
+                                    <div
+                                        className="multi-select-trigger"
+                                        onClick={() => setShowPicDropdown(!showPicDropdown)}
+                                    >
+                                        {formData.picTeam && formData.picTeam.length > 0 ? (
+                                            <div className="selected-categories">
+                                                {formData.picTeam.map((member, idx) => (
+                                                    <span key={idx} className="category-tag">
+                                                        {member}
+                                                        <button
+                                                            type="button"
+                                                            className="category-tag-remove"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                removePicMember(member);
+                                                            }}
+                                                        >
+                                                            &times;
+                                                        </button>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <span className="placeholder">Select PIC members...</span>
+                                        )}
+                                        <span className="dropdown-arrow">▼</span>
+                                    </div>
+                                    {showPicDropdown && (
+                                        <div className="multi-select-dropdown">
+                                            {picMembers.map((member) => (
+                                                <label key={member._id} className="category-option">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={(formData.picTeam || []).includes(member.name)}
+                                                        onChange={() => togglePicMember(member.name)}
+                                                    />
+                                                    <span>{member.name}</span>
+                                                </label>
+                                            ))}
+                                            {picMembers.length === 0 && (
+                                                <div className="no-categories">No PIC members available</div>
+                                            )}
                                         </div>
-                                    ))}
-                                    <input
-                                        type="text"
-                                        className="tag-input"
-                                        value={tagInput}
-                                        onChange={(e) => setTagInput(e.target.value)}
-                                        onKeyDown={handleTagKeyDown}
-                                        onBlur={addTag}
-                                        placeholder={formData.picTeam.length === 0 ? "Add team member..." : ""}
-                                    />
+                                    )}
                                 </div>
                             </div>
 
