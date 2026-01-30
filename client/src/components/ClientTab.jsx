@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { clientsApi } from '../api/clients';
+import { dailiesApi } from '../api/dailies';
 import './ClientTab.css';
 
 function ClientTab({ user, selectedClientName, onClientSelect }) {
@@ -11,6 +12,16 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [activeSubTab, setActiveSubTab] = useState('daily');
     const [error, setError] = useState(null);
+    
+    // Modal state for adding new entry
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [newEntry, setNewEntry] = useState({
+        date: new Date().toISOString().split('T')[0],
+        picTeam: [],
+        description: '',
+        attachment: null
+    });
+    const [submitting, setSubmitting] = useState(false);
 
     // Fetch all clients
     const fetchClients = useCallback(async () => {
@@ -64,6 +75,58 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
         if (onClientSelect) {
             onClientSelect(client.clientName);
         }
+    };
+
+    // Handle add new entry
+    const handleAddEntry = async (e) => {
+        e.preventDefault();
+        if (!selectedClient) return;
+        
+        setSubmitting(true);
+        try {
+            const entryData = {
+                clientName: selectedClient.clientName,
+                date: newEntry.date,
+                picTeam: newEntry.picTeam,
+                detailAction: newEntry.description,
+                services: [],
+                caseIssue: [],
+                action: '',
+                status: 'Progress'
+            };
+            
+            await dailiesApi.create(entryData);
+            
+            // TODO: Handle file upload if attachment exists
+            // if (newEntry.attachment) {
+            //     await dailiesApi.uploadAttachment(result._id, newEntry.attachment);
+            // }
+            
+            // Refresh client detail
+            fetchClientDetail(selectedClient.clientName);
+            
+            // Close modal and reset form
+            setShowAddModal(false);
+            setNewEntry({
+                date: new Date().toISOString().split('T')[0],
+                picTeam: [],
+                description: '',
+                attachment: null
+            });
+        } catch (err) {
+            console.error('Add entry error:', err);
+            alert('Failed to add entry: ' + (err.response?.data?.message || err.message));
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    // Handle PIC input (comma separated)
+    const handlePicChange = (e) => {
+        const value = e.target.value;
+        // Convert comma-separated string to array
+        const picArray = value.split(',').map(p => p.trim()).filter(p => p);
+        setNewEntry(prev => ({ ...prev, picTeam: picArray, picInput: value }));
     };
 
     // Filter clients by search
@@ -336,6 +399,15 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
                                                     </tr>
                                                 ))
                                             )}
+                                            {/* Add Entry Row */}
+                                            <tr 
+                                                className="add-entry-row"
+                                                onClick={() => setShowAddModal(true)}
+                                            >
+                                                <td colSpan="5">
+                                                    <span className="add-entry-inline">➕ Add New Entry</span>
+                                                </td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 ) : (
@@ -407,6 +479,80 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
                     </div>
                 )}
             </div>
+
+            {/* Add Entry Modal */}
+            {showAddModal && (
+                <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+                    <div className="add-entry-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>➕ Add Entry for {selectedClient?.clientName}</h3>
+                            <button className="modal-close" onClick={() => setShowAddModal(false)}>✕</button>
+                        </div>
+                        <form onSubmit={handleAddEntry}>
+                            <div className="modal-body">
+                                <div className="form-group">
+                                    <label>📅 Date</label>
+                                    <input
+                                        type="date"
+                                        value={newEntry.date}
+                                        onChange={(e) => setNewEntry(prev => ({ ...prev, date: e.target.value }))}
+                                        required
+                                    />
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>👤 PIC</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter names (comma separated)"
+                                        value={newEntry.picInput || ''}
+                                        onChange={handlePicChange}
+                                    />
+                                    {newEntry.picTeam.length > 0 && (
+                                        <div className="pic-preview">
+                                            {newEntry.picTeam.map((pic, idx) => (
+                                                <span key={idx} className="pic-chip">{pic}</span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>📝 Description</label>
+                                    <textarea
+                                        placeholder="Describe the activity..."
+                                        value={newEntry.description}
+                                        onChange={(e) => setNewEntry(prev => ({ ...prev, description: e.target.value }))}
+                                        rows={3}
+                                    />
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>📎 Attachment</label>
+                                    <input
+                                        type="file"
+                                        onChange={(e) => setNewEntry(prev => ({ ...prev, attachment: e.target.files[0] }))}
+                                    />
+                                    {newEntry.attachment && (
+                                        <div className="file-preview">
+                                            📄 {newEntry.attachment.name}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-cancel" onClick={() => setShowAddModal(false)}>
+                                    Cancel
+                                </button>
+                                <button type="submit" className="btn btn-submit" disabled={submitting}>
+                                    {submitting ? 'Adding...' : 'Add Entry'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

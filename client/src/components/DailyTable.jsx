@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import AttachmentViewer from './AttachmentViewer';
 
-export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = [], onSelectionChange, onBatchStatusUpdate }) {
+export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = [], onSelectionChange, onBatchStatusUpdate, onAddEntry }) {
     // Group by client name for display
     const groupedDailies = useMemo(() => {
         const groups = {};
@@ -166,13 +166,16 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
                                     </td>
                                 )}
 
-                                {/* Client Name - merged for same clients */}
+                                {/* Client Name - merged for same clients, clickable to add entry */}
                                 {entryIndex === 0 && (
                                     <td
-                                        className={`project-name-cell ${clientEntries.length > 1 ? 'merged' : ''}`}
+                                        className={`project-name-cell ${clientEntries.length > 1 ? 'merged' : ''} clickable-client`}
                                         rowSpan={clientEntries.length}
+                                        onClick={() => onAddEntry && onAddEntry(clientName)}
+                                        title="Click to add new entry for this client"
                                     >
                                         {clientName}
+                                        <span className="add-entry-hint">+</span>
                                     </td>
                                 )}
 

@@ -3,6 +3,7 @@ import SpreadsheetTable from './components/SpreadsheetTable';
 import DailyTable from './components/DailyTable';
 import EntryForm from './components/EntryForm';
 import DailyEntryForm from './components/DailyEntryForm';
+import QuickAddModal from './components/QuickAddModal';
 import LoginForm from './components/LoginForm';
 import ActivityLog from './components/ActivityLog';
 import UserManagement from './components/UserManagement';
@@ -17,6 +18,7 @@ import PWAInstallPrompt from './components/PWAInstallPrompt';
 import { useToast } from './components/ToastProvider';
 import { projectsApi } from './api/projects';
 import { dailiesApi } from './api/dailies';
+
 
 function App() {
     const [user, setUser] = useState(null);
@@ -36,6 +38,11 @@ function App() {
     const [isPicMemberMgmtOpen, setIsPicMemberMgmtOpen] = useState(false);
     const [editData, setEditData] = useState(null);
     const [error, setError] = useState(null);
+
+    // Quick Add Modal state
+    const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+    const [quickAddName, setQuickAddName] = useState('');
+    const [quickAddType, setQuickAddType] = useState('daily');
 
     // Selection state for batch operations
     const [selectedProjectIds, setSelectedProjectIds] = useState([]);
@@ -339,6 +346,31 @@ function App() {
         setActiveTab('client');
     };
 
+    // Handle add entry from client name click in table
+    const handleAddEntryForClient = (clientName) => {
+        setQuickAddName(clientName);
+        setQuickAddType('daily');
+        setIsQuickAddOpen(true);
+    };
+
+    // Handle add entry from project name click in table
+    const handleAddEntryForProject = (projectName) => {
+        setQuickAddName(projectName);
+        setQuickAddType('project');
+        setIsQuickAddOpen(true);
+    };
+
+    // Handle quick add save
+    const handleQuickAddSave = async (formData) => {
+        if (quickAddType === 'daily') {
+            await dailiesApi.create(formData);
+        } else {
+            await projectsApi.create(formData);
+        }
+        await fetchData();
+        toast.success('Entry added successfully!');
+    };
+
     // Filter and sort data
     const filteredProjects = useMemo(() => {
         let result = [...projects];
@@ -586,6 +618,7 @@ function App() {
                         selectedIds={selectedProjectIds}
                         onSelectionChange={setSelectedProjectIds}
                         onBatchStatusUpdate={handleBatchStatusUpdate}
+                        onAddEntry={handleAddEntryForProject}
                     />
                 ) : (
                     <DailyTable
@@ -595,6 +628,7 @@ function App() {
                         selectedIds={selectedDailyIds}
                         onSelectionChange={setSelectedDailyIds}
                         onBatchStatusUpdate={handleDailyBatchStatusUpdate}
+                        onAddEntry={handleAddEntryForClient}
                     />
                 )}
             </main>
@@ -679,6 +713,15 @@ function App() {
                     onClose={() => setIsPicMemberMgmtOpen(false)}
                 />
             )}
+
+            {/* Quick Add Modal for table name clicks */}
+            <QuickAddModal
+                isOpen={isQuickAddOpen}
+                onClose={() => setIsQuickAddOpen(false)}
+                onSave={handleQuickAddSave}
+                entryName={quickAddName}
+                entryType={quickAddType}
+            />
 
             {/* PWA Install Prompt */}
             <PWAInstallPrompt />

@@ -72,7 +72,7 @@ router.get('/quarters', async (req, res) => {
     }
 });
 
-// Get report data (quarterly or yearly)
+// Get report data (quarterly or yearly) with analytics
 router.get('/report', async (req, res) => {
     try {
         const { quarter, year, yearly } = req.query;
@@ -96,6 +96,64 @@ router.get('/report', async (req, res) => {
             noStatus: projects.filter(p => !p.status || p.status === '').length
         };
 
+        // Calculate percentages
+        summary.donePercent = summary.total > 0 ? Math.round((summary.done / summary.total) * 100) : 0;
+        summary.progressPercent = summary.total > 0 ? Math.round((summary.progress / summary.total) * 100) : 0;
+        summary.holdPercent = summary.total > 0 ? Math.round((summary.hold / summary.total) * 100) : 0;
+
+        // Service breakdown
+        const serviceStats = {};
+        projects.forEach(p => {
+            const services = Array.isArray(p.services) ? p.services : (p.services ? [p.services] : []);
+            services.forEach(service => {
+                if (service && service.trim()) {
+                    const svc = service.trim();
+                    if (!serviceStats[svc]) {
+                        serviceStats[svc] = { total: 0, done: 0, progress: 0, hold: 0 };
+                    }
+                    serviceStats[svc].total++;
+                    if (p.status === 'Done') serviceStats[svc].done++;
+                    else if (p.status === 'Progress') serviceStats[svc].progress++;
+                    else if (p.status === 'Hold') serviceStats[svc].hold++;
+                }
+            });
+        });
+
+        // PIC Team stats
+        const picStats = {};
+        projects.forEach(p => {
+            const picTeam = Array.isArray(p.picTeam) ? p.picTeam : (p.picTeam ? [p.picTeam] : []);
+            picTeam.forEach(pic => {
+                if (pic && pic.trim()) {
+                    const picName = pic.trim();
+                    if (!picStats[picName]) {
+                        picStats[picName] = { total: 0, done: 0, progress: 0, hold: 0 };
+                    }
+                    picStats[picName].total++;
+                    if (p.status === 'Done') picStats[picName].done++;
+                    else if (p.status === 'Progress') picStats[picName].progress++;
+                    else if (p.status === 'Hold') picStats[picName].hold++;
+                }
+            });
+        });
+
+        // Quarterly breakdown (for yearly reports)
+        let quarterlyTrend = [];
+        if (yearly === 'true' && year) {
+            const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+            for (const q of quarters) {
+                const qName = `${q}-${year}`;
+                const qProjects = projects.filter(p => p.quarter === qName);
+                quarterlyTrend.push({
+                    quarter: q,
+                    total: qProjects.length,
+                    done: qProjects.filter(p => p.status === 'Done').length,
+                    progress: qProjects.filter(p => p.status === 'Progress').length,
+                    hold: qProjects.filter(p => p.status === 'Hold').length
+                });
+            }
+        }
+
         // Group by project name for cleaner report
         const grouped = {};
         projects.forEach(p => {
@@ -110,6 +168,9 @@ router.get('/report', async (req, res) => {
             period: yearly === 'true' ? year : quarter,
             year: parseInt(year),
             summary,
+            serviceStats,
+            picStats,
+            quarterlyTrend,
             projects,
             grouped
         });

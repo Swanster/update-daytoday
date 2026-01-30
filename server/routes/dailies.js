@@ -72,7 +72,7 @@ router.get('/quarters', async (req, res) => {
     }
 });
 
-// Get report data (quarterly or yearly)
+// Get report data (quarterly or yearly) with analytics
 router.get('/report', async (req, res) => {
     try {
         const { quarter, year, yearly } = req.query;
@@ -96,6 +96,73 @@ router.get('/report', async (req, res) => {
             noStatus: dailies.filter(d => !d.status || d.status === '').length
         };
 
+        // Calculate percentages
+        summary.donePercent = summary.total > 0 ? Math.round((summary.done / summary.total) * 100) : 0;
+        summary.progressPercent = summary.total > 0 ? Math.round((summary.progress / summary.total) * 100) : 0;
+        summary.holdPercent = summary.total > 0 ? Math.round((summary.hold / summary.total) * 100) : 0;
+
+        // Service breakdown
+        const serviceStats = {};
+        dailies.forEach(d => {
+            const services = Array.isArray(d.services) ? d.services : (d.services ? [d.services] : []);
+            services.forEach(service => {
+                if (service && service.trim()) {
+                    const svc = service.trim();
+                    if (!serviceStats[svc]) {
+                        serviceStats[svc] = { total: 0, done: 0, progress: 0, hold: 0 };
+                    }
+                    serviceStats[svc].total++;
+                    if (d.status === 'Done') serviceStats[svc].done++;
+                    else if (d.status === 'Progress') serviceStats[svc].progress++;
+                    else if (d.status === 'Hold') serviceStats[svc].hold++;
+                }
+            });
+        });
+
+        // Action type breakdown (Onsite/Remote)
+        const actionStats = {
+            onsite: dailies.filter(d => d.action?.toLowerCase() === 'onsite').length,
+            remote: dailies.filter(d => d.action?.toLowerCase() === 'remote').length,
+            other: dailies.filter(d => d.action && !['onsite', 'remote'].includes(d.action.toLowerCase())).length
+        };
+
+        // PIC Team stats
+        const picStats = {};
+        dailies.forEach(d => {
+            const picTeam = Array.isArray(d.picTeam) ? d.picTeam : (d.picTeam ? [d.picTeam] : []);
+            picTeam.forEach(pic => {
+                if (pic && pic.trim()) {
+                    const picName = pic.trim();
+                    if (!picStats[picName]) {
+                        picStats[picName] = { total: 0, done: 0, progress: 0, hold: 0, onsite: 0, remote: 0 };
+                    }
+                    picStats[picName].total++;
+                    if (d.status === 'Done') picStats[picName].done++;
+                    else if (d.status === 'Progress') picStats[picName].progress++;
+                    else if (d.status === 'Hold') picStats[picName].hold++;
+                    if (d.action?.toLowerCase() === 'onsite') picStats[picName].onsite++;
+                    if (d.action?.toLowerCase() === 'remote') picStats[picName].remote++;
+                }
+            });
+        });
+
+        // Quarterly breakdown (for yearly reports)
+        let quarterlyTrend = [];
+        if (yearly === 'true' && year) {
+            const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+            for (const q of quarters) {
+                const qName = `${q}-${year}`;
+                const qDailies = dailies.filter(d => d.quarter === qName);
+                quarterlyTrend.push({
+                    quarter: q,
+                    total: qDailies.length,
+                    done: qDailies.filter(d => d.status === 'Done').length,
+                    progress: qDailies.filter(d => d.status === 'Progress').length,
+                    hold: qDailies.filter(d => d.status === 'Hold').length
+                });
+            }
+        }
+
         // Group by client name for cleaner report
         const grouped = {};
         dailies.forEach(d => {
@@ -110,6 +177,10 @@ router.get('/report', async (req, res) => {
             period: yearly === 'true' ? year : quarter,
             year: parseInt(year),
             summary,
+            serviceStats,
+            actionStats,
+            picStats,
+            quarterlyTrend,
             dailies,
             grouped
         });

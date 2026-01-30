@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import AttachmentViewer from './AttachmentViewer';
 
-export default function SpreadsheetTable({ projects, onEdit, onDelete, selectedIds = [], onSelectionChange, onBatchStatusUpdate }) {
+export default function SpreadsheetTable({ projects, onEdit, onDelete, selectedIds = [], onSelectionChange, onBatchStatusUpdate, onAddEntry }) {
     // Group projects by name for merged cell display
     const groupedProjects = useMemo(() => {
         const groups = {};
@@ -165,13 +165,16 @@ export default function SpreadsheetTable({ projects, onEdit, onDelete, selectedI
                                     </td>
                                 )}
 
-                                {/* Project Name - merged for same projects */}
+                                {/* Project Name - merged for same projects, clickable to add entry */}
                                 {entryIndex === 0 && (
                                     <td
-                                        className={`project-name-cell ${projectEntries.length > 1 ? 'merged' : ''}`}
+                                        className={`project-name-cell ${projectEntries.length > 1 ? 'merged' : ''} clickable-client`}
                                         rowSpan={projectEntries.length}
+                                        onClick={() => onAddEntry && onAddEntry(projectName)}
+                                        title="Click to add new entry for this project"
                                     >
                                         {projectName}
+                                        <span className="add-entry-hint">+</span>
                                     </td>
                                 )}
 
