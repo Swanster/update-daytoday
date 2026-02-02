@@ -69,20 +69,44 @@ router.get('/stats', auth, adminOrSuperuser, async (req, res) => {
     }
 });
 
-// GET /api/dashboard/overdue - Get projects in progress (renamed from overdue)
+// GET /api/dashboard/overdue - Get projects in progress (grouped by project name)
 router.get('/overdue', auth, adminOrSuperuser, async (req, res) => {
     try {
-        // Get projects in progress
-        const progressProjects = await Project.find({
-            status: 'Progress'
-        })
-            .sort({ dueDate: 1, createdAt: -1 })
-            .limit(30)
-            .lean();
+        const now = new Date();
+        
+        // Aggregate projects in progress, grouped by projectName
+        // Shows only one entry per client/project with latest status
+        const groupedProjects = await Project.aggregate([
+            // Match only projects in progress
+            { $match: { status: 'Progress' } },
+            // Sort by updatedAt descending to get latest first
+            { $sort: { updatedAt: -1 } },
+            // Group by projectName, keeping the latest entry's data
+            {
+                $group: {
+                    _id: '$projectName',
+                    latestId: { $first: '$_id' },
+                    projectName: { $first: '$projectName' },
+                    dueDate: { $first: '$dueDate' },
+                    services: { $first: '$services' },
+                    material: { $first: '$material' },
+                    wo: { $first: '$wo' },
+                    progress: { $first: '$progress' },
+                    status: { $first: '$status' },
+                    updatedAt: { $first: '$updatedAt' },
+                    createdAt: { $first: '$createdAt' },
+                    // Count total entries for this project name
+                    entryCount: { $sum: 1 }
+                }
+            },
+            // Sort by due date (nulls last), then by createdAt
+            { $sort: { dueDate: 1, createdAt: -1 } },
+            // Limit results
+            { $limit: 30 }
+        ]);
 
         // Calculate days until due (or days overdue if past due)
-        const now = new Date();
-        const projectsWithDays = progressProjects.map(p => {
+        const projectsWithDays = groupedProjects.map(p => {
             let daysInfo = null;
             let isOverdue = false;
             
@@ -99,14 +123,17 @@ router.get('/overdue', auth, adminOrSuperuser, async (req, res) => {
             }
             
             return {
-                ...p,
+                _id: p.latestId,
                 type: 'project',
                 name: p.projectName,
                 services: p.services || [],
                 material: p.material || '',
                 wo: p.wo || '',
+                progress: p.progress || '',
+                dueDate: p.dueDate,
                 daysUntilDue: daysInfo,
-                isOverdue: isOverdue
+                isOverdue: isOverdue,
+                entryCount: p.entryCount
             };
         });
 

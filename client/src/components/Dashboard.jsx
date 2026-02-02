@@ -235,7 +235,7 @@ function Dashboard({ user, onClientClick }) {
                 <div className="dashboard-section progress-section">
                     <div className="section-header progress-header">
                         <h3>🚀 Progress Projects</h3>
-                        <span className="section-count">{overdue.length} projects</span>
+                        <span className="section-count">{overdue.length} {overdue.length === 1 ? 'client' : 'clients'}</span>
                     </div>
                     {overdue.length === 0 ? (
                         <div className="empty-section">
