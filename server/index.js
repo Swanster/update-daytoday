@@ -14,6 +14,7 @@ const caseTypeRoutes = require('./routes/caseTypes');
 const picMemberRoutes = require('./routes/picMembers');
 const dashboardRoutes = require('./routes/dashboard');
 const clientRoutes = require('./routes/clients');
+const workOrderRoutes = require('./routes/workOrders');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -45,6 +46,7 @@ app.use('/api/case-types', caseTypeRoutes);
 app.use('/api/pic-members', picMemberRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/clients', clientRoutes);
+app.use('/api/work-orders', workOrderRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

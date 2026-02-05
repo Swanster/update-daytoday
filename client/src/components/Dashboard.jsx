@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { dashboardApi } from '../api/dashboard';
-import './Dashboard.css';
+// import './Dashboard.css'; // Removed custom CSS
 
 const REFRESH_INTERVAL = 30000; // 30 seconds
 
@@ -158,223 +158,223 @@ function Dashboard({ user, onClientClick }) {
     }
 
     return (
-        <div className="dashboard">
+        <div className="flex flex-col gap-6">
             {/* Dashboard Header */}
-            <div className="dashboard-header">
-                <h2>📊 Dashboard Overview</h2>
-                <div className="dashboard-meta">
+            <div className="flex justify-between items-end border-b border-gray-200/50 pb-4">
+                <div>
+                    <h2 className="text-2xl font-bold text-primary-dark">📊 Dashboard Overview</h2>
+                    <p className="text-gray-500 text-sm mt-1">Real-time project insights</p>
+                </div>
+                <div className="text-right hidden sm:block">
                     {lastUpdated && (
-                        <span className="last-updated">
+                        <div className="text-xs text-gray-500 font-medium">
                             🔄 Last updated: {formatTime(lastUpdated)}
-                        </span>
+                        </div>
                     )}
-                    <span className="auto-refresh-indicator">
+                    <div className="text-[10px] text-gray-400 mt-0.5">
                         Auto-refresh: 30s
-                    </span>
+                    </div>
                 </div>
             </div>
 
             {/* Stats Cards */}
-            <div className="stats-grid">
-                <div className="stat-card active-projects">
-                    <div className="stat-icon">📁</div>
-                    <div className="stat-content">
-                        <div className="stat-value">{stats?.activeProjects || 0}</div>
-                        <div className="stat-label">Active Projects</div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <div className="bg-white rounded-xl p-4 md:p-6 shadow-custom hover:translate-y-[-2px] transition-transform border-l-4 border-blue-500 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform text-6xl">📁</div>
+                    <div className="relative z-10">
+                        <div className="text-3xl md:text-4xl font-bold text-gray-800 mb-1">{stats?.activeProjects || 0}</div>
+                        <div className="text-sm text-gray-500 font-medium uppercase tracking-wide">Active Projects</div>
                     </div>
                 </div>
 
-                <div className="stat-card completed">
-                    <div className="stat-icon">✅</div>
-                    <div className="stat-content">
-                        <div className="stat-value">{stats?.completedThisQuarter || 0}</div>
-                        <div className="stat-label">Completed ({stats?.currentQuarter})</div>
+                <div className="bg-white rounded-xl p-4 md:p-6 shadow-custom hover:translate-y-[-2px] transition-transform border-l-4 border-green-500 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform text-6xl">✅</div>
+                    <div className="relative z-10">
+                        <div className="text-3xl md:text-4xl font-bold text-gray-800 mb-1">{stats?.completedThisQuarter || 0}</div>
+                        <div className="text-sm text-gray-500 font-medium uppercase tracking-wide">Completed ({stats?.currentQuarter})</div>
                     </div>
                 </div>
 
-                <div className="stat-card daily">
-                    <div className="stat-icon">📅</div>
-                    <div className="stat-content">
-                        <div className="stat-value">{stats?.dailiesThisMonth || 0}</div>
-                        <div className="stat-label">Daily This Month</div>
+                <div className="bg-white rounded-xl p-4 md:p-6 shadow-custom hover:translate-y-[-2px] transition-transform border-l-4 border-accent-coral relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform text-6xl">📅</div>
+                    <div className="relative z-10">
+                        <div className="text-3xl md:text-4xl font-bold text-gray-800 mb-1">{stats?.dailiesThisMonth || 0}</div>
+                        <div className="text-sm text-gray-500 font-medium uppercase tracking-wide">Daily This Month</div>
                     </div>
                 </div>
 
-                <div className="stat-card on-hold">
-                    <div className="stat-icon">⏸️</div>
-                    <div className="stat-content">
-                        <div className="stat-value">{stats?.onHold || 0}</div>
-                        <div className="stat-label">On Hold</div>
+                <div className="bg-white rounded-xl p-4 md:p-6 shadow-custom hover:translate-y-[-2px] transition-transform border-l-4 border-orange-400 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform text-6xl">⏸️</div>
+                    <div className="relative z-10">
+                        <div className="text-3xl md:text-4xl font-bold text-gray-800 mb-1">{stats?.onHold || 0}</div>
+                        <div className="text-sm text-gray-500 font-medium uppercase tracking-wide">On Hold</div>
                     </div>
                 </div>
 
-                <div className={`stat-card overdue ${(stats?.overdueTotal || 0) > 0 ? 'has-overdue' : ''}`}>
-                    <div className="stat-icon">⚠️</div>
-                    <div className="stat-content">
-                        <div className="stat-value">{stats?.overdueTotal || 0}</div>
-                        <div className="stat-label">Overdue Items</div>
-                    </div>
-                </div>
-
-                {stats?.pendingUsers > 0 && (
-                    <div className="stat-card pending-users">
-                        <div className="stat-icon">👥</div>
-                        <div className="stat-content">
-                            <div className="stat-value">{stats.pendingUsers}</div>
-                            <div className="stat-label">Pending Approvals</div>
+                {/* Overdue Alert - Full Width on Mobile if present */}
+                {(stats?.overdueTotal || 0) > 0 && (
+                     <div className="col-span-2 lg:col-span-4 bg-red-50 rounded-xl p-4 border border-red-100 flex items-center justify-between shadow-sm animate-pulse-slow">
+                        <div className="flex items-center gap-3">
+                            <span className="text-2xl">⚠️</span>
+                            <div>
+                                <span className="text-lg font-bold text-red-700">{stats?.overdueTotal} Overdue Items</span>
+                                <p className="text-xs text-red-600">Action required immediately</p>
+                            </div>
                         </div>
+                        <button className="bg-white text-red-600 px-3 py-1 rounded-lg text-xs font-bold border border-red-200 shadow-sm">
+                            View All
+                        </button>
                     </div>
                 )}
             </div>
 
             {/* Main Content Grid */}
-            <div className="dashboard-content">
-            {/* Split Row: Progress Projects & Activity */}
-            <div className="dashboard-split-row">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                 {/* Progress Projects Section */}
-                <div className="dashboard-section progress-section">
-                    <div className="section-header progress-header">
-                        <h3>🚀 Progress Projects</h3>
-                        <span className="section-count">{overdue.length} {overdue.length === 1 ? 'client' : 'clients'}</span>
+                <div className="xl:col-span-2 flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-bold text-primary-dark flex items-center gap-2">
+                            🚀 Progress Projects
+                            <span className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">{overdue.length}</span>
+                        </h3>
                     </div>
-                    {overdue.length === 0 ? (
-                        <div className="empty-section">
-                            <span className="empty-icon">📋</span>
-                            <p>No projects in progress.</p>
-                        </div>
-                    ) : (
-                        <div className="overdue-table-container">
-                            <table className="overdue-table progress-table">
-                                <thead>
-                                    <tr>
-                                        <th>Project Name</th>
-                                        <th>Due Date</th>
-                                        <th>Timeline</th>
-                                        <th>Service</th>
-                                        <th>Material</th>
-                                        <th>Vendor</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {overdue.map((item) => (
-                                        <tr key={item._id} className={item.isOverdue ? 'urgency-critical' : ''}>
-                                            <td className="item-name">{item.name}</td>
-                                            <td>{formatDate(item.dueDate)}</td>
-                                            <td>
-                                                {item.daysUntilDue !== null ? (
-                                                    <span className={`days-badge ${item.isOverdue ? 'critical' : 'on-track'}`}>
-                                                        {item.isOverdue 
-                                                            ? `⚠️ ${item.daysUntilDue}d overdue`
-                                                            : `📅 ${item.daysUntilDue}d left`
-                                                        }
-                                                    </span>
-                                                ) : (
-                                                    <span className="days-badge no-date">-</span>
-                                                )}
-                                            </td>
-                                            <td>
-                                                <div className="service-tags">
-                                                    {Array.isArray(item.services) && item.services.slice(0, 2).map((svc, idx) => (
-                                                        <span key={idx} className="service-tag">{svc}</span>
-                                                    ))}
-                                                    {Array.isArray(item.services) && item.services.length > 2 && (
-                                                        <span className="service-tag more">+{item.services.length - 2}</span>
-                                                    )}
-                                                    {(!Array.isArray(item.services) || item.services.length === 0) && '-'}
-                                                </div>
-                                            </td>
-                                            <td>
-                                                {item.material === 'Done Installation' ? (
-                                                    <span className="status-done">✓ Done</span>
-                                                ) : (
-                                                    <button
-                                                        className="btn btn-field-done"
-                                                        onClick={() => handleUpdateField(item._id, 'material', 'Done Installation')}
-                                                        disabled={updatingField === `${item._id}-material`}
-                                                    >
-                                                        {updatingField === `${item._id}-material` ? '⏳' : '✓ Done'}
-                                                    </button>
-                                                )}
-                                            </td>
-                                            <td>
-                                                {item.wo === 'Done' ? (
-                                                    <span className="status-done">✓ Done</span>
-                                                ) : (
-                                                    <button
-                                                        className="btn btn-field-done"
-                                                        onClick={() => handleUpdateField(item._id, 'wo', 'Done')}
-                                                        disabled={updatingField === `${item._id}-wo`}
-                                                    >
-                                                        {updatingField === `${item._id}-wo` ? '⏳' : '✓ Done'}
-                                                    </button>
-                                                )}
-                                            </td>
-                                            <td>
-                                                <button
-                                                    className="btn btn-mark-done"
-                                                    onClick={() => handleMarkDone(item._id, item.type)}
-                                                    disabled={markingDone === item._id}
-                                                >
-                                                    {markingDone === item._id ? '⏳' : '✓ Done'}
-                                                </button>
-                                            </td>
+
+                    <div className="bg-white rounded-xl shadow-custom overflow-hidden border border-gray-100">
+                        {overdue.length === 0 ? (
+                            <div className="p-8 text-center text-gray-400 flex flex-col items-center">
+                                <span className="text-4xl mb-2 opacity-50">📋</span>
+                                <p>No projects in progress.</p>
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="bg-gray-50 text-gray-500 font-semibold uppercase text-xs border-b border-gray-100">
+                                        <tr>
+                                            <th className="px-4 py-3">Project Name</th>
+                                            <th className="px-4 py-3">Due Date</th>
+                                            <th className="px-4 py-3">Timeline</th>
+                                            <th className="px-4 py-3 hidden md:table-cell">Service</th>
+                                            <th className="px-4 py-3 hidden sm:table-cell">Material</th>
+                                            <th className="px-4 py-3 hidden sm:table-cell">Vendor</th>
+                                            <th className="px-4 py-3">Action</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                        {overdue.map((item) => (
+                                            <tr key={item._id} className={`hover:bg-gray-50 transition-colors ${item.isOverdue ? 'bg-red-50/30' : ''}`}>
+                                                <td className="px-4 py-3 font-medium text-gray-800">{item.name}</td>
+                                                <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{formatDate(item.dueDate)}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap">
+                                                    {item.daysUntilDue !== null ? (
+                                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${item.isOverdue ? 'bg-red-100 text-red-800 border-red-200' : 'bg-green-100 text-green-800 border-green-200'}`}>
+                                                            {item.isOverdue 
+                                                                ? `${item.daysUntilDue}d overdue`
+                                                                : `${item.daysUntilDue}d left`
+                                                            }
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-gray-400">-</span>
+                                                    )}
+                                                </td>
+                                                <td className="px-4 py-3 hidden md:table-cell">
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {Array.isArray(item.services) && item.services.slice(0, 2).map((svc, idx) => (
+                                                            <span key={idx} className="bg-blue-50 text-blue-700 border border-blue-100 px-1.5 py-0.5 rounded text-[10px]">{svc}</span>
+                                                        ))}
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3 hidden sm:table-cell">
+                                                    <button
+                                                        className={`text-xs px-2 py-1 rounded transition-colors ${item.material === 'Done Installation' ? 'bg-green-100 text-green-700 cursor-default' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                                        onClick={() => item.material !== 'Done Installation' && handleUpdateField(item._id, 'material', 'Done Installation')}
+                                                        disabled={item.material === 'Done Installation' || updatingField === `${item._id}-material`}
+                                                    >
+                                                        {updatingField === `${item._id}-material` ? '...' : item.material === 'Done Installation' ? 'Done' : 'Mark Done'}
+                                                    </button>
+                                                </td>
+                                                <td className="px-4 py-3 hidden sm:table-cell">
+                                                    <button
+                                                        className={`text-xs px-2 py-1 rounded transition-colors ${item.wo === 'Done' ? 'bg-green-100 text-green-700 cursor-default' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                                        onClick={() => item.wo !== 'Done' && handleUpdateField(item._id, 'wo', 'Done')}
+                                                        disabled={item.wo === 'Done' || updatingField === `${item._id}-wo`}
+                                                    >
+                                                        {updatingField === `${item._id}-wo` ? '...' : item.wo === 'Done' ? 'Done' : 'Mark Done'}
+                                                    </button>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <button
+                                                        className="text-white bg-green-500 hover:bg-green-600 shadow-sm px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95"
+                                                        onClick={() => handleMarkDone(item._id, item.type)}
+                                                        disabled={markingDone === item._id}
+                                                    >
+                                                        {markingDone === item._id ? '...' : '✓ Done'}
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Recent Activity Section */}
-                <div className="dashboard-section activity-section">
-                    <div className="section-header activity-header">
-                        <h3>⚡ Recent Activity</h3>
-                        <span className="section-count">{activity?.length || 0} events</span>
+                <div className="xl:col-span-1 flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-bold text-primary-dark">⚡ Recent Activity</h3>
                     </div>
-                    <div className="activity-list">
-                        {(!activity || activity.length === 0) ? (
-                            <div className="empty-section compact">
-                                <span className="empty-icon small">📝</span>
+                    
+                    <div className="bg-white rounded-xl shadow-custom p-4 max-h-[500px] overflow-y-auto border border-gray-100">
+                         {(!activity || activity.length === 0) ? (
+                            <div className="text-center text-gray-400 py-8">
                                 <p>No recent activity.</p>
                             </div>
                         ) : (
-                            activity.map((log) => (
-                                <div key={log._id} className="activity-item">
-                                    <div className={`activity-icon ${log.action.toLowerCase()}`}>
-                                        {log.action === 'CREATE' && '➕'}
-                                        {log.action === 'UPDATE' && '✏️'}
-                                        {log.action === 'DELETE' && '🗑️'}
-                                        {log.action === 'DONE' && '✅'}
-                                        {!['CREATE', 'UPDATE', 'DELETE', 'DONE'].includes(log.action) && '📋'}
-                                    </div>
-                                    <div className="activity-details">
-                                        <p className="activity-text">{log.details}</p>
-                                        <div className="activity-meta">
-                                            <span className="activity-user">👤 {log.username}</span>
-                                            <span className="activity-time">🕒 {formatTime(log.createdAt)}</span>
+                            <div className="space-y-4">
+                                {activity.map((log) => (
+                                    <div key={log._id} className="flex gap-3 items-start p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                                        <div className={`
+                                            w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs
+                                            ${log.action === 'CREATE' ? 'bg-blue-100 text-blue-600' : ''}
+                                            ${log.action === 'UPDATE' ? 'bg-orange-100 text-orange-600' : ''}
+                                            ${log.action === 'DELETE' ? 'bg-red-100 text-red-600' : ''}
+                                            ${log.action === 'DONE' ? 'bg-green-100 text-green-600' : ''}
+                                            ${!['CREATE', 'UPDATE', 'DELETE', 'DONE'].includes(log.action) ? 'bg-gray-100 text-gray-600' : ''}
+                                        `}>
+                                            {log.action === 'CREATE' && '➕'}
+                                            {log.action === 'UPDATE' && '✏️'}
+                                            {log.action === 'DELETE' && '🗑️'}
+                                            {log.action === 'DONE' && '✅'}
+                                            {!['CREATE', 'UPDATE', 'DELETE', 'DONE'].includes(log.action) && '📋'}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-gray-800 leading-snug">{log.details}</p>
+                                            <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
+                                                <span className="font-medium text-gray-500">{log.username}</span>
+                                                <span>•</span>
+                                                <span>{formatTime(log.createdAt)}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))
+                                ))}
+                            </div>
                         )}
                     </div>
                 </div>
             </div>
-            </div>
 
             {/* Quick Add Project Modal */}
             {showAddModal && (
-                <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
-                    <div className="quick-add-modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3>➕ Quick Add Project</h3>
-                            <button className="modal-close" onClick={() => setShowAddModal(false)}>×</button>
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setShowAddModal(false)}>
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-in" onClick={(e) => e.stopPropagation()}>
+                        <div className="bg-primary-dark px-6 py-4 flex justify-between items-center">
+                            <h3 className="text-white font-bold text-lg">➕ Quick Add Project</h3>
+                            <button className="text-white/70 hover:text-white text-xl" onClick={() => setShowAddModal(false)}>×</button>
                         </div>
-                        <form onSubmit={handleQuickAddProject}>
-                            <div className="form-group">
-                                <label htmlFor="projectName">Project Name *</label>
+                        <form onSubmit={handleQuickAddProject} className="p-6 flex flex-col gap-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1" htmlFor="projectName">Project Name *</label>
                                 <input
                                     type="text"
                                     id="projectName"
@@ -383,44 +383,49 @@ function Dashboard({ user, onClientClick }) {
                                     placeholder="Enter project name"
                                     required
                                     autoFocus
+                                    className="w-full px-4 py-2 border rounded-lg focus:border-accent-coral focus:ring-2 focus:ring-accent-coral/20 outline-none transition-all"
                                 />
                             </div>
-                            <div className="form-group">
-                                <label htmlFor="services">Services (comma separated)</label>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1" htmlFor="services">Services</label>
                                 <input
                                     type="text"
                                     id="services"
                                     value={newProject.services}
                                     onChange={(e) => setNewProject({...newProject, services: e.target.value})}
                                     placeholder="e.g., Fiber, Internet"
+                                    className="w-full px-4 py-2 border rounded-lg focus:border-accent-coral focus:ring-2 focus:ring-accent-coral/20 outline-none transition-all"
                                 />
                             </div>
-                            <div className="form-group">
-                                <label htmlFor="picTeam">PIC Team (comma separated)</label>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1" htmlFor="picTeam">PIC Team</label>
                                 <input
                                     type="text"
                                     id="picTeam"
                                     value={newProject.picTeam}
                                     onChange={(e) => setNewProject({...newProject, picTeam: e.target.value})}
                                     placeholder="e.g., John, Jane"
+                                    className="w-full px-4 py-2 border rounded-lg focus:border-accent-coral focus:ring-2 focus:ring-accent-coral/20 outline-none transition-all"
                                 />
                             </div>
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label htmlFor="dueDate">Due Date</label>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1" htmlFor="dueDate">Due Date</label>
                                     <input
                                         type="date"
                                         id="dueDate"
                                         value={newProject.dueDate}
                                         onChange={(e) => setNewProject({...newProject, dueDate: e.target.value})}
+                                        className="w-full px-4 py-2 border rounded-lg focus:border-accent-coral focus:ring-2 focus:ring-accent-coral/20 outline-none transition-all"
                                     />
                                 </div>
-                                <div className="form-group">
-                                    <label htmlFor="status">Status</label>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1" htmlFor="status">Status</label>
                                     <select
                                         id="status"
                                         value={newProject.status}
                                         onChange={(e) => setNewProject({...newProject, status: e.target.value})}
+                                        className="w-full px-4 py-2 border rounded-lg focus:border-accent-coral focus:ring-2 focus:ring-accent-coral/20 outline-none transition-all"
                                     >
                                         <option value="Done">Done</option>
                                         <option value="Progress">Progress</option>
@@ -428,11 +433,11 @@ function Dashboard({ user, onClientClick }) {
                                     </select>
                                 </div>
                             </div>
-                            <div className="modal-actions">
-                                <button type="button" className="btn btn-cancel" onClick={() => setShowAddModal(false)}>
+                            <div className="flex justify-end gap-3 mt-4">
+                                <button type="button" className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition-colors" onClick={() => setShowAddModal(false)}>
                                     Cancel
                                 </button>
-                                <button type="submit" className="btn btn-primary" disabled={addingProject}>
+                                <button type="submit" className="px-6 py-2 bg-accent-coral text-white font-bold rounded-lg shadow-md hover:bg-[#ff6b47] transition-all disabled:opacity-70" disabled={addingProject}>
                                     {addingProject ? 'Adding...' : 'Add Project'}
                                 </button>
                             </div>

@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { uploadsApi } from '../api/uploads';
-import './FileUpload.css';
+// import './FileUpload.css'; // Removed custom CSS
 
 // File type icons
 const getFileIcon = (mimetype) => {
@@ -128,17 +128,22 @@ export default function FileUpload({ existingFiles = [], onFilesChange, disabled
     };
 
     return (
-        <div className="file-upload-container">
-            <label className="file-upload-label">Attachments</label>
-
+        <div className="w-full">
             {/* Drop zone */}
             <div
-                className={`file-drop-zone ${dragActive ? 'active' : ''} ${disabled ? 'disabled' : ''}`}
+                className={`
+                    relative border-2 border-dashed rounded-xl p-6 md:p-8 flex flex-col items-center justify-center text-center transition-all duration-200
+                    ${disabled ? 'bg-gray-50 border-gray-200 cursor-not-allowed opacity-60' : 'cursor-pointer'}
+                    ${dragActive 
+                        ? 'border-indigo-500 bg-indigo-50/50 scale-[1.01]' 
+                        : 'border-gray-300 hover:border-indigo-400 hover:bg-gray-50'
+                    }
+                `}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
-                onClick={openFilePicker}
+                onClick={!disabled ? openFilePicker : undefined}
             >
                 <input
                     ref={inputRef}
@@ -146,79 +151,108 @@ export default function FileUpload({ existingFiles = [], onFilesChange, disabled
                     multiple
                     onChange={handleInputChange}
                     accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.xlsx,.xls,.docx,.doc"
-                    style={{ display: 'none' }}
+                    className="hidden"
                     disabled={disabled}
                 />
+                
                 {uploading ? (
-                    <div className="upload-loading">
-                        <span className="spinner"></span>
-                        <span>Uploading...</span>
+                    <div className="flex flex-col items-center justify-center text-indigo-600">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mb-3"></div>
+                        <span className="text-sm font-medium animate-pulse">Uploading files...</span>
                     </div>
                 ) : (
                     <>
-                        <span className="upload-icon">📁</span>
-                        <span className="upload-text">
-                            Drag & drop files here or click to browse
+                        <div className={`text-4xl mb-3 transition-transform duration-300 ${dragActive ? 'scale-110' : ''}`}>
+                            {dragActive ? '📂' : '📁'}
+                        </div>
+                        <span className="text-sm font-bold text-gray-700 mb-1">
+                            Click to upload or drag and drop
                         </span>
-                        <span className="upload-hint">
+                        <span className="text-xs text-gray-500">
                             Images, PDF, Excel, Word (max 50MB)
                         </span>
                     </>
                 )}
             </div>
 
-            {error && <div className="file-upload-error">{error}</div>}
-
-            {/* Existing files */}
-            {existingFiles.length > 0 && (
-                <div className="file-list">
-                    <div className="file-list-title">Existing Files</div>
-                    {existingFiles.map((file, index) => (
-                        <div key={file.filename} className="file-item">
-                            <span className="file-icon">{getFileIcon(file.mimetype)}</span>
-                            <a
-                                href={uploadsApi.getFileUrl(file.filename)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="file-name"
-                            >
-                                {file.originalName}
-                            </a>
-                            <span className="file-size">{formatFileSize(file.size)}</span>
-                            {!disabled && canDelete && (
-                                <button
-                                    type="button"
-                                    className="file-remove"
-                                    onClick={() => removeExistingFile(index)}
-                                >
-                                    ×
-                                </button>
-                            )}
-                        </div>
-                    ))}
+            {error && (
+                <div className="mt-3 p-3 bg-red-50 text-red-600 text-xs font-medium rounded-lg border border-red-100 flex items-center gap-2 animate-shake">
+                    ⚠️ {error}
                 </div>
             )}
 
-            {/* Newly uploaded files */}
-            {files.length > 0 && (
-                <div className="file-list">
-                    <div className="file-list-title">New Files</div>
-                    {files.map((file, index) => (
-                        <div key={file.filename} className="file-item new">
-                            <span className="file-icon">{getFileIcon(file.mimetype)}</span>
-                            <span className="file-name">{file.originalName}</span>
-                            <span className="file-size">{formatFileSize(file.size)}</span>
-                            {!disabled && canDelete && (
-                                <button
-                                    type="button"
-                                    className="file-remove"
-                                    onClick={() => removeNewFile(index)}
-                                >
-                                    ×
-                                </button>
-                            )}
+            {/* File Lists Container */}
+            {(existingFiles.length > 0 || files.length > 0) && (
+                <div className="mt-4 space-y-4">
+                    
+                    {/* Existing files */}
+                    {existingFiles.length > 0 && (
+                        <div>
+                            <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 px-1">Attached Files</div>
+                            <div className="space-y-2">
+                                {existingFiles.map((file, index) => (
+                                    <div key={file.filename || index} className="group flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all">
+                                        <span className="text-xl">{getFileIcon(file.mimetype)}</span>
+                                        <a
+                                            href={uploadsApi.getFileUrl(file.filename)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex-1 text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:underline truncate"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            {file.originalName}
+                                        </a>
+                                        <span className="text-xs text-gray-400 font-mono whitespace-nowrap">{formatFileSize(file.size)}</span>
+                                        {!disabled && canDelete && (
+                                            <button
+                                                type="button"
+                                                className="w-6 h-6 flex items-center justify-center rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    removeExistingFile(index);
+                                                }}
+                                                title="Remove file"
+                                            >
+                                                ×
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    ))}
+                    )}
+
+                    {/* Newly uploaded files */}
+                    {files.length > 0 && (
+                        <div>
+                             <div className="text-xs font-bold text-green-600 uppercase tracking-wide mb-2 px-1 flex items-center gap-1">
+                                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                New Uploads
+                            </div>
+                             <div className="space-y-2">
+                                {files.map((file, index) => (
+                                    <div key={file.filename || index} className="group flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-100 shadow-sm">
+                                        <span className="text-xl">{getFileIcon(file.mimetype)}</span>
+                                        <span className="flex-1 text-sm font-medium text-gray-700 truncate">{file.originalName}</span>
+                                        <span className="text-xs text-gray-500 font-mono whitespace-nowrap">{formatFileSize(file.size)}</span>
+                                        {!disabled && canDelete && (
+                                            <button
+                                                type="button"
+                                                className="w-6 h-6 flex items-center justify-center rounded-full text-gray-400 hover:text-red-500 hover:bg-red-100 transition-colors"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    removeNewFile(index);
+                                                }}
+                                                title="Remove file"
+                                            >
+                                                ×
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

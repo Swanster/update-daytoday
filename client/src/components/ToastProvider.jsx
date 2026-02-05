@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback } from 'react';
-import './Toast.css';
+// import './Toast.css'; // Removed custom CSS
 
 const ToastContext = createContext(null);
 
@@ -49,21 +49,39 @@ function ToastContainer({ toasts, onRemove }) {
     if (toasts.length === 0) return null;
 
     return (
-        <div className="toast-container">
+        <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-3 pointer-events-none">
             {toasts.map(toast => (
                 <div
                     key={toast.id}
-                    className={`toast toast-${toast.type}`}
+                    className={`
+                        pointer-events-auto min-w-[300px] max-w-sm bg-white rounded-xl shadow-lg border p-4 flex items-start gap-3 animate-slide-in transform transition-all duration-300
+                        ${toast.type === 'success' ? 'border-l-4 border-l-green-500 border-gray-100' : ''}
+                        ${toast.type === 'error' ? 'border-l-4 border-l-red-500 border-gray-100' : ''}
+                        ${toast.type === 'warning' ? 'border-l-4 border-l-amber-500 border-gray-100' : ''}
+                        ${toast.type === 'info' ? 'border-l-4 border-l-blue-500 border-gray-100' : ''}
+                    `}
                     onClick={() => onRemove(toast.id)}
                 >
-                    <span className="toast-icon">
-                        {toast.type === 'success' && '✓'}
-                        {toast.type === 'error' && '✕'}
-                        {toast.type === 'warning' && '⚠'}
-                        {toast.type === 'info' && 'ℹ'}
+                    <span className="text-lg flex-shrink-0 mt-0.5">
+                        {toast.type === 'success' && '✅'}
+                        {toast.type === 'error' && '❌'}
+                        {toast.type === 'warning' && '⚠️'}
+                        {toast.type === 'info' && 'ℹ️'}
                     </span>
-                    <span className="toast-message">{toast.message}</span>
-                    <button className="toast-close" onClick={(e) => { e.stopPropagation(); onRemove(toast.id); }}>
+                    <div className="flex-1 pt-0.5">
+                        <p className={`text-sm font-medium ${
+                            toast.type === 'success' ? 'text-green-800' :
+                            toast.type === 'error' ? 'text-red-800' :
+                            toast.type === 'warning' ? 'text-amber-800' :
+                            'text-blue-800'
+                        }`}>
+                            {toast.message}
+                        </p>
+                    </div>
+                    <button 
+                        className="text-gray-400 hover:text-gray-600 transition-colors w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 flex-shrink-0" 
+                        onClick={(e) => { e.stopPropagation(); onRemove(toast.id); }}
+                    >
                         ×
                     </button>
                 </div>

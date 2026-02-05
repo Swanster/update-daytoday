@@ -18,6 +18,9 @@ import PWAInstallPrompt from './components/PWAInstallPrompt';
 import { useToast } from './components/ToastProvider';
 import { projectsApi } from './api/projects';
 import { dailiesApi } from './api/dailies';
+import { workOrdersApi } from './api/workOrders';
+import WOTable from './components/WOTable';
+import WOEntryForm from './components/WOEntryForm';
 
 
 function App() {
@@ -27,6 +30,7 @@ function App() {
     const [selectedClientName, setSelectedClientName] = useState(null); // For Client tab navigation
     const [projects, setProjects] = useState([]);
     const [dailies, setDailies] = useState([]);
+    const [workOrders, setWorkOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isActivityOpen, setIsActivityOpen] = useState(false);
@@ -47,12 +51,15 @@ function App() {
     // Selection state for batch operations
     const [selectedProjectIds, setSelectedProjectIds] = useState([]);
     const [selectedDailyIds, setSelectedDailyIds] = useState([]);
+    const [selectedWOIds, setSelectedWOIds] = useState([]);
 
     // Quarterly state - separate for each tab
     const [projectQuarters, setProjectQuarters] = useState([]);
     const [dailyQuarters, setDailyQuarters] = useState([]);
+    const [woQuarters, setWOQuarters] = useState([]);
     const [projectSelectedQuarter, setProjectSelectedQuarter] = useState(null);
     const [dailySelectedQuarter, setDailySelectedQuarter] = useState(null);
+    const [woSelectedQuarter, setWOSelectedQuarter] = useState(null);
 
     // Search and sort state
     const [searchTerm, setSearchTerm] = useState('');
@@ -108,25 +115,26 @@ function App() {
         const current = getCurrentQuarter();
         setProjectSelectedQuarter(current);
         setDailySelectedQuarter(current);
+        setWOSelectedQuarter(current);
     }, []);
 
     // Get current quarter/quarters based on active tab
-    const selectedQuarter = activeTab === 'project' ? projectSelectedQuarter : dailySelectedQuarter;
-    const quarters = activeTab === 'project' ? projectQuarters : dailyQuarters;
+    const selectedQuarter = activeTab === 'project' ? projectSelectedQuarter : (activeTab === 'wo' ? woSelectedQuarter : dailySelectedQuarter);
+    const quarters = activeTab === 'project' ? projectQuarters : (activeTab === 'wo' ? woQuarters : dailyQuarters);
 
     // Fetch data when tab or quarter changes
     useEffect(() => {
-        const quarter = activeTab === 'project' ? projectSelectedQuarter : dailySelectedQuarter;
+        const quarter = activeTab === 'project' ? projectSelectedQuarter : (activeTab === 'wo' ? woSelectedQuarter : dailySelectedQuarter);
         if (quarter && user) {
             fetchData();
             fetchQuarters();
         }
-    }, [activeTab, projectSelectedQuarter, dailySelectedQuarter, user]);
+    }, [activeTab, projectSelectedQuarter, dailySelectedQuarter, woSelectedQuarter, user]);
 
     const fetchQuarters = async () => {
         try {
-            const currentQuarter = activeTab === 'project' ? projectSelectedQuarter : dailySelectedQuarter;
-            const api = activeTab === 'project' ? projectsApi : dailiesApi;
+            const currentQuarter = activeTab === 'project' ? projectSelectedQuarter : (activeTab === 'wo' ? woSelectedQuarter : dailySelectedQuarter);
+            const api = activeTab === 'project' ? projectsApi : (activeTab === 'wo' ? workOrdersApi : dailiesApi);
             let data = await api.getQuarters();
 
             // Filter out any invalid quarters (null or empty)
@@ -139,6 +147,8 @@ function App() {
 
             if (activeTab === 'project') {
                 setProjectQuarters(data);
+            } else if (activeTab === 'wo') {
+                setWOQuarters(data);
             } else {
                 setDailyQuarters(data);
             }
@@ -158,6 +168,12 @@ function App() {
                     selectedQuarter?.year
                 );
                 setProjects(data);
+            } else if (activeTab === 'wo') {
+                const data = await workOrdersApi.getAll(
+                    selectedQuarter?.quarter,
+                    selectedQuarter?.year
+                );
+                setWorkOrders(data);
             } else {
                 const data = await dailiesApi.getAll(
                     selectedQuarter?.quarter,
@@ -208,6 +224,8 @@ function App() {
             try {
                 if (activeTab === 'project') {
                     await projectsApi.delete(id);
+                } else if (activeTab === 'wo') {
+                    await workOrdersApi.delete(id);
                 } else {
                     await dailiesApi.delete(id);
                 }
@@ -228,6 +246,12 @@ function App() {
                     await projectsApi.update(editData._id, formData);
                 } else {
                     await projectsApi.create(formData);
+                }
+            } else if (activeTab === 'wo') {
+                if (isEdit) {
+                    await workOrdersApi.update(editData._id, formData);
+                } else {
+                    await workOrdersApi.create(formData);
                 }
             } else {
                 if (isEdit) {
@@ -258,6 +282,8 @@ function App() {
 
         if (activeTab === 'project') {
             setProjectSelectedQuarter(newQuarter);
+        } else if (activeTab === 'wo') {
+            setWOSelectedQuarter(newQuarter);
         } else {
             setDailySelectedQuarter(newQuarter);
         }
@@ -326,6 +352,28 @@ function App() {
             const result = await dailiesApi.batchUpdateStatus(selectedDailyIds, status);
             toast.success(result.message);
             setSelectedDailyIds([]);
+        } catch (err) {
+            console.error('Batch status update error:', err);
+            toast.error('Failed to update status. Please try again.');
+            return;
+        }
+
+        // Refresh data after success
+        try {
+            await fetchData();
+        } catch (err) {
+            console.error('Error refreshing data:', err);
+        }
+    };
+
+    // Handle WO batch status update
+    const handleWOBatchStatusUpdate = async (status) => {
+        if (selectedWOIds.length === 0) return;
+
+        try {
+            const result = await workOrdersApi.batchUpdateStatus(selectedWOIds, status);
+            toast.success(result.message);
+            setSelectedWOIds([]);
         } catch (err) {
             console.error('Batch status update error:', err);
             toast.error('Failed to update status. Please try again.');
@@ -441,61 +489,79 @@ function App() {
     }
 
     return (
-        <div className="app">
-            <header className="app-header">
-                <h1>DAILY ACTIVITY INFRASTRUCTURE ENGINEER</h1>
+        <div className="min-h-screen bg-bg-cream text-text-dark font-lexend flex flex-col">
+            {/* Header - Sticky Top */}
+            <div className="sticky top-0 z-50 bg-primary-dark text-white shadow-lg transition-all duration-300">
+                <header className="px-4 py-3 flex justify-between items-center">
+                <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2 truncate">
+                    <span className="text-2xl">📊</span> 
+                    <span className="hidden md:inline">DAILY ACTIVITY INFRASTRUCTURE ENGINEER</span>
+                    <span className="md:hidden">Daily Activity</span>
+                </h1>
 
-                <div className="header-controls">
-                    {/* Quarter Selector */}
-                    <div className="quarter-selector">
-                        <label>Quarter:</label>
+                <div className="flex items-center gap-3">
+                    {/* Quarter Selector - Hidden on very small screens if needed, or compacted */}
+                    <div className="flex items-center gap-2 bg-white/10 rounded-lg px-2 py-1">
+                        <label className="hidden md:block text-sm font-semibold">Quarter:</label>
                         <select
+                            className="bg-transparent border-none text-white text-sm font-semibold focus:ring-0 cursor-pointer outline-none"
                             value={selectedQuarter ? `${selectedQuarter.quarter}|${selectedQuarter.year}` : ''}
                             onChange={handleQuarterChange}
                         >
                             {quarters.map((q, idx) => (
-                                <option key={idx} value={`${q.quarter}|${q.year}`}>
+                                <option key={idx} value={`${q.quarter}|${q.year}`} className="text-black">
                                     {q.quarter}
                                 </option>
                             ))}
                         </select>
                     </div>
 
-                    <button className="add-btn" onClick={handleAddClick}>
-                        <span>+</span> Add Entry
-                    </button>
+                    {(activeTab === 'project' || activeTab === 'daily' || activeTab === 'wo') && (
+                        <>
+                            <button 
+                                className="hidden md:flex bg-accent-coral text-white px-4 py-1.5 rounded-lg font-semibold items-center gap-1 shadow-md hover:bg-[#ff6b47] hover:-translate-y-0.5 transition-all active:scale-95"
+                                onClick={handleAddClick}
+                            >
+                                <span>+</span> Add Entry
+                            </button>
+                             {/* Mobile Add Button (Icon only) */}
+                            <button 
+                                className="md:hidden w-8 h-8 flex items-center justify-center bg-accent-coral text-white rounded-full shadow-md active:scale-90"
+                                onClick={handleAddClick}
+                            >
+                                +
+                            </button>
+                        </>
+                    )}
 
                     {/* User Menu */}
-                    <div className="user-menu">
-                        <span className="user-name">
-                            👤 {user.displayName || user.username}
-                            {user.role !== 'user' && <span className="role-indicator">({user.role})</span>}
-                        </span>
+                    <div className="flex items-center gap-3 ml-2">
+                        <div className="hidden md:flex flex-col items-end leading-tight">
+                            <span className="font-semibold text-sm">{user.displayName || user.username}</span>
+                            {user.role !== 'user' && <span className="text-xs opacity-75 uppercase tracking-wider">{user.role}</span>}
+                        </div>
 
-                        {/* Admin-only buttons */}
+                        {/* Admin-only buttons - Desktop */}
                         {isAdminOrSuper() && (
-                            <>
-                                <button className="icon-btn" onClick={() => setIsUserMgmtOpen(true)} title="User Management">
-                                    👥
-                                </button>
-                                <button className="icon-btn" onClick={() => setIsActivityOpen(true)} title="Activity Log">
-                                    📋
-                                </button>
-                            </>
+                            <div className="hidden md:flex gap-2">
+                                <button className="p-1.5 hover:bg-white/10 rounded-full transition-colors" onClick={() => setIsUserMgmtOpen(true)} title="User Management">👥</button>
+                                <button className="p-1.5 hover:bg-white/10 rounded-full transition-colors" onClick={() => setIsActivityOpen(true)} title="Activity Log">📋</button>
+                            </div>
                         )}
 
-                        <button className="icon-btn logout-btn" onClick={handleLogout} title="Logout">
+                        <button className="text-xl p-1.5 hover:bg-white/10 rounded-full transition-colors text-gray-300 hover:text-white" onClick={handleLogout} title="Logout">
                             🚪
                         </button>
                     </div>
                 </div>
             </header>
 
-            {/* Tab Navigation */}
-            <div className="tab-navigation">
+            {/* Desktop Tab Navigation */}
+            <div className="hidden md:flex px-6 gap-1 overflow-x-auto">
                 {isAdminOrSuper() && (
                     <button
-                        className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+                        className={`px-6 py-2.5 rounded-t-lg font-semibold text-sm transition-all flex items-center gap-2
+                            ${activeTab === 'dashboard' ? 'bg-bg-cream text-primary-dark shadow-sm translate-y-[1px]' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
                         onClick={() => { setActiveTab('dashboard'); setSearchTerm(''); }}
                     >
                         📊 Dashboard
@@ -503,90 +569,100 @@ function App() {
                 )}
                 {isAdminOrSuper() && (
                     <button
-                        className={`tab-btn ${activeTab === 'client' ? 'active' : ''}`}
+                        className={`px-6 py-2.5 rounded-t-lg font-semibold text-sm transition-all flex items-center gap-2
+                            ${activeTab === 'client' ? 'bg-bg-cream text-primary-dark shadow-sm translate-y-[1px]' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
                         onClick={() => { setActiveTab('client'); setSearchTerm(''); setSelectedClientName(null); }}
                     >
                         🏢 Client
                     </button>
                 )}
                 <button
-                    className={`tab-btn ${activeTab === 'project' ? 'active' : ''}`}
+                    className={`px-6 py-2.5 rounded-t-lg font-semibold text-sm transition-all flex items-center gap-2
+                        ${activeTab === 'wo' ? 'bg-bg-cream text-primary-dark shadow-sm translate-y-[1px]' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
+                    onClick={() => { setActiveTab('wo'); setSearchTerm(''); }}
+                >
+                    🛠️ WO
+                </button>
+                <button
+                    className={`px-6 py-2.5 rounded-t-lg font-semibold text-sm transition-all flex items-center gap-2
+                        ${activeTab === 'project' ? 'bg-bg-cream text-primary-dark shadow-sm translate-y-[1px]' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
                     onClick={() => { setActiveTab('project'); setSearchTerm(''); }}
                 >
                     📋 Project
                 </button>
+
                 <button
-                    className={`tab-btn ${activeTab === 'daily' ? 'active' : ''}`}
+                    className={`px-6 py-2.5 rounded-t-lg font-semibold text-sm transition-all flex items-center gap-2
+                        ${activeTab === 'daily' ? 'bg-bg-cream text-primary-dark shadow-sm translate-y-[1px]' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
                     onClick={() => { setActiveTab('daily'); setSearchTerm(''); }}
                 >
                     📅 Daily
                 </button>
             </div>
 
-            {/* Search and Sort Controls - hide on dashboard and client tab */}
+            {/* Search and Sort Controls */}
             {activeTab !== 'dashboard' && activeTab !== 'client' && (
-                <div className="search-sort-controls">
-                    <div className="search-box">
-                        <span className="search-icon">🔍</span>
+                <div className="bg-white p-4 shadow-sm border-b border-gray-200 flex flex-col md:flex-row gap-4 items-center justify-between sticky top-[60px] md:static z-40">
+                    <div className="relative w-full md:w-96 group">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-accent-coral transition-colors">🔍</span>
                         <input
                             type="text"
-                            placeholder={activeTab === 'project' ? 'Search projects...' : 'Search daily activities...'}
+                            placeholder={activeTab === 'project' ? 'Search projects...' : (activeTab === 'wo' ? 'Search work orders...' : 'Search daily activities...')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="search-input"
+                            className="w-full pl-10 pr-10 py-2 border-2 border-gray-200 rounded-full text-sm focus:outline-none focus:border-accent-coral focus:ring-4 focus:ring-accent-coral/10 transition-all bg-gray-50 focus:bg-white"
                         />
                         {searchTerm && (
-                            <button className="clear-search" onClick={() => setSearchTerm('')}>✕</button>
+                            <button className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-accent-coral" onClick={() => setSearchTerm('')}>✕</button>
                         )}
                     </div>
-                    <div className="sort-box">
-                        <label>Sort by:</label>
-                        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                            <option value="sequence">Sequence (No.)</option>
-                            <option value="name">{activeTab === 'project' ? 'Project Name' : 'Client Name'}</option>
-                            <option value="date">Date</option>
-                            <option value="status">Status</option>
-                        </select>
-                    </div>
-                    {activeTab === 'project' && isAdminOrSuper() && (
-                        <>
-                            <button className="carry-forward-btn" onClick={handleCarryForward}>
-                                📥 Carry Forward
-                            </button>
-                            <button className="carry-forward-btn" onClick={() => setIsCSVImportOpen(true)}>
-                                📤 Import TSV
-                            </button>
-                        </>
-                    )}
-                    {activeTab === 'daily' && isAdminOrSuper() && (
-                        <button className="carry-forward-btn" onClick={() => setIsCSVImportOpen(true)}>
-                            📤 Import TSV
-                        </button>
-                    )}
-                    {isAdminOrSuper() && (
-                        <button className="carry-forward-btn" onClick={() => setIsReportOpen(true)}>
-                            📊 Report
-                        </button>
-                    )}
-                    {isAdminOrSuper() && (
-                        <>
-                            <button className="manage-categories-btn" onClick={() => setIsCategoryMgmtOpen(true)}>
-                                🏷️ Manage Categories
-                            </button>
-                            <button className="manage-categories-btn" onClick={() => setIsCaseTypeMgmtOpen(true)}>
-                                📋 Manage Case Types
-                            </button>
-                            {user?.role === 'superuser' && (
-                                <button className="manage-categories-btn" onClick={() => setIsPicMemberMgmtOpen(true)}>
-                                    👥 Manage PIC Members
+                    
+                    <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+                         <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1.5 shrink-0">
+                            <label className="text-xs font-bold text-gray-600">Sort:</label>
+                            <select 
+                                value={sortBy} 
+                                onChange={(e) => setSortBy(e.target.value)}
+                                className="bg-transparent border-none text-sm font-medium focus:ring-0 cursor-pointer text-gray-800"
+                            >
+                                <option value="sequence">Sequence (No.)</option>
+                                <option value="name">{activeTab === 'project' ? 'Project Name' : (activeTab === 'wo' ? 'Client Name' : 'Client Name')}</option>
+                                <option value="date">Date</option>
+                                <option value="status">Status</option>
+                            </select>
+                        </div>
+
+                        {/* Admin Actions - Desktop & Mobile Horizontal Scroll */}
+                        {isAdminOrSuper() && (
+                            <>
+                                {activeTab === 'project' && (
+                                     <button className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-accent-coral hover:border-accent-coral transition-all shrink-0 flex items-center gap-1" onClick={handleCarryForward}>
+                                        📥 <span className="hidden sm:inline">Carry Fwd</span>
+                                    </button>
+                                )}
+                                <button className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-accent-coral hover:border-accent-coral transition-all shrink-0 flex items-center gap-1" onClick={() => setIsCSVImportOpen(true)}>
+                                    📤 <span className="hidden sm:inline">Import</span>
                                 </button>
-                            )}
-                        </>
-                    )}
+                                <button className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-accent-coral hover:border-accent-coral transition-all shrink-0 flex items-center gap-1" onClick={() => setIsReportOpen(true)}>
+                                    📊 <span className="hidden sm:inline">Report</span>
+                                </button>
+                                
+                                {/* More Menu for Management (Hidden on Mobile usually, but let's keep accessible) */}
+                                <div className="flex gap-1">
+                                    <button className="p-2 bg-gray-100 rounded-lg hover:bg-accent-coral hover:text-white transition-colors" onClick={() => setIsCategoryMgmtOpen(true)} title="Manage Categories">🏷️</button>
+                                    <button className="p-2 bg-gray-100 rounded-lg hover:bg-accent-coral hover:text-white transition-colors" onClick={() => setIsCaseTypeMgmtOpen(true)} title="Manage Case Types">📋</button>
+                                    {user?.role === 'superuser' && (
+                                         <button className="p-2 bg-gray-100 rounded-lg hover:bg-accent-coral hover:text-white transition-colors" onClick={() => setIsPicMemberMgmtOpen(true)} title="Manage PICs">👥</button>
+                                    )}
+                                </div>
+                            </>
+                        )}
+                    </div>
                 </div>
             )}
+            </div>
 
-            <main className="app-container">
+            <main className="flex-1 p-4 md:p-6 overflow-x-hidden md:overflow-visible pb-24 md:pb-6">
                 {activeTab === 'dashboard' ? (
                     <Dashboard user={user} onClientClick={handleClientClick} />
                 ) : activeTab === 'client' ? (
@@ -596,19 +672,20 @@ function App() {
                         onClientSelect={setSelectedClientName}
                     />
                 ) : loading ? (
-                    <div className="loading">
-                        <div className="loading-spinner"></div>
+                     <div className="flex flex-col items-center justify-center py-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-coral"></div>
+                        <p className="mt-4 text-gray-500 font-medium">Loading data...</p>
                     </div>
                 ) : error ? (
-                    <div className="spreadsheet-container">
-                        <div className="empty-state">
-                            <div className="empty-state-icon">⚠️</div>
-                            <h3>Connection Error</h3>
-                            <p>{error}</p>
-                            <button className="btn btn-primary" onClick={fetchData}>
-                                Retry
-                            </button>
+                    <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-lg max-w-2xl mx-auto my-10 shadow-sm">
+                        <div className="flex items-center gap-3 mb-2">
+                             <span className="text-2xl">⚠️</span>
+                             <h3 className="text-lg font-bold text-red-700">Connection Error</h3>
                         </div>
+                        <p className="text-red-600 mb-4">{error}</p>
+                        <button className="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors" onClick={fetchData}>
+                            Retry Connection
+                        </button>
                     </div>
                 ) : activeTab === 'project' ? (
                     <SpreadsheetTable
@@ -619,6 +696,15 @@ function App() {
                         onSelectionChange={setSelectedProjectIds}
                         onBatchStatusUpdate={handleBatchStatusUpdate}
                         onAddEntry={handleAddEntryForProject}
+                    />
+                ) : activeTab === 'wo' ? (
+                     <WOTable
+                        workOrders={workOrders}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        selectedIds={selectedWOIds}
+                        onSelectionChange={setSelectedWOIds}
+                        onBatchStatusUpdate={handleWOBatchStatusUpdate}
                     />
                 ) : (
                     <DailyTable
@@ -633,7 +719,59 @@ function App() {
                 )}
             </main>
 
-            {/* Project Entry Form */}
+            {/* Mobile Bottom Navigation Bar */}
+            <div className="md:hidden fixed bottom-0 left-0 w-full bg-primary-dark text-gray-400 flex justify-around items-center p-2 z-50 border-t border-gray-700 pb-safe">
+                {isAdminOrSuper() && (
+                    <button 
+                        className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'dashboard' ? 'text-accent-coral bg-white/10' : 'hover:text-white'}`}
+                        onClick={() => { setActiveTab('dashboard'); setSearchTerm(''); }}
+                    >
+                        <span className="text-xl mb-0.5">📊</span>
+                        <span className="text-[10px] font-medium">Dash</span>
+                    </button>
+                )}
+                {isAdminOrSuper() && (
+                    <button 
+                        className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'client' ? 'text-accent-coral bg-white/10' : 'hover:text-white'}`}
+                        onClick={() => { setActiveTab('client'); setSearchTerm(''); setSelectedClientName(null); }}
+                    >
+                        <span className="text-xl mb-0.5">🏢</span>
+                        <span className="text-[10px] font-medium">Client</span>
+                    </button>
+                )}
+                <button 
+                    className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'project' ? 'text-accent-coral bg-white/10' : 'hover:text-white'}`}
+                    onClick={() => { setActiveTab('project'); setSearchTerm(''); }}
+                >
+                    <span className="text-xl mb-0.5">📋</span>
+                    <span className="text-[10px] font-medium">Project</span>
+                </button>
+                <button 
+                    className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'wo' ? 'text-accent-coral bg-white/10' : 'hover:text-white'}`}
+                    onClick={() => { setActiveTab('wo'); setSearchTerm(''); }}
+                >
+                    <span className="text-xl mb-0.5">🛠️</span>
+                    <span className="text-[10px] font-medium">WO</span>
+                </button>
+                <button 
+                    className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'daily' ? 'text-accent-coral bg-white/10' : 'hover:text-white'}`}
+                    onClick={() => { setActiveTab('daily'); setSearchTerm(''); }}
+                >
+                    <span className="text-xl mb-0.5">📅</span>
+                    <span className="text-[10px] font-medium">Daily</span>
+                </button>
+                 {isAdminOrSuper() && (
+                     <button 
+                        className="flex flex-col items-center p-2 rounded-xl hover:text-white"
+                        onClick={() => setIsActivityOpen(true)}
+                    >
+                        <span className="text-xl mb-0.5">⋮</span>
+                        <span className="text-[10px] font-medium">Menu</span>
+                    </button>
+                 )}
+            </div>
+
+            {/* Modals & Components */}
             {activeTab === 'project' && (
                 <EntryForm
                     isOpen={isFormOpen}
@@ -644,7 +782,6 @@ function App() {
                 />
             )}
 
-            {/* Daily Entry Form */}
             {activeTab === 'daily' && (
                 <DailyEntryForm
                     isOpen={isFormOpen}
@@ -655,75 +792,33 @@ function App() {
                 />
             )}
 
-            {/* Activity Log Modal - Admin only */}
+            {activeTab === 'wo' && (
+                <WOEntryForm
+                    isOpen={isFormOpen}
+                    onClose={handleFormClose}
+                    onSave={handleSave}
+                    editData={editData}
+                    user={user}
+                />
+            )}
+
             {isAdminOrSuper() && (
-                <ActivityLog
-                    token={token}
-                    isOpen={isActivityOpen}
-                    onClose={() => setIsActivityOpen(false)}
-                />
+                <ActivityLog token={token} isOpen={isActivityOpen} onClose={() => setIsActivityOpen(false)} />
             )}
 
-            {/* User Management Modal - Admin only */}
             {isAdminOrSuper() && (
-                <UserManagement
-                    token={token}
-                    isOpen={isUserMgmtOpen}
-                    onClose={() => setIsUserMgmtOpen(false)}
-                    currentUser={user}
-                />
+                <UserManagement token={token} isOpen={isUserMgmtOpen} onClose={() => setIsUserMgmtOpen(false)} currentUser={user} />
             )}
 
-            {/* TSV Import Modal */}
-            <CSVImportModal
-                isOpen={isCSVImportOpen}
-                onClose={() => setIsCSVImportOpen(false)}
-                onSuccess={handleCSVImportSuccess}
-                apiType={activeTab}
-            />
-
-            {/* Report Modal */}
-            <ReportModal
-                isOpen={isReportOpen}
-                onClose={() => setIsReportOpen(false)}
-                apiType={activeTab}
-                quarters={activeTab === 'project' ? projectQuarters : dailyQuarters}
-            />
-
-            {/* Category Management Modal - Superuser only */}
-            {isAdminOrSuper() && (
-                <CategoryManagement
-                    isOpen={isCategoryMgmtOpen}
-                    onClose={() => setIsCategoryMgmtOpen(false)}
-                />
-            )}
-
-            {/* Case Type Management Modal - Admin and Superuser only */}
-            {isAdminOrSuper() && (
-                <CaseTypeManagement
-                    isOpen={isCaseTypeMgmtOpen}
-                    onClose={() => setIsCaseTypeMgmtOpen(false)}
-                />
-            )}
-
-            {/* PIC Member Management Modal - Superuser only */}
-            {user?.role === 'superuser' && (
-                <PicMemberManagement
-                    isOpen={isPicMemberMgmtOpen}
-                    onClose={() => setIsPicMemberMgmtOpen(false)}
-                />
-            )}
-
-            {/* Quick Add Modal for table name clicks */}
-            <QuickAddModal
-                isOpen={isQuickAddOpen}
-                onClose={() => setIsQuickAddOpen(false)}
-                onSave={handleQuickAddSave}
-                entryName={quickAddName}
-                entryType={quickAddType}
-            />
-
-            {/* PWA Install Prompt */}
+            <CSVImportModal isOpen={isCSVImportOpen} onClose={() => setIsCSVImportOpen(false)} onSuccess={handleCSVImportSuccess} apiType={activeTab} />
+            
+            <ReportModal isOpen={isReportOpen} onClose={() => setIsReportOpen(false)} apiType={activeTab} quarters={activeTab === 'project' ? projectQuarters : (activeTab === 'wo' ? woQuarters : dailyQuarters)} />
+            
+            {isAdminOrSuper() && <CategoryManagement isOpen={isCategoryMgmtOpen} onClose={() => setIsCategoryMgmtOpen(false)} />}
+            {isAdminOrSuper() && <CaseTypeManagement isOpen={isCaseTypeMgmtOpen} onClose={() => setIsCaseTypeMgmtOpen(false)} />}
+            {user?.role === 'superuser' && <PicMemberManagement isOpen={isPicMemberMgmtOpen} onClose={() => setIsPicMemberMgmtOpen(false)} />}
+            
+            <QuickAddModal isOpen={isQuickAddOpen} onClose={() => setIsQuickAddOpen(false)} onSave={handleQuickAddSave} entryName={quickAddName} entryType={quickAddType} />
             <PWAInstallPrompt />
         </div>
     );

@@ -87,61 +87,80 @@ export default function CaseTypeManagement({ isOpen, onClose }) {
     if (!isOpen) return null;
 
     return (
-        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-            <div className="modal-content category-management-modal">
-                <div className="modal-header">
-                    <h2>Manage Case Types</h2>
-                    <button className="modal-close" onClick={onClose}>&times;</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={(e) => e.target === e.currentTarget && onClose()}>
+            <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl glass overflow-hidden flex flex-col animate-scale-in">
+                <div className="px-6 py-4 border-b border-gray-100 bg-white/50 backdrop-blur-md flex items-center justify-between">
+                    <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                        <span className="text-amber-500">🏷️</span>
+                        Manage Case Types
+                    </h2>
+                    <button 
+                        className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-gray-400 hover:text-gray-600 hover:bg-gray-100 border border-gray-200 transition-all shadow-sm"
+                        onClick={onClose}
+                    >
+                        &times;
+                    </button>
                 </div>
 
-                <div className="modal-body">
+                <div className="p-6 flex-1 overflow-y-auto max-h-[70vh]">
                     {error && (
-                        <div className="error-message">
-                            ⚠️ {error}
-                            <button onClick={() => setError('')}>&times;</button>
+                        <div className="mb-4 p-4 bg-red-50 text-red-600 text-sm font-medium rounded-xl border border-red-100 flex items-center justify-between animate-shake">
+                            <span className="flex items-center gap-2">⚠️ {error}</span>
+                            <button onClick={() => setError('')} className="text-red-400 hover:text-red-700">&times;</button>
                         </div>
                     )}
 
                     {/* Add new case type form */}
-                    <form onSubmit={handleAddCaseType} className="add-category-form">
+                    <form onSubmit={handleAddCaseType} className="flex gap-2 mb-6">
                         <input
                             type="text"
                             value={newCaseTypeName}
                             onChange={(e) => setNewCaseTypeName(e.target.value)}
                             placeholder="Enter new case type name..."
+                            className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all text-sm"
                             disabled={loading}
                         />
-                        <button type="submit" className="btn btn-primary" disabled={loading || !newCaseTypeName.trim()}>
-                            Add Case Type
+                        <button 
+                            type="submit" 
+                            className="px-4 py-2.5 bg-amber-500 text-white font-bold text-sm rounded-xl hover:bg-amber-600 focus:ring-4 focus:ring-amber-500/30 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                            disabled={loading || !newCaseTypeName.trim()}
+                        >
+                            Add +
                         </button>
                     </form>
 
                     {/* Case type list */}
-                    <div className="category-list">
+                    <div className="space-y-2">
                         {loading && caseTypes.length === 0 ? (
-                            <div className="loading">Loading case types...</div>
+                            <div className="text-center py-8 text-gray-400">
+                                <div className="w-8 h-8 border-4 border-amber-100 border-t-amber-500 rounded-full animate-spin mx-auto mb-2"></div>
+                                Loading case types...
+                            </div>
                         ) : caseTypes.length === 0 ? (
-                            <div className="empty-state">No case types found</div>
+                            <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-gray-400 text-sm">
+                                No case types found
+                            </div>
                         ) : (
                             caseTypes.map((caseType) => (
-                                <div key={caseType._id} className="category-item">
+                                <div key={caseType._id} className="group flex items-center justify-between p-3 bg-white border border-gray-100 rounded-xl hover:shadow-md hover:border-amber-100 transition-all duration-200">
                                     {editingId === caseType._id ? (
-                                        <div className="category-edit">
+                                        <div className="flex-1 flex items-center gap-2">
                                             <input
                                                 type="text"
                                                 value={editName}
                                                 onChange={(e) => setEditName(e.target.value)}
                                                 autoFocus
+                                                className="flex-1 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                                             />
                                             <button
-                                                className="btn btn-sm btn-success"
+                                                className="px-3 py-1.5 bg-green-500 text-white rounded-lg text-xs font-bold hover:bg-green-600 transition-colors shadow-sm"
                                                 onClick={handleSaveEdit}
                                                 disabled={loading}
                                             >
                                                 Save
                                             </button>
                                             <button
-                                                className="btn btn-sm btn-secondary"
+                                                className="px-3 py-1.5 bg-gray-200 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-300 transition-colors"
                                                 onClick={handleCancelEdit}
                                             >
                                                 Cancel
@@ -149,19 +168,26 @@ export default function CaseTypeManagement({ isOpen, onClose }) {
                                         </div>
                                     ) : (
                                         <>
-                                            <span className="category-name">{caseType.name}</span>
-                                            <div className="category-actions">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center text-sm font-bold">
+                                                    {caseType.name.charAt(0).toUpperCase()}
+                                                </div>
+                                                <span className="font-medium text-gray-700">{caseType.name}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button
-                                                    className="btn btn-sm btn-edit"
+                                                    className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
                                                     onClick={() => handleStartEdit(caseType)}
                                                     disabled={loading}
+                                                    title="Edit"
                                                 >
                                                     ✏️
                                                 </button>
                                                 <button
-                                                    className="btn btn-sm btn-delete"
+                                                    className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                     onClick={() => handleDelete(caseType._id)}
                                                     disabled={loading}
+                                                    title="Delete"
                                                 >
                                                     🗑️
                                                 </button>
@@ -174,8 +200,11 @@ export default function CaseTypeManagement({ isOpen, onClose }) {
                     </div>
                 </div>
 
-                <div className="modal-footer">
-                    <button className="btn btn-secondary" onClick={onClose}>
+                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+                    <button 
+                        className="px-6 py-2 bg-gray-200 text-gray-700 font-bold text-sm rounded-xl hover:bg-gray-300 transition-colors"
+                        onClick={onClose}
+                    >
                         Close
                     </button>
                 </div>

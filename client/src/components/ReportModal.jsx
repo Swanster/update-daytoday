@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { projectsApi } from '../api/projects';
 import { dailiesApi } from '../api/dailies';
 import * as XLSX from 'xlsx';
-import './ReportModal.css';
+// import './ReportModal.css'; // Removed custom CSS
 
 export default function ReportModal({ isOpen, onClose, apiType = 'project', quarters = [] }) {
     const [reportData, setReportData] = useState(null);
@@ -154,7 +154,7 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
                     }
                     .report-header {
                         text-align: center;
-                        border-bottom: 3px solid #FF6347;
+                        border-bottom: 3px solid #ff5757;
                         padding-bottom: 20px;
                         margin-bottom: 30px;
                     }
@@ -165,7 +165,7 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
                     }
                     .report-header h2 {
                         font-size: 18px;
-                        color: #FF6347;
+                        color: #ff5757;
                         font-weight: normal;
                     }
                     .report-header p {
@@ -310,9 +310,9 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
     };
 
     const getStatusClass = (status) => {
-        if (status === 'Done') return 'status-done';
-        if (status === 'Progress') return 'status-progress';
-        if (status === 'Hold') return 'status-hold';
+        if (status === 'Done') return 'text-green-600 font-semibold';
+        if (status === 'Progress') return 'text-amber-500 font-semibold';
+        if (status === 'Hold') return 'text-red-500 font-semibold';
         return '';
     };
 
@@ -327,28 +327,28 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
         const entries = Object.entries(data || {}).sort((a, b) => b[1].total - a[1].total).slice(0, 8);
         
         return (
-            <div className="bar-chart">
+            <div className="space-y-3">
                 {entries.map(([label, stats]) => (
-                    <div key={label} className="bar-item">
-                        <span className="bar-label" title={label}>{label}</span>
-                        <div className="bar-track">
+                    <div key={label} className="flex items-center gap-3">
+                        <span className="w-24 text-xs font-medium text-gray-600 truncate" title={label}>{label}</span>
+                        <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden flex">
                             {showStatus ? (
-                                <div style={{ display: 'flex', height: '100%' }}>
+                                <>
                                     {stats.done > 0 && (
-                                        <div className="bar-fill done" style={{ width: `${(stats.done / maxValue) * 100}%` }} />
+                                        <div className="bg-green-500 h-full" style={{ width: `${(stats.done / maxValue) * 100}%` }} />
                                     )}
                                     {stats.progress > 0 && (
-                                        <div className="bar-fill progress" style={{ width: `${(stats.progress / maxValue) * 100}%` }} />
+                                        <div className="bg-amber-400 h-full" style={{ width: `${(stats.progress / maxValue) * 100}%` }} />
                                     )}
                                     {stats.hold > 0 && (
-                                        <div className="bar-fill hold" style={{ width: `${(stats.hold / maxValue) * 100}%` }} />
+                                        <div className="bg-red-500 h-full" style={{ width: `${(stats.hold / maxValue) * 100}%` }} />
                                     )}
-                                </div>
+                                </>
                             ) : (
-                                <div className="bar-fill total" style={{ width: `${(stats.total / maxValue) * 100}%` }} />
+                                <div className="bg-indigo-500 h-full" style={{ width: `${(stats.total / maxValue) * 100}%` }} />
                             )}
                         </div>
-                        <span className="bar-value">{stats.total}</span>
+                        <span className="w-8 text-right text-xs font-bold text-gray-700">{stats.total}</span>
                     </div>
                 ))}
             </div>
@@ -362,210 +362,242 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
         const maxTotal = Math.max(...reportData.quarterlyTrend.map(q => q.total), 1);
 
         return (
-            <div className="chart-container" style={{ gridColumn: '1 / -1' }}>
-                <h4>📈 Quarterly Trend - {selectedYear}</h4>
-                <div className="quarterly-chart">
+            <div className="bg-white rounded-xl border border-gray-100 p-6 col-span-full shadow-sm">
+                <h4 className="text-gray-800 font-bold mb-4 flex items-center gap-2">
+                    <span>📈</span> Quarterly Trend - {selectedYear}
+                </h4>
+                <div className="flex items-end justify-between h-48 pt-4 pb-2 px-2 gap-4">
                     {reportData.quarterlyTrend.map(q => (
-                        <div key={q.quarter} className="quarter-bar-group">
-                            <div className="quarter-bars">
+                        <div key={q.quarter} className="flex flex-col items-center flex-1 gap-2 group cursor-default">
+                           <div className="w-full max-w-[60px] flex flex-col-reverse h-full bg-gray-50 rounded-lg overflow-hidden relative">
                                 <div 
-                                    className="quarter-bar done" 
-                                    style={{ height: `${maxTotal > 0 ? (q.done / maxTotal) * 160 : 0}px` }}
+                                    className="bg-green-500 w-full transition-all duration-500" 
+                                    style={{ height: `${maxTotal > 0 ? (q.done / maxTotal) * 100 : 0}%` }}
                                     title={`Done: ${q.done}`}
                                 />
                                 <div 
-                                    className="quarter-bar progress" 
-                                    style={{ height: `${maxTotal > 0 ? (q.progress / maxTotal) * 160 : 0}px` }}
+                                    className="bg-amber-400 w-full transition-all duration-500" 
+                                    style={{ height: `${maxTotal > 0 ? (q.progress / maxTotal) * 100 : 0}%` }}
                                     title={`Progress: ${q.progress}`}
                                 />
                                 <div 
-                                    className="quarter-bar hold" 
-                                    style={{ height: `${maxTotal > 0 ? (q.hold / maxTotal) * 160 : 0}px` }}
+                                    className="bg-red-500 w-full transition-all duration-500" 
+                                    style={{ height: `${maxTotal > 0 ? (q.hold / maxTotal) * 100 : 0}%` }}
                                     title={`Hold: ${q.hold}`}
                                 />
                             </div>
-                            <div className="quarter-label">{q.quarter}</div>
-                            <div className="quarter-total">{q.total} total</div>
+                            <div className="text-xs font-bold text-gray-600">{q.quarter}</div>
+                            <div className="text-[10px] text-gray-400 font-mono">{q.total} total</div>
                         </div>
                     ))}
                 </div>
-                <div className="chart-legend">
-                    <div className="legend-item"><span className="legend-color done"></span> Done</div>
-                    <div className="legend-item"><span className="legend-color progress"></span> Progress</div>
-                    <div className="legend-item"><span className="legend-color hold"></span> Hold</div>
+                <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-gray-100">
+                    <div className="flex items-center gap-2 text-xs text-gray-600"><span className="w-3 h-3 rounded-full bg-green-500"></span> Done</div>
+                    <div className="flex items-center gap-2 text-xs text-gray-600"><span className="w-3 h-3 rounded-full bg-amber-400"></span> Progress</div>
+                    <div className="flex items-center gap-2 text-xs text-gray-600"><span className="w-3 h-3 rounded-full bg-red-500"></span> Hold</div>
                 </div>
             </div>
         );
     };
 
     return (
-        <div className="modal-overlay" onClick={handleClose}>
-            <div className="modal-content report-modal" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>📊 Professional Report</h2>
-                    <button className="close-btn" onClick={handleClose}>&times;</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={handleClose}>
+            <div className="bg-white w-full max-w-6xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col glass overflow-hidden animate-scale-in" onClick={(e) => e.stopPropagation()}>
+                <div className="px-6 py-4 border-b border-gray-100 bg-white/50 backdrop-blur-md flex items-center justify-between flex-shrink-0">
+                    <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                        <span className="text-indigo-500">📊</span>
+                        Professional Report
+                    </h2>
+                    <button className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-gray-400 hover:text-gray-600 hover:bg-gray-100 border border-gray-200 transition-all shadow-sm" onClick={handleClose}>
+                        &times;
+                    </button>
                 </div>
 
-                <div className="modal-body">
+                <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                     {/* Report Options */}
-                    <div className="report-options">
-                        <div className="option-group">
-                            <label>
+                    <div className="flex flex-wrap items-center justify-between gap-4 mb-8 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                        <div className="flex items-center gap-4">
+                            <label className="flex items-center gap-2 cursor-pointer">
                                 <input
                                     type="radio"
+                                    className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
                                     checked={!isYearly}
                                     onChange={() => setIsYearly(false)}
-                                /> Quarterly Report
+                                />
+                                <span className="text-sm font-medium text-gray-700">Quarterly Report</span>
                             </label>
-                            <label>
+                            <label className="flex items-center gap-2 cursor-pointer">
                                 <input
                                     type="radio"
+                                    className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
                                     checked={isYearly}
                                     onChange={() => setIsYearly(true)}
-                                /> Yearly Report
+                                />
+                                <span className="text-sm font-medium text-gray-700">Yearly Report</span>
                             </label>
                         </div>
 
-                        {!isYearly ? (
-                            <select
-                                value={selectedQuarter}
-                                onChange={(e) => {
-                                    setSelectedQuarter(e.target.value);
-                                    const q = quarters.find(q => q.quarter === e.target.value);
-                                    if (q) setSelectedYear(q.year);
-                                }}
-                            >
-                                {quarters.map(q => (
-                                    <option key={q.quarter} value={q.quarter}>{q.quarter}</option>
-                                ))}
-                            </select>
-                        ) : (
-                            <select
-                                value={selectedYear}
-                                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                            >
-                                {years.map(y => (
-                                    <option key={y} value={y}>{y}</option>
-                                ))}
-                            </select>
-                        )}
+                        <div className="flex items-center gap-4">
+                            {!isYearly ? (
+                                <select
+                                    className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                    value={selectedQuarter}
+                                    onChange={(e) => {
+                                        setSelectedQuarter(e.target.value);
+                                        const q = quarters.find(q => q.quarter === e.target.value);
+                                        if (q) setSelectedYear(q.year);
+                                    }}
+                                >
+                                    {quarters.map(q => (
+                                        <option key={q.quarter} value={q.quarter}>{q.quarter}</option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <select
+                                    className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                    value={selectedYear}
+                                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                                >
+                                    {years.map(y => (
+                                        <option key={y} value={y}>{y}</option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
                     </div>
 
                     {/* View Toggle */}
-                    <div className="view-toggle">
-                        <button 
-                            className={viewMode === 'summary' ? 'active' : ''} 
-                            onClick={() => setViewMode('summary')}
-                        >
-                            📊 Summary
-                        </button>
-                        <button 
-                            className={viewMode === 'detail' ? 'active' : ''} 
-                            onClick={() => setViewMode('detail')}
-                        >
-                            📋 Detail
-                        </button>
+                    <div className="flex justify-center mb-8">
+                        <div className="bg-gray-100 p-1 rounded-xl inline-flex">
+                            <button 
+                                className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${viewMode === 'summary' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                onClick={() => setViewMode('summary')}
+                            >
+                                📊 Summary
+                            </button>
+                            <button 
+                                className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${viewMode === 'detail' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                onClick={() => setViewMode('detail')}
+                            >
+                                📋 Detail
+                            </button>
+                        </div>
                     </div>
 
                     {/* Report Preview */}
-                    <div className="report-preview" ref={printRef}>
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm min-h-[400px]" ref={printRef}>
                         {loading ? (
-                            <div className="loading-report">Loading report...</div>
+                            <div className="flex flex-col items-center justify-center h-[400px] text-gray-400">
+                                <div className="w-10 h-10 border-4 border-indigo-100 border-t-indigo-500 rounded-full animate-spin mb-4"></div>
+                                <p>Loading report...</p>
+                            </div>
                         ) : reportData ? (
-                            <>
-                                <div className="report-header">
-                                    <h1>{apiType === 'daily' ? 'DAILY ACTIVITY' : 'PROJECT'} INFRASTRUCTURE ENGINEER</h1>
-                                    <h2>{isYearly ? `Year ${selectedYear}` : selectedQuarter}</h2>
-                                    <p>Generated on {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                            <div className="p-8">
+                                <div className="text-center border-b-[3px] border-[#ff5757] pb-6 mb-8">
+                                    <h1 className="text-2xl font-bold text-[#1a1a2e] mb-1 tracking-wide">{apiType === 'daily' ? 'DAILY ACTIVITY' : 'PROJECT'} INFRASTRUCTURE ENGINEER</h1>
+                                    <h2 className="text-lg text-[#ff5757] font-medium">{isYearly ? `Year ${selectedYear}` : selectedQuarter}</h2>
+                                    <p className="text-gray-500 text-sm mt-2">Generated on {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                                 </div>
 
                                 {/* Summary Cards */}
-                                <div className="summary-cards">
-                                    <div className="summary-card total">
-                                        <div className="value">{reportData.summary.total}</div>
-                                        <div className="percent">100%</div>
-                                        <div className="label">Total</div>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 bg-gray-50 p-6 rounded-xl">
+                                    <div className="text-center p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                                        <div className="text-3xl font-bold text-indigo-600 mb-1">{reportData.summary.total}</div>
+                                        <div className="text-xs font-medium text-gray-900 mb-1">100%</div>
+                                        <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Total</div>
                                     </div>
-                                    <div className="summary-card done">
-                                        <div className="value">{reportData.summary.done}</div>
-                                        <div className="percent">{reportData.summary.donePercent || 0}%</div>
-                                        <div className="label">Done</div>
+                                    <div className="text-center p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                                        <div className="text-3xl font-bold text-green-500 mb-1">{reportData.summary.done}</div>
+                                        <div className="text-xs font-medium text-gray-900 mb-1">{reportData.summary.donePercent || 0}%</div>
+                                        <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Done</div>
                                     </div>
-                                    <div className="summary-card progress">
-                                        <div className="value">{reportData.summary.progress}</div>
-                                        <div className="percent">{reportData.summary.progressPercent || 0}%</div>
-                                        <div className="label">Progress</div>
+                                    <div className="text-center p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                                        <div className="text-3xl font-bold text-amber-500 mb-1">{reportData.summary.progress}</div>
+                                        <div className="text-xs font-medium text-gray-900 mb-1">{reportData.summary.progressPercent || 0}%</div>
+                                        <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Progress</div>
                                     </div>
-                                    <div className="summary-card hold">
-                                        <div className="value">{reportData.summary.hold}</div>
-                                        <div className="percent">{reportData.summary.holdPercent || 0}%</div>
-                                        <div className="label">Hold</div>
+                                    <div className="text-center p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                                        <div className="text-3xl font-bold text-red-500 mb-1">{reportData.summary.hold}</div>
+                                        <div className="text-xs font-medium text-gray-900 mb-1">{reportData.summary.holdPercent || 0}%</div>
+                                        <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Hold</div>
                                     </div>
                                 </div>
 
                                 {viewMode === 'summary' && (
                                     <>
                                         {/* Charts */}
-                                        <div className="charts-grid">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                                             {/* Service Breakdown */}
-                                            <div className="chart-container">
-                                                <h4>🏷️ Service Breakdown</h4>
+                                            <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+                                                <h4 className="text-gray-800 font-bold mb-4 flex items-center gap-2">
+                                                    <span>🏷️</span> Service Breakdown
+                                                </h4>
                                                 {Object.keys(reportData.serviceStats || {}).length > 0 ? (
                                                     renderBarChart(reportData.serviceStats, getMaxValue(reportData.serviceStats), true)
                                                 ) : (
-                                                    <p style={{ color: '#94a3b8', textAlign: 'center' }}>No service data</p>
+                                                    <p className="text-gray-400 text-center py-4 text-sm">No service data</p>
                                                 )}
                                             </div>
 
                                             {/* PIC Team Performance */}
-                                            <div className="chart-container">
-                                                <h4>👥 PIC Team Workload</h4>
+                                            <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+                                                <h4 className="text-gray-800 font-bold mb-4 flex items-center gap-2">
+                                                    <span>👥</span> PIC Team Workload
+                                                </h4>
                                                 {Object.keys(reportData.picStats || {}).length > 0 ? (
                                                     renderBarChart(reportData.picStats, getMaxValue(reportData.picStats), true)
                                                 ) : (
-                                                    <p style={{ color: '#94a3b8', textAlign: 'center' }}>No PIC data</p>
+                                                    <p className="text-gray-400 text-center py-4 text-sm">No PIC data</p>
                                                 )}
                                             </div>
                                         </div>
 
                                         {/* Quarterly Trend (for yearly reports) */}
-                                        {isYearly && renderQuarterlyTrend()}
+                                        {isYearly && (
+                                            <div className="mb-8">
+                                                {renderQuarterlyTrend()}
+                                            </div>
+                                        )}
 
                                         {/* PIC Team Table */}
                                         {Object.keys(reportData.picStats || {}).length > 0 && (
-                                            <div className="chart-container">
-                                                <h4>📋 PIC Team Details</h4>
-                                                <table className="pic-table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>PIC Member</th>
-                                                            <th>Total</th>
-                                                            <th>Done</th>
-                                                            <th>Progress</th>
-                                                            <th>Hold</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {Object.entries(reportData.picStats)
-                                                            .sort((a, b) => b[1].total - a[1].total)
-                                                            .map(([pic, stats]) => (
-                                                                <tr key={pic}>
-                                                                    <td><strong>{pic}</strong></td>
-                                                                    <td>{stats.total}</td>
-                                                                    <td><span className="count-badge done">{stats.done}</span></td>
-                                                                    <td><span className="count-badge progress">{stats.progress}</span></td>
-                                                                    <td><span className="count-badge hold">{stats.hold}</span></td>
-                                                                </tr>
-                                                            ))}
-                                                    </tbody>
-                                                </table>
+                                            <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+                                                <h4 className="text-gray-800 font-bold mb-4 flex items-center gap-2">
+                                                    <span>📋</span> PIC Team Details
+                                                </h4>
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full text-sm">
+                                                        <thead>
+                                                            <tr className="bg-gray-50 border-b border-gray-200 text-left">
+                                                                <th className="py-3 px-4 font-semibold text-gray-700">PIC Member</th>
+                                                                <th className="py-3 px-4 font-semibold text-gray-700">Total</th>
+                                                                <th className="py-3 px-4 font-semibold text-gray-700">Done</th>
+                                                                <th className="py-3 px-4 font-semibold text-gray-700">Progress</th>
+                                                                <th className="py-3 px-4 font-semibold text-gray-700">Hold</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-gray-100">
+                                                            {Object.entries(reportData.picStats)
+                                                                .sort((a, b) => b[1].total - a[1].total)
+                                                                .map(([pic, stats]) => (
+                                                                    <tr key={pic} className="hover:bg-gray-50/50">
+                                                                        <td className="py-3 px-4 font-medium text-gray-900">{pic}</td>
+                                                                        <td className="py-3 px-4 text-gray-600">{stats.total}</td>
+                                                                        <td className="py-3 px-4 text-green-600 font-medium">{stats.done}</td>
+                                                                        <td className="py-3 px-4 text-amber-500 font-medium">{stats.progress}</td>
+                                                                        <td className="py-3 px-4 text-red-500 font-medium">{stats.hold}</td>
+                                                                    </tr>
+                                                                ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                             </div>
                                         )}
                                     </>
                                 )}
 
                                 {viewMode === 'detail' && (
-                                    <>
+                                    <div className="space-y-8">
                                         {/* Grouped by Site/Client Name */}
                                         {(() => {
                                             const nameKey = apiType === 'daily' ? 'clientName' : 'projectName';
@@ -577,69 +609,79 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
                                             });
 
                                             return Object.entries(grouped).map(([siteName, siteItems], groupIdx) => (
-                                                <div key={siteName} className="report-group">
-                                                    <div className="report-group-header">
-                                                        <span className="group-number">{groupIdx + 1}</span>
-                                                        <span className="group-name">{siteName}</span>
-                                                        <span className="group-count">{siteItems.length} entries</span>
+                                                <div key={siteName} className="border border-gray-200 rounded-xl overflow-hidden">
+                                                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">{groupIdx + 1}</span>
+                                                            <span className="font-bold text-gray-800">{siteName}</span>
+                                                        </div>
+                                                        <span className="text-xs font-semibold bg-white border border-gray-200 px-3 py-1 rounded-full text-gray-600">{siteItems.length} entries</span>
                                                     </div>
-                                                    <table className="report-group-table">
-                                                        <thead>
-                                                            <tr>
-                                                                <th style={{ width: '40px' }}>No</th>
-                                                                <th>Service</th>
-                                                                <th>Date</th>
-                                                                <th>PIC</th>
-                                                                <th>{apiType === 'daily' ? 'Detail Action' : 'Progress'}</th>
-                                                                <th style={{ width: '80px' }}>Status</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {siteItems.map((item, idx) => (
-                                                                <tr key={item._id || idx}>
-                                                                    <td>{idx + 1}</td>
-                                                                    <td>{Array.isArray(item.services) ? item.services.join(', ') : item.services || '-'}</td>
-                                                                    <td>{formatDate(item.date)}</td>
-                                                                    <td>{Array.isArray(item.picTeam) ? item.picTeam.join(', ') : item.picTeam || '-'}</td>
-                                                                    <td>{apiType === 'daily' ? item.detailAction : item.progress || '-'}</td>
-                                                                    <td className={getStatusClass(item.status)}>{item.status || '-'}</td>
+                                                    <div className="overflow-x-auto">
+                                                        <table className="w-full text-sm">
+                                                            <thead>
+                                                                <tr className="bg-white border-b border-gray-100 text-left text-xs uppercase text-gray-500 tracking-wider">
+                                                                    <th className="py-3 px-4 w-12 font-semibold">No</th>
+                                                                    <th className="py-3 px-4 font-semibold">Service</th>
+                                                                    <th className="py-3 px-4 w-32 font-semibold">Date</th>
+                                                                    <th className="py-3 px-4 font-semibold">PIC</th>
+                                                                    <th className="py-3 px-4 font-semibold">{apiType === 'daily' ? 'Detail Action' : 'Progress'}</th>
+                                                                    <th className="py-3 px-4 w-24 font-semibold">Status</th>
                                                                 </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
+                                                            </thead>
+                                                            <tbody className="divide-y divide-gray-50">
+                                                                {siteItems.map((item, idx) => (
+                                                                    <tr key={item._id || idx} className="hover:bg-gray-50/50">
+                                                                        <td className="py-3 px-4 text-gray-500">{idx + 1}</td>
+                                                                        <td className="py-3 px-4 text-gray-800 font-medium">{Array.isArray(item.services) ? item.services.join(', ') : item.services || '-'}</td>
+                                                                        <td className="py-3 px-4 text-gray-600 font-mono text-xs">{formatDate(item.date)}</td>
+                                                                        <td className="py-3 px-4 text-gray-600 truncate max-w-[150px]">{Array.isArray(item.picTeam) ? item.picTeam.join(', ') : item.picTeam || '-'}</td>
+                                                                        <td className="py-3 px-4 text-gray-600 text-xs min-w-[200px]">{apiType === 'daily' ? item.detailAction : item.progress || '-'}</td>
+                                                                        <td className={`py-3 px-4 text-xs ${getStatusClass(item.status)}`}>{item.status || '-'}</td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
                                                 </div>
                                             ));
                                         })()}
-                                    </>
+                                    </div>
                                 )}
 
-                                <div className="footer">
-                                    <p>Daily Activity Infrastructure Engineer - Report generated by system</p>
+                                <div className="mt-12 pt-6 border-t border-gray-200 text-center">
+                                    <p className="text-xs text-gray-400">Daily Activity Infrastructure Engineer - Report generated by system</p>
                                 </div>
-                            </>
+                            </div>
                         ) : (
-                            <div className="no-data">Select a period to generate report</div>
+                            <div className="flex flex-col items-center justify-center h-[400px] text-gray-400">
+                                <span className="text-4xl mb-2">📊</span>
+                                <p>Select a period to generate report</p>
+                            </div>
                         )}
                     </div>
                 </div>
 
-                <div className="modal-footer">
-                    <button className="btn btn-secondary" onClick={handleClose}>
+                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3 flex-shrink-0">
+                    <button 
+                        className="px-6 py-2.5 text-gray-600 font-bold text-sm hover:bg-gray-200/50 rounded-xl transition-colors" 
+                        onClick={handleClose}
+                    >
                         Close
                     </button>
                     <button
-                        className="btn btn-success"
+                        className="px-8 py-2.5 bg-green-600 text-white font-bold text-sm rounded-xl hover:bg-green-700 focus:ring-4 focus:ring-green-500/30 transition-all shadow-md transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         onClick={handleExportExcel}
                         disabled={!reportData || loading}
                     >
-                        📥 Download Excel
+                        <span>📥</span> Download Excel
                     </button>
                     <button
-                        className="btn btn-primary"
+                        className="px-8 py-2.5 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-500/30 transition-all shadow-md transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         onClick={handlePrint}
                         disabled={!reportData || loading}
                     >
-                        🖨️ Print / PDF
+                        <span>🖨️</span> Print / PDF
                     </button>
                 </div>
             </div>
