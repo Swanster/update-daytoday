@@ -610,7 +610,7 @@ function App() {
                             placeholder={activeTab === 'project' ? 'Search projects...' : (activeTab === 'wo' ? 'Search work orders...' : 'Search daily activities...')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-10 py-2 border-2 border-gray-200 rounded-full text-sm focus:outline-none focus:border-accent-coral focus:ring-4 focus:ring-accent-coral/10 transition-all bg-gray-50 focus:bg-white"
+                            className="w-full pl-10 pr-10 py-2 border-2 border-gray-200 rounded-full text-sm focus:outline-none focus:border-accent-coral focus:ring-4 focus:ring-accent-coral/10 transition-all bg-gray-50 focus:bg-white text-gray-800"
                         />
                         {searchTerm && (
                             <button className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-accent-coral" onClick={() => setSearchTerm('')}>✕</button>

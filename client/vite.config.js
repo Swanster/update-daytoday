@@ -15,5 +15,20 @@ export default defineConfig({
                 changeOrigin: true
             }
         }
+    },
+    build: {
+        chunkSizeWarningLimit: 1000, // Increase limit as quick fix
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    if (id.includes('node_modules')) {
+                        if (id.includes('xlsx')) {
+                            return 'xlsx'; // Split xlsx into its own chunk
+                        }
+                        return 'vendor'; // All other node_modules in vendor
+                    }
+                }
+            }
+        }
     }
 })
