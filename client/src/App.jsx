@@ -19,6 +19,7 @@ import { useToast } from './components/ToastProvider';
 import { projectsApi } from './api/projects';
 import { dailiesApi } from './api/dailies';
 import { workOrdersApi } from './api/workOrders';
+import VersionCheck from './components/VersionCheck';
 import WOTable from './components/WOTable';
 import WOEntryForm from './components/WOEntryForm';
 
@@ -509,6 +510,7 @@ function App() {
 
     return (
         <div className="min-h-screen bg-bg-cream text-text-dark font-lexend flex flex-col">
+            <VersionCheck />
             {/* Header - Sticky Top */}
             <div className="sticky top-0 z-50 bg-primary-dark text-white shadow-lg transition-all duration-300">
                 <header className="px-4 py-3 flex justify-between items-center">
