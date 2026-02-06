@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = [], onSelectionChange, onBatchStatusUpdate }) {
     
@@ -52,11 +52,38 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
     // Status Cell Component for Inline Editing
     const StatusCell = ({ value, type, onUpdate }) => {
         const [isOpen, setIsOpen] = useState(false);
+        const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
+        const buttonRef = useRef(null);
 
         const options = {
             requestBarang: ['Progress', 'Done'],
             requestJasa: ['No Need', 'Progress', 'Done'],
             status: ['Progress', 'Done', 'Hold']
+        };
+
+        const handleOpen = (e) => {
+            e.stopPropagation();
+            if (isOpen) {
+                setIsOpen(false);
+                return;
+            }
+
+            // Calculate position
+            if (buttonRef.current) {
+                const rect = buttonRef.current.getBoundingClientRect();
+                const viewportHeight = window.innerHeight;
+                const spaceBelow = viewportHeight - rect.bottom;
+                
+                // If closely near bottom, show above
+                const showAbove = spaceBelow < 150; // Approximating dropdown height
+                
+                setDropdownPos({
+                    top: showAbove ? rect.top - 10 : rect.bottom + 5,
+                    left: rect.left,
+                    transform: showAbove ? 'translateY(-100%)' : 'none'
+                });
+            }
+            setIsOpen(true);
         };
 
         const getBadgeClass = (val) => {
@@ -77,27 +104,31 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
         };
 
         return (
-            <div className="relative">
+            <>
                 <span 
+                    ref={buttonRef}
                     className={getBadgeClass(value)}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setIsOpen(!isOpen);
-                    }}
+                    onClick={handleOpen}
                 >
                     {value || '-'}
                 </span>
                 
                 {isOpen && (
-                    <>
+                    <div 
+                        className="fixed inset-0 z-[9999] isolate" // Portal-like behavior via fixed position
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsOpen(false);
+                        }} 
+                    >
                         <div 
-                            className="fixed inset-0 z-40" 
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setIsOpen(false);
-                            }} 
-                        />
-                        <div className="absolute z-50 mt-1 w-32 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-scale-in">
+                            className="absolute bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-scale-in w-32"
+                            style={{ 
+                                top: dropdownPos.top, 
+                                left: dropdownPos.left,
+                                transform: dropdownPos.transform
+                            }}
+                        >
                             {options[type].map((opt) => (
                                 <div 
                                     key={opt}
@@ -115,9 +146,9 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                                 </div>
                             ))}
                         </div>
-                    </>
+                    </div>
                 )}
-            </div>
+            </>
         );
     };
 
