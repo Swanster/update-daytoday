@@ -20,6 +20,7 @@ import { projectsApi } from './api/projects';
 import { dailiesApi } from './api/dailies';
 import { workOrdersApi } from './api/workOrders';
 import VersionCheck from './components/VersionCheck';
+import DeleteConfirmationModal from './components/DeleteConfirmationModal';
 import WOTable from './components/WOTable';
 import WOEntryForm from './components/WOEntryForm';
 
@@ -61,6 +62,26 @@ function App() {
     const [projectSelectedQuarter, setProjectSelectedQuarter] = useState(null);
     const [dailySelectedQuarter, setDailySelectedQuarter] = useState(null);
     const [woSelectedQuarter, setWOSelectedQuarter] = useState(null);
+    
+    // Delete Modal State
+    const [deleteModal, setDeleteModal] = useState({
+        isOpen: false,
+        itemId: null,
+        itemName: '',
+        itemType: '',
+        deleteFunction: null
+    });
+
+    // Helper to open delete modal
+    const confirmDelete = (id, name, type, deleteFn) => {
+        setDeleteModal({
+            isOpen: true,
+            itemId: id,
+            itemName: name,
+            itemType: type,
+            deleteFunction: deleteFn
+        });
+    };
 
     // Search and sort state
     const [searchTerm, setSearchTerm] = useState('');
@@ -220,28 +241,37 @@ function App() {
         setIsFormOpen(true);
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this entry?')) {
-            try {
-                if (activeTab === 'project') {
-                    await projectsApi.delete(id);
-                } else if (activeTab === 'wo') {
-                    await workOrdersApi.delete(id);
-                } else {
-                    await dailiesApi.delete(id);
-                }
-                await fetchData();
-                toast.success('Entry deleted successfully');
-            } catch (err) {
-                console.error('Error deleting entry:', err);
-                toast.error('Failed to delete entry. Please try again.');
-            }
+    const handleConfirmDelete = async () => {
+        if (deleteModal.deleteFunction && deleteModal.itemId) {
+            await deleteModal.deleteFunction(deleteModal.itemId);
+            setDeleteModal({ ...deleteModal, isOpen: false });
         }
     };
 
-    // Alias handlers for WO explicitly to avoid ReferenceError
+    // Generic execute delete wrappers
+    const executeDelete = async (id, api, successMsg, failMsg) => {
+        try {
+            await api.delete(id);
+            await fetchData();
+            toast.success(successMsg);
+        } catch (err) {
+            console.error('Delete error:', err);
+            toast.error(failMsg);
+        }
+    };
+
+    const handleDelete = (id, name = 'Entry') => {
+        if (activeTab === 'project') {
+             confirmDelete(id, name, 'Project', (id) => executeDelete(id, projectsApi, 'Project deleted successfully', 'Failed to delete project'));
+        } else if (activeTab === 'wo') {
+             confirmDelete(id, name, 'Work Order', (id) => executeDelete(id, workOrdersApi, 'Work Order deleted successfully', 'Failed to delete work order'));
+        } else {
+             confirmDelete(id, name, 'Daily Entry', (id) => executeDelete(id, dailiesApi, 'Daily entry deleted successfully', 'Failed to delete daily entry'));
+        }
+    };
+
     const handleEditWO = handleEdit;
-    const handleDeleteWO = handleDelete;
+    const handleDeleteWO = handleDelete; // Keeps using the unified handleDelete which now supports modal
 
     const handleSave = async (formData) => {
         const isEdit = editData && editData._id;
@@ -831,6 +861,14 @@ function App() {
             {isAdminOrSuper() && (
                 <UserManagement token={token} isOpen={isUserMgmtOpen} onClose={() => setIsUserMgmtOpen(false)} currentUser={user} />
             )}
+
+            <DeleteConfirmationModal 
+                isOpen={deleteModal.isOpen}
+                onClose={() => setDeleteModal({ ...deleteModal, isOpen: false })}
+                onConfirm={handleConfirmDelete}
+                itemName={deleteModal.itemName}
+                itemType={deleteModal.itemType}
+            />
 
             <CSVImportModal isOpen={isCSVImportOpen} onClose={() => setIsCSVImportOpen(false)} onSuccess={handleCSVImportSuccess} apiType={activeTab} />
             
