@@ -9,6 +9,11 @@ const WorkOrderSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    clientStatus: {
+        type: String,
+        enum: ['Existing', 'New Client'],
+        default: 'New Client'
+    },
     services: {
         type: String,
         enum: ['KEPONET', 'MEGALOS', 'VLEPO', 'TAAS', 'FIBERZONE APPS', 'WAS', 'FTTR', 'INTERNET BANDWITH', 'OTHER'],
@@ -21,17 +26,15 @@ const WorkOrderSchema = new mongoose.Schema({
     dueDate: {
         type: Date
     },
-    request: {
+    requestBarang: {
         type: String,
-        default: ''
+        enum: ['Progress', 'Done'],
+        default: 'Progress'
     },
-    barang: {
+    requestJasa: {
         type: String,
-        default: ''
-    },
-    jasa: {
-        type: String,
-        default: ''
+        enum: ['No Need', 'Progress', 'Done'],
+        default: 'No Need'
     },
     keterangan: {
         type: String,

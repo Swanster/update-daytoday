@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { dashboardApi } from '../api/dashboard';
+import { workOrdersApi } from '../api/workOrders'; // Import workOrdersApi
 // import './Dashboard.css'; // Removed custom CSS
 
 const REFRESH_INTERVAL = 30000; // 30 seconds
@@ -7,7 +8,7 @@ const REFRESH_INTERVAL = 30000; // 30 seconds
 function Dashboard({ user, onClientClick }) {
     const [stats, setStats] = useState(null);
     const [overdue, setOverdue] = useState([]);
-    const [activity, setActivity] = useState([]);
+    const [workOrders, setWorkOrders] = useState([]); // Add workOrders state
     const [topClients, setTopClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -17,17 +18,28 @@ function Dashboard({ user, onClientClick }) {
     const [markingDone, setMarkingDone] = useState(null); // tracks which item is being marked
     const [newProject, setNewProject] = useState({ projectName: '', services: '', picTeam: '', dueDate: '', status: 'Done' });
 
+    // Get current quarter logic (same as App.jsx)
+    const getCurrentQuarter = () => {
+        const now = new Date();
+        const month = now.getMonth();
+        const year = now.getFullYear();
+        const quarter = Math.floor(month / 3) + 1;
+        return { quarter: `Q${quarter}-${year}`, year };
+    };
+
     const fetchDashboardData = useCallback(async () => {
         try {
-            const [statsData, overdueData, activityData, topClientsData] = await Promise.all([
+            const currentQ = getCurrentQuarter();
+            
+            const [statsData, overdueData, workOrdersData, topClientsData] = await Promise.all([
                 dashboardApi.getStats(),
                 dashboardApi.getOverdue(),
-                dashboardApi.getActivity(),
+                workOrdersApi.getAll(currentQ.quarter, currentQ.year), // Fetch current quarter WOs
                 dashboardApi.getTopClients()
             ]);
             setStats(statsData);
             setOverdue(overdueData);
-            setActivity(activityData);
+            setWorkOrders(workOrdersData);
             setTopClients(topClientsData);
             setLastUpdated(new Date());
             setError(null);
@@ -138,7 +150,8 @@ function Dashboard({ user, onClientClick }) {
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 10;
 
-    // ... existing code ...
+    // Filter Progress Work Orders
+    const progressWOs = workOrders.filter(wo => wo.status === 'Progress');
 
     // Calculate pagination
     const totalPages = Math.ceil(overdue.length / ITEMS_PER_PAGE);
@@ -345,42 +358,45 @@ function Dashboard({ user, onClientClick }) {
                     </div>
                 </div>
 
-                {/* Recent Activity Section */}
+                {/* Progress Work Orders Section */}
                 <div className="xl:col-span-1 flex flex-col gap-4 h-full">
                     <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-primary-dark">⚡ Recent Activity</h3>
+                        <h3 className="text-lg font-bold text-primary-dark flex items-center gap-2">
+                             🛠️ Progress Work Orders
+                            <span className="bg-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded-full">{progressWOs.length}</span>
+                        </h3>
                     </div>
                     
                     <div className="bg-white rounded-xl shadow-custom p-4 border border-gray-100 flex-1 overflow-y-auto">
-                         {(!activity || activity.length === 0) ? (
+                         {progressWOs.length === 0 ? (
                             <div className="text-center text-gray-400 py-8 h-full flex items-center justify-center">
-                                <p>No recent activity.</p>
+                                <p>No work orders in progress.</p>
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {activity.map((log) => (
-                                    <div key={log._id} className="flex gap-3 items-start p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                                        <div className={`
-                                            w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs
-                                            ${log.action === 'CREATE' ? 'bg-blue-100 text-blue-600' : ''}
-                                            ${log.action === 'UPDATE' ? 'bg-orange-100 text-orange-600' : ''}
-                                            ${log.action === 'DELETE' ? 'bg-red-100 text-red-600' : ''}
-                                            ${log.action === 'DONE' ? 'bg-green-100 text-green-600' : ''}
-                                            ${!['CREATE', 'UPDATE', 'DELETE', 'DONE'].includes(log.action) ? 'bg-gray-100 text-gray-600' : ''}
-                                        `}>
-                                            {log.action === 'CREATE' && '➕'}
-                                            {log.action === 'UPDATE' && '✏️'}
-                                            {log.action === 'DELETE' && '🗑️'}
-                                            {log.action === 'DONE' && '✅'}
-                                            {!['CREATE', 'UPDATE', 'DELETE', 'DONE'].includes(log.action) && '📋'}
+                                {progressWOs.map((wo) => (
+                                    <div key={wo._id} className="flex gap-3 items-start p-3 hover:bg-gray-50 rounded-lg transition-colors border border-gray-50 shadow-sm">
+                                        <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-xl bg-blue-100 text-blue-600">
+                                            🛠️
                                         </div>
-                                        <div>
-                                            <p className="text-sm text-gray-800 leading-snug">{log.details}</p>
-                                            <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
-                                                <span className="font-medium text-gray-500">{log.username}</span>
-                                                <span>•</span>
-                                                <span>{formatTime(log.createdAt)}</span>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-semibold text-gray-800 text-sm truncate">{wo.clientName}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                 <span className="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-[10px] font-medium border border-indigo-100 truncate max-w-[120px]">
+                                                    {wo.services || 'No Service'}
+                                                </span>
                                             </div>
+                                            {wo.detailRequest && (
+                                                <p className="text-xs text-gray-500 mt-2 line-clamp-2 italic">"{wo.detailRequest}"</p>
+                                            )}
+                                            <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
+                                                <span>📅 Due: {formatDate(wo.dueDate)}</span>
+                                            </div>
+                                        </div>
+                                        <div className="shrink-0">
+                                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border bg-blue-100 text-blue-800 border-blue-200">
+                                                {wo.status}
+                                            </span>
                                         </div>
                                     </div>
                                 ))}

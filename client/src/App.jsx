@@ -238,6 +238,10 @@ function App() {
         }
     };
 
+    // Alias handlers for WO explicitly to avoid ReferenceError
+    const handleEditWO = handleEdit;
+    const handleDeleteWO = handleDelete;
+
     const handleSave = async (formData) => {
         const isEdit = editData && editData._id;
         try {
@@ -382,11 +386,26 @@ function App() {
 
         // Refresh data after success
         try {
-            await fetchData();
+             await fetchData();
         } catch (err) {
-            console.error('Error refreshing data:', err);
+             console.error('Error refreshing data:', err);
         }
     };
+
+    // Handle individual WO status update (field update)
+    const handleStatusUpdate = async (id, field, value) => {
+        try {
+             const updateData = { [field]: value };
+             await workOrdersApi.update(id, updateData);
+             toast.success('Status updated successfully');
+             await fetchData();
+        } catch (err) {
+             console.error('Status update error:', err);
+             toast.error('Failed to update status');
+        }
+    };
+
+
 
     // Handle client click from dashboard - navigate to Client tab
     const handleClientClick = (clientName) => {
@@ -698,13 +717,14 @@ function App() {
                         onAddEntry={handleAddEntryForProject}
                     />
                 ) : activeTab === 'wo' ? (
-                     <WOTable
-                        workOrders={workOrders}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
+                     <WOTable 
+                        workOrders={workOrders} 
+                        onEdit={handleEditWO}
+                        onDelete={handleDeleteWO}
                         selectedIds={selectedWOIds}
                         onSelectionChange={setSelectedWOIds}
                         onBatchStatusUpdate={handleWOBatchStatusUpdate}
+                        onStatusUpdate={handleStatusUpdate}
                     />
                 ) : (
                     <DailyTable

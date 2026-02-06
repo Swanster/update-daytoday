@@ -49,6 +49,78 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
         }
     };
 
+    // Status Cell Component for Inline Editing
+    const StatusCell = ({ value, type, onUpdate }) => {
+        const [isOpen, setIsOpen] = useState(false);
+
+        const options = {
+            requestBarang: ['Progress', 'Done'],
+            requestJasa: ['No Need', 'Progress', 'Done'],
+            status: ['Progress', 'Done', 'Hold']
+        };
+
+        const getBadgeClass = (val) => {
+            const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border cursor-pointer hover:opacity-80 transition-opacity select-none";
+            const valLower = (val || '').toLowerCase();
+            
+            if (valLower.includes('done') || valLower.includes('complete')) {
+                return `${baseClasses} bg-green-100 text-green-800 border-green-200`;
+            } else if (valLower.includes('progress')) {
+                return `${baseClasses} bg-blue-100 text-blue-800 border-blue-200`;
+            } else if (valLower.includes('hold')) {
+                return `${baseClasses} bg-orange-100 text-orange-800 border-orange-200`;
+            } else if (valLower.includes('no need')) {
+                return `${baseClasses} bg-gray-100 text-gray-800 border-gray-200`;
+            } else {
+                return `${baseClasses} bg-gray-100 text-gray-800 border-gray-200`;
+            }
+        };
+
+        return (
+            <div className="relative">
+                <span 
+                    className={getBadgeClass(value)}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsOpen(!isOpen);
+                    }}
+                >
+                    {value || '-'}
+                </span>
+                
+                {isOpen && (
+                    <>
+                        <div 
+                            className="fixed inset-0 z-40" 
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsOpen(false);
+                            }} 
+                        />
+                        <div className="absolute z-50 mt-1 w-32 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-scale-in">
+                            {options[type].map((opt) => (
+                                <div 
+                                    key={opt}
+                                    className={`px-4 py-2 text-xs font-medium cursor-pointer hover:bg-gray-50 flex items-center justify-between ${
+                                        value === opt ? 'text-indigo-600 bg-indigo-50' : 'text-gray-700'
+                                    }`}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onUpdate(opt);
+                                        setIsOpen(false);
+                                    }}
+                                >
+                                    {opt}
+                                    {value === opt && <span>✓</span>}
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                )}
+            </div>
+        );
+    };
+
     if (workOrders.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center p-12 text-center text-gray-400 bg-white rounded-xl shadow-custom border border-gray-100">
@@ -112,14 +184,14 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                                     />
                                 </th>
                                 <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap">No</th>
-                                <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap w-48">Client</th>
+                                <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap w-32">Status Client</th>
+                                <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap w-48">Client Name</th>
                                 <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap">Sales</th>
                                 <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap">Services</th>
                                 <th className="px-4 py-3 border-b border-gray-200 min-w-[200px]">Detail Request</th>
                                 <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap">Due Date</th>
-                                <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap">Request</th>
-                                <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap">Barang</th>
-                                <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap">Jasa</th>
+                                <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap">Request Barang</th>
+                                <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap">Request Jasa</th>
                                 <th className="px-4 py-3 border-b border-gray-200 min-w-[150px]">Keterangan</th>
                                 <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap">Status</th>
                                 <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap text-right">Actions</th>
@@ -137,6 +209,15 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                                         />
                                     </td>
                                     <td className="px-4 py-3 text-center text-gray-400 font-medium">{wo.quarterSequence}</td>
+                                    <td className="px-4 py-3 text-center">
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                                            wo.clientStatus === 'New Client' 
+                                                ? 'bg-purple-100 text-purple-800 border-purple-200' 
+                                                : (wo.clientStatus === 'Existing' ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-gray-100 text-gray-800 border-gray-200')
+                                        }`}>
+                                            {wo.clientStatus || '-'}
+                                        </span>
+                                    </td>
                                     <td className="px-4 py-3 font-semibold text-gray-800">{wo.clientName}</td>
                                     <td className="px-4 py-3 text-gray-600">{wo.sales || '-'}</td>
                                     <td className="px-4 py-3 text-gray-600">
@@ -146,14 +227,27 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                                     </td>
                                     <td className="px-4 py-3 text-gray-700 text-xs">{wo.detailRequest || '-'}</td>
                                     <td className="px-4 py-3 whitespace-nowrap text-gray-600 font-mono text-xs">{formatDate(wo.dueDate)}</td>
-                                    <td className="px-4 py-3 text-gray-600 text-xs">{wo.request || '-'}</td>
-                                    <td className="px-4 py-3 text-gray-600 text-xs">{wo.barang || '-'}</td>
-                                    <td className="px-4 py-3 text-gray-600 text-xs">{wo.jasa || '-'}</td>
+                                    <td className="px-4 py-3 text-gray-600 text-xs text-center">
+                                        <StatusCell 
+                                            value={wo.requestBarang} 
+                                            type="requestBarang" 
+                                            onUpdate={(val) => onStatusUpdate(wo._id, 'requestBarang', val)}
+                                        />
+                                    </td>
+                                    <td className="px-4 py-3 text-gray-600 text-xs text-center">
+                                        <StatusCell 
+                                            value={wo.requestJasa} 
+                                            type="requestJasa" 
+                                            onUpdate={(val) => onStatusUpdate(wo._id, 'requestJasa', val)}
+                                        />
+                                    </td>
                                     <td className="px-4 py-3 text-gray-600 text-xs italic">{wo.keterangan || '-'}</td>
                                     <td className="px-4 py-3 whitespace-nowrap">
-                                        <span className={getStatusBadgeClass(wo.status)}>
-                                            {wo.status}
-                                        </span>
+                                        <StatusCell 
+                                            value={wo.status} 
+                                            type="status" 
+                                            onUpdate={(val) => onStatusUpdate(wo._id, 'status', val)}
+                                        />
                                     </td>
                                     <td className="px-4 py-3 text-right whitespace-nowrap">
                                         <div className="flex items-center justify-end gap-1">
