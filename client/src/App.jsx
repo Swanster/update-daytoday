@@ -469,7 +469,10 @@ function App() {
         toast.success('Entry added successfully!');
     };
 
-    // Filter and sort data
+    // Work Order Filter State
+    const [woFilterStatus, setWoFilterStatus] = useState('All');
+
+    // Filter and sort Projects
     const filteredProjects = useMemo(() => {
         let result = [...projects];
 
@@ -501,6 +504,48 @@ function App() {
         return result;
     }, [projects, searchTerm, sortBy]);
 
+    // Filter and sort Work Orders
+    const filteredWorkOrders = useMemo(() => {
+        let result = [...workOrders];
+
+        // 1. Search Filter (Client Name)
+        if (searchTerm.trim()) {
+            const term = searchTerm.toLowerCase();
+            result = result.filter(wo => 
+                wo.clientName?.toLowerCase().includes(term) ||
+                wo.detailRequest?.toLowerCase().includes(term)
+            );
+        }
+
+        // 2. Status Filter
+        if (woFilterStatus !== 'All') {
+             if (woFilterStatus === 'Done') {
+                result = result.filter(wo => wo.status === 'Done' || wo.status === 'Complete');
+             } else {
+                result = result.filter(wo => wo.status === woFilterStatus);
+             }
+        }
+
+        // 3. Sort
+        result.sort((a, b) => {
+            switch (sortBy) {
+                case 'name':
+                    return (a.clientName || '').localeCompare(b.clientName || '');
+                case 'date':
+                     // Sort by Due Date for WOs usually, or CreatedAt? Let's use Due Date as it's more relevant for operations
+                    return new Date(a.dueDate || 0) - new Date(b.dueDate || 0);
+                case 'status':
+                    return (a.status || '').localeCompare(b.status || '');
+                case 'sequence':
+                default:
+                    return (a.quarterSequence || 0) - (b.quarterSequence || 0);
+            }
+        });
+
+        return result;
+    }, [workOrders, searchTerm, sortBy, woFilterStatus]);
+
+    // Filter and sort Dailies
     const filteredDailies = useMemo(() => {
         let result = [...dailies];
 
@@ -669,6 +714,23 @@ function App() {
                     </div>
                     
                     <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+                         {/* WO Status Filter */}
+                         {activeTab === 'wo' && (
+                             <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1.5 shrink-0">
+                                <label className="text-xs font-bold text-gray-600">Status:</label>
+                                <select 
+                                    value={woFilterStatus} 
+                                    onChange={(e) => setWoFilterStatus(e.target.value)}
+                                    className="bg-transparent border-none text-sm font-medium focus:ring-0 cursor-pointer text-gray-800"
+                                >
+                                    <option value="All">All</option>
+                                    <option value="Progress">Progress</option>
+                                    <option value="Done">Done</option>
+                                    <option value="Hold">Hold</option>
+                                </select>
+                            </div>
+                         )}
+
                          <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1.5 shrink-0">
                             <label className="text-xs font-bold text-gray-600">Sort:</label>
                             <select 
@@ -678,7 +740,7 @@ function App() {
                             >
                                 <option value="sequence">Sequence (No.)</option>
                                 <option value="name">{activeTab === 'project' ? 'Project Name' : (activeTab === 'wo' ? 'Client Name' : 'Client Name')}</option>
-                                <option value="date">Date</option>
+                                <option value="date">{activeTab === 'wo' ? 'Due Date' : 'Date'}</option>
                                 <option value="status">Status</option>
                             </select>
                         </div>
@@ -750,7 +812,7 @@ function App() {
                     />
                 ) : activeTab === 'wo' ? (
                      <WOTable 
-                        workOrders={workOrders} 
+                        workOrders={filteredWorkOrders} 
                         onEdit={handleEditWO}
                         onDelete={handleDeleteWO}
                         selectedIds={selectedWOIds}

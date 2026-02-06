@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 
-export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = [], onSelectionChange, onBatchStatusUpdate }) {
+export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = [], onSelectionChange, onBatchStatusUpdate, onStatusUpdate }) {
     
     // Check if all are selected
     const allSelected = workOrders.length > 0 && selectedIds.length === workOrders.length;
@@ -229,8 +229,15 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {workOrders.map((wo, index) => (
-                                <tr key={wo._id} className={`hover:bg-gray-50 transition-colors ${selectedIds.includes(wo._id) ? 'bg-blue-50/50' : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')}`}>
+                            {workOrders.length === 0 ? (
+                                <tr>
+                                    <td colSpan="13" className="px-4 py-8 text-center text-gray-400">
+                                        No work orders match your search.
+                                    </td>
+                                </tr>
+                            ) : (
+                                workOrders.map((wo, index) => (
+                                    <tr key={wo._id} className={`hover:bg-gray-50 transition-colors ${selectedIds.includes(wo._id) ? 'bg-blue-50/50' : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')}`}>
                                     <td className="px-4 py-3 border-r border-gray-100/50">
                                         <input
                                             type="checkbox"
@@ -298,8 +305,9 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                                             </button>
                                         </div>
                                     </td>
-                                </tr>
-                            ))}
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>

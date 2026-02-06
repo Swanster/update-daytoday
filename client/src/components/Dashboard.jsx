@@ -149,11 +149,24 @@ function Dashboard({ user, onClientClick }) {
 
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 10;
+    
+    // Work Order Pagination
+    const [woPage, setWoPage] = useState(1);
+    const WO_ITEMS_PER_PAGE = 5;
 
-    // Filter Progress Work Orders
-    const progressWOs = workOrders.filter(wo => wo.status === 'Progress');
+    // Filter Progress Work Orders and Sort by Due Date (Ascending: Overdue/Nearest first)
+    const progressWOs = workOrders
+        .filter(wo => wo.status === 'Progress')
+        .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
 
-    // Calculate pagination
+    // Calculate WO pagination
+    const totalWOPages = Math.ceil(progressWOs.length / WO_ITEMS_PER_PAGE);
+    const paginatedWOs = progressWOs.slice(
+        (woPage - 1) * WO_ITEMS_PER_PAGE,
+        woPage * WO_ITEMS_PER_PAGE
+    );
+
+    // Calculate pagination for Overdue Projects
     const totalPages = Math.ceil(overdue.length / ITEMS_PER_PAGE);
     const paginatedOverdue = overdue.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
@@ -163,6 +176,12 @@ function Dashboard({ user, onClientClick }) {
     const handlePageChange = (newPage) => {
         if (newPage >= 1 && newPage <= totalPages) {
             setCurrentPage(newPage);
+        }
+    };
+
+    const handleWOPageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= totalWOPages) {
+            setWoPage(newPage);
         }
     };
 
@@ -373,34 +392,59 @@ function Dashboard({ user, onClientClick }) {
                                 <p>No work orders in progress.</p>
                             </div>
                         ) : (
-                            <div className="space-y-4">
-                                {progressWOs.map((wo) => (
-                                    <div key={wo._id} className="flex gap-3 items-start p-3 hover:bg-gray-50 rounded-lg transition-colors border border-gray-50 shadow-sm">
-                                        <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-xl bg-blue-100 text-blue-600">
-                                            🛠️
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-semibold text-gray-800 text-sm truncate">{wo.clientName}</p>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                 <span className="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-[10px] font-medium border border-indigo-100 truncate max-w-[120px]">
-                                                    {wo.services || 'No Service'}
+                            <>
+                                <div className="space-y-4 flex-1 flex flex-col">
+                                    {paginatedWOs.map((wo) => (
+                                        <div key={wo._id} className="flex gap-3 items-start p-3 hover:bg-gray-50 rounded-lg transition-colors border border-gray-50 shadow-sm">
+                                            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-xl bg-blue-100 text-blue-600">
+                                                🛠️
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-semibold text-gray-800 text-sm truncate">{wo.clientName}</p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                     <span className="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-[10px] font-medium border border-indigo-100 truncate max-w-[120px]">
+                                                        {wo.services || 'No Service'}
+                                                    </span>
+                                                </div>
+                                                {wo.detailRequest && (
+                                                    <p className="text-xs text-gray-500 mt-2 line-clamp-2 italic">"{wo.detailRequest}"</p>
+                                                )}
+                                                <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
+                                                    <span>📅 Due: {formatDate(wo.dueDate)}</span>
+                                                </div>
+                                            </div>
+                                            <div className="shrink-0">
+                                                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border bg-blue-100 text-blue-800 border-blue-200">
+                                                    {wo.status}
                                                 </span>
                                             </div>
-                                            {wo.detailRequest && (
-                                                <p className="text-xs text-gray-500 mt-2 line-clamp-2 italic">"{wo.detailRequest}"</p>
-                                            )}
-                                            <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
-                                                <span>📅 Due: {formatDate(wo.dueDate)}</span>
-                                            </div>
                                         </div>
-                                        <div className="shrink-0">
-                                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border bg-blue-100 text-blue-800 border-blue-200">
-                                                {wo.status}
-                                            </span>
-                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* WO Pagination Controls */}
+                                {totalWOPages > 1 && (
+                                    <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+                                        <button
+                                            onClick={() => handleWOPageChange(woPage - 1)}
+                                            disabled={woPage === 1}
+                                            className="px-2 py-1 rounded-md text-[10px] font-medium bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            Prev
+                                        </button>
+                                        <span className="text-[10px] text-gray-500 font-medium">
+                                            {woPage} / {totalWOPages}
+                                        </span>
+                                        <button
+                                            onClick={() => handleWOPageChange(woPage + 1)}
+                                            disabled={woPage === totalWOPages}
+                                            className="px-2 py-1 rounded-md text-[10px] font-medium bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            Next
+                                        </button>
                                     </div>
-                                ))}
-                            </div>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>
