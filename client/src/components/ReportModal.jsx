@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { projectsApi } from '../api/projects';
 import { dailiesApi } from '../api/dailies';
+import { workOrdersApi } from '../api/workOrders';
 import * as XLSX from 'xlsx';
 // import './ReportModal.css'; // Removed custom CSS
 
@@ -32,7 +33,7 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
     const fetchReport = async () => {
         setLoading(true);
         try {
-            const api = apiType === 'daily' ? dailiesApi : projectsApi;
+            const api = apiType === 'daily' ? dailiesApi : (apiType === 'wo' ? workOrdersApi : projectsApi);
             const quarter = quarters.find(q => q.quarter === selectedQuarter);
             const data = await api.getReport(
                 selectedQuarter,
@@ -50,7 +51,7 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
     const handleExportExcel = () => {
         if (!reportData) return;
 
-        const items = apiType === 'daily' ? reportData.dailies : reportData.projects;
+        const items = apiType === 'daily' ? reportData.dailies : (apiType === 'wo' ? reportData.workOrders : reportData.projects);
 
         // Prepare data for Excel
         const excelData = items.map((item, idx) => {
@@ -64,6 +65,18 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
                     'Date': item.date ? new Date(item.date).toLocaleDateString('id-ID') : '',
                     'PIC Team': Array.isArray(item.picTeam) ? item.picTeam.join(', ') : item.picTeam,
                     'Detail Action': item.detailAction,
+                    'Status': item.status
+                };
+            } else if (apiType === 'wo') {
+                return {
+                    'No': idx + 1,
+                    'Client': item.clientName,
+                    'Client Status': item.clientStatus,
+                    'Service': item.services,
+                    'Detail Request': item.detailRequest,
+                    'Due Date': item.dueDate ? new Date(item.dueDate).toLocaleDateString('id-ID') : '',
+                    'Req Barang': item.requestBarang,
+                    'Req Jasa': item.requestJasa,
                     'Status': item.status
                 };
             } else {
@@ -110,6 +123,15 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
             'Hold': stats.hold
         }));
 
+        // Client Status breakdown sheet (for WO)
+        const clientStatusData = apiType === 'wo' ? Object.entries(reportData.clientStatusStats || {}).map(([status, stats]) => ({
+            'Status': status,
+            'Total': stats.total,
+            'Done': stats.done,
+            'Progress': stats.progress,
+            'Hold': stats.hold
+        })) : [];
+
         const wb = XLSX.utils.book_new();
 
         // Add sheets
@@ -126,12 +148,19 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
             XLSX.utils.book_append_sheet(wb, wsPic, 'PIC Team');
         }
 
+        if (clientStatusData.length > 0) {
+            const wsClientStatus = XLSX.utils.json_to_sheet(clientStatusData);
+            XLSX.utils.book_append_sheet(wb, wsClientStatus, 'Client Status');
+        }
+
+
+
         const wsData = XLSX.utils.json_to_sheet(excelData);
-        XLSX.utils.book_append_sheet(wb, wsData, apiType === 'daily' ? 'Daily Activity' : 'Projects');
+        XLSX.utils.book_append_sheet(wb, wsData, apiType === 'daily' ? 'Daily Activity' : (apiType === 'wo' ? 'Work Orders' : 'Projects'));
 
         // Generate filename
         const period = isYearly ? `Year-${selectedYear}` : selectedQuarter;
-        const filename = `${apiType === 'daily' ? 'Daily_Activity' : 'Project'}_Report_${period}.xlsx`;
+        const filename = `${apiType === 'daily' ? 'Daily_Activity' : (apiType === 'wo' ? 'Work_Order' : 'Project')}_Report_${period}.xlsx`;
 
         XLSX.writeFile(wb, filename);
     };
@@ -144,7 +173,7 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Report - ${apiType === 'daily' ? 'Daily Activity' : 'Project'}</title>
+                <title>Report - ${apiType === 'daily' ? 'Daily Activity' : (apiType === 'wo' ? 'Work Order' : 'Project')}</title>
                 <style>
                     * { margin: 0; padding: 0; box-sizing: border-box; }
                     body { 
@@ -302,7 +331,7 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
 
     if (!isOpen) return null;
 
-    const items = reportData ? (apiType === 'daily' ? reportData.dailies : reportData.projects) : [];
+    const items = reportData ? (apiType === 'daily' ? reportData.dailies : (apiType === 'wo' ? reportData.workOrders : reportData.projects)) : [];
 
     const formatDate = (date) => {
         if (!date) return '-';
@@ -494,7 +523,7 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
                         ) : reportData ? (
                             <div className="p-8">
                                 <div className="text-center border-b-[3px] border-[#ff5757] pb-6 mb-8">
-                                    <h1 className="text-2xl font-bold text-[#1a1a2e] mb-1 tracking-wide">{apiType === 'daily' ? 'DAILY ACTIVITY' : 'PROJECT'} INFRASTRUCTURE ENGINEER</h1>
+                                    <h1 className="text-2xl font-bold text-[#1a1a2e] mb-1 tracking-wide">{apiType === 'daily' ? 'DAILY ACTIVITY' : (apiType === 'wo' ? 'WORK ORDER' : 'PROJECT')} INFRASTRUCTURE ENGINEER</h1>
                                     <h2 className="text-lg text-[#ff5757] font-medium">{isYearly ? `Year ${selectedYear}` : selectedQuarter}</h2>
                                     <p className="text-gray-500 text-sm mt-2">Generated on {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                                 </div>
@@ -539,17 +568,30 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
                                                 )}
                                             </div>
 
-                                            {/* PIC Team Performance */}
-                                            <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
-                                                <h4 className="text-gray-800 font-bold mb-4 flex items-center gap-2">
-                                                    <span>👥</span> PIC Team Workload
-                                                </h4>
-                                                {Object.keys(reportData.picStats || {}).length > 0 ? (
-                                                    renderBarChart(reportData.picStats, getMaxValue(reportData.picStats), true)
-                                                ) : (
-                                                    <p className="text-gray-400 text-center py-4 text-sm">No PIC data</p>
-                                                )}
-                                            </div>
+                                            {/* PIC Team Performance (Hide for WO if not needed, or replace with Client Status) */}
+                                            {apiType === 'wo' ? (
+                                                <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+                                                    <h4 className="text-gray-800 font-bold mb-4 flex items-center gap-2">
+                                                        <span>🏢</span> Client Status
+                                                    </h4>
+                                                    {Object.keys(reportData.clientStatusStats || {}).length > 0 ? (
+                                                        renderBarChart(reportData.clientStatusStats, getMaxValue(reportData.clientStatusStats), true)
+                                                    ) : (
+                                                        <p className="text-gray-400 text-center py-4 text-sm">No client status data</p>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+                                                    <h4 className="text-gray-800 font-bold mb-4 flex items-center gap-2">
+                                                        <span>👥</span> PIC Team Workload
+                                                    </h4>
+                                                    {Object.keys(reportData.picStats || {}).length > 0 ? (
+                                                        renderBarChart(reportData.picStats, getMaxValue(reportData.picStats), true)
+                                                    ) : (
+                                                        <p className="text-gray-400 text-center py-4 text-sm">No PIC data</p>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Quarterly Trend (for yearly reports) */}
@@ -559,8 +601,8 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
                                             </div>
                                         )}
 
-                                        {/* PIC Team Table */}
-                                        {Object.keys(reportData.picStats || {}).length > 0 && (
+                                        {/* PIC Team Table (Hide for WO) */}
+                                        {apiType !== 'wo' && Object.keys(reportData.picStats || {}).length > 0 && (
                                             <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
                                                 <h4 className="text-gray-800 font-bold mb-4 flex items-center gap-2">
                                                     <span>📋</span> PIC Team Details
@@ -600,7 +642,7 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
                                     <div className="space-y-8">
                                         {/* Grouped by Site/Client Name */}
                                         {(() => {
-                                            const nameKey = apiType === 'daily' ? 'clientName' : 'projectName';
+                                            const nameKey = apiType === 'daily' ? 'clientName' : (apiType === 'wo' ? 'clientName' : 'projectName');
                                             const grouped = {};
                                             items.forEach(item => {
                                                 const name = item[nameKey] || 'Unknown';
@@ -624,8 +666,8 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
                                                                     <th className="py-3 px-4 w-12 font-semibold">No</th>
                                                                     <th className="py-3 px-4 font-semibold">Service</th>
                                                                     <th className="py-3 px-4 w-32 font-semibold">Date</th>
-                                                                    <th className="py-3 px-4 font-semibold">PIC</th>
-                                                                    <th className="py-3 px-4 font-semibold">{apiType === 'daily' ? 'Detail Action' : 'Progress'}</th>
+                                                                    <th className="py-3 px-4 font-semibold">{apiType === 'wo' ? 'Client Status' : 'PIC'}</th>
+                                                                    <th className="py-3 px-4 font-semibold">{apiType === 'daily' ? 'Detail Action' : (apiType === 'wo' ? 'Detail Request' : 'Progress')}</th>
                                                                     <th className="py-3 px-4 w-24 font-semibold">Status</th>
                                                                 </tr>
                                                             </thead>
@@ -634,9 +676,9 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
                                                                     <tr key={item._id || idx} className="hover:bg-gray-50/50">
                                                                         <td className="py-3 px-4 text-gray-500">{idx + 1}</td>
                                                                         <td className="py-3 px-4 text-gray-800 font-medium">{Array.isArray(item.services) ? item.services.join(', ') : item.services || '-'}</td>
-                                                                        <td className="py-3 px-4 text-gray-600 font-mono text-xs">{formatDate(item.date)}</td>
-                                                                        <td className="py-3 px-4 text-gray-600 truncate max-w-[150px]">{Array.isArray(item.picTeam) ? item.picTeam.join(', ') : item.picTeam || '-'}</td>
-                                                                        <td className="py-3 px-4 text-gray-600 text-xs min-w-[200px]">{apiType === 'daily' ? item.detailAction : item.progress || '-'}</td>
+                                                                        <td className="py-3 px-4 text-gray-600 font-mono text-xs">{formatDate(item.date || item.dueDate)}</td>
+                                                                        <td className="py-3 px-4 text-gray-600 truncate max-w-[150px]">{apiType === 'wo' ? item.clientStatus : (Array.isArray(item.picTeam) ? item.picTeam.join(', ') : item.picTeam || '-')}</td>
+                                                                        <td className="py-3 px-4 text-gray-600 text-xs min-w-[200px]">{apiType === 'daily' ? item.detailAction : (apiType === 'wo' ? item.detailRequest : item.progress || '-')}</td>
                                                                         <td className={`py-3 px-4 text-xs ${getStatusClass(item.status)}`}>{item.status || '-'}</td>
                                                                     </tr>
                                                                 ))}

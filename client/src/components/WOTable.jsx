@@ -162,43 +162,156 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
         );
     }
 
-    return (
-        <div className="flex flex-col gap-4">
-             {/* Batch Action Bar */}
-             {selectedIds.length > 0 && (
-                <div className="flex flex-wrap items-center gap-4 bg-orange-50 p-3 rounded-xl shadow-sm border border-orange-100 animate-slide-up">
-                    <span className="text-sm font-semibold text-orange-800 px-2">{selectedIds.length} selected</span>
-                    <div className="h-6 w-px bg-orange-200 hidden sm:block"></div>
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-orange-700 uppercase tracking-wide mr-2 hidden sm:inline">Set Status:</span>
+    const [isGrouped, setIsGrouped] = useState(true);
+
+    // Group work orders
+    const groupedWOs = {
+        'New Client': [],
+        'Existing': [],
+        'Other': []
+    };
+
+    if (isGrouped) {
+        workOrders.forEach(wo => {
+            const status = wo.clientStatus === 'New Client' ? 'New Client' : (wo.clientStatus === 'Existing' ? 'Existing' : 'Other');
+            groupedWOs[status].push(wo);
+        });
+    }
+
+    const renderRows = (orders) => {
+        return orders.map((wo, index) => (
+            <tr key={wo._id} className={`hover:bg-gray-50 transition-colors ${selectedIds.includes(wo._id) ? 'bg-blue-50/50' : (index % 2 === 0 && !isGrouped ? 'bg-white' : 'bg-gray-50')}`}>
+                <td className="px-4 py-3 border-r border-gray-100/50">
+                    <input
+                        type="checkbox"
+                        checked={selectedIds.includes(wo._id)}
+                        onChange={() => handleSelectOne(wo._id)}
+                        className="rounded border-gray-300 text-accent-coral focus:ring-accent-coral"
+                    />
+                </td>
+                <td className="px-4 py-3 text-center text-gray-400 font-medium">{wo.quarterSequence}</td>
+                <td className="px-4 py-3 text-center">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                        wo.clientStatus === 'New Client' 
+                            ? 'bg-purple-100 text-purple-800 border-purple-200' 
+                            : (wo.clientStatus === 'Existing' ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-gray-100 text-gray-800 border-gray-200')
+                    }`}>
+                        {wo.clientStatus || '-'}
+                    </span>
+                </td>
+                <td className="px-4 py-3 font-semibold text-gray-800">{wo.clientName}</td>
+                <td className="px-4 py-3 text-gray-600">{wo.sales || '-'}</td>
+                <td className="px-4 py-3 text-gray-600">
+                    <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-xs font-medium border border-indigo-100">
+                        {wo.services || '-'}
+                    </span>
+                </td>
+                <td className="px-4 py-3 text-gray-700 text-xs">{wo.detailRequest || '-'}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-gray-600 font-mono text-xs">{formatDate(wo.dueDate)}</td>
+                <td className="px-4 py-3 text-gray-600 text-xs text-center">
+                    <StatusCell 
+                        value={wo.requestBarang} 
+                        type="requestBarang" 
+                        onUpdate={(val) => onStatusUpdate(wo._id, 'requestBarang', val)}
+                    />
+                </td>
+                <td className="px-4 py-3 text-gray-600 text-xs text-center">
+                    <StatusCell 
+                        value={wo.requestJasa} 
+                        type="requestJasa" 
+                        onUpdate={(val) => onStatusUpdate(wo._id, 'requestJasa', val)}
+                    />
+                </td>
+                <td className="px-4 py-3 text-gray-600 text-xs italic">{wo.keterangan || '-'}</td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                    <StatusCell 
+                        value={wo.status} 
+                        type="status" 
+                        onUpdate={(val) => onStatusUpdate(wo._id, 'status', val)}
+                    />
+                </td>
+                <td className="px-4 py-3 text-right whitespace-nowrap">
+                    <div className="flex items-center justify-end gap-1">
                         <button
-                            className="px-3 py-1.5 bg-white text-green-600 text-xs font-bold rounded-lg border border-green-200 hover:bg-green-50 transition-colors shadow-sm"
-                            onClick={() => onBatchStatusUpdate('Done')}
+                            className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            onClick={() => onEdit(wo)}
+                            title="Edit"
                         >
-                            ✓ Done
+                            ✏️
                         </button>
                         <button
-                            className="px-3 py-1.5 bg-white text-blue-600 text-xs font-bold rounded-lg border border-blue-200 hover:bg-blue-50 transition-colors shadow-sm"
-                            onClick={() => onBatchStatusUpdate('Progress')}
+                            className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            onClick={() => onDelete(wo._id)}
+                            title="Delete"
                         >
-                            ⏳ Progress
-                        </button>
-                        <button
-                            className="px-3 py-1.5 bg-white text-orange-600 text-xs font-bold rounded-lg border border-orange-200 hover:bg-orange-50 transition-colors shadow-sm"
-                            onClick={() => onBatchStatusUpdate('Hold')}
-                        >
-                            ⏸ Hold
+                            🗑️
                         </button>
                     </div>
+                </td>
+            </tr>
+        ));
+    };
+
+    return (
+        <div className="flex flex-col gap-4">
+             {/* Batch Action Bar & Group Toggle */}
+             <div className="flex flex-wrap items-center justify-between gap-4">
+                {selectedIds.length > 0 ? (
+                    <div className="flex flex-wrap items-center gap-4 bg-orange-50 p-3 rounded-xl shadow-sm border border-orange-100 animate-slide-up flex-1">
+                        <span className="text-sm font-semibold text-orange-800 px-2">{selectedIds.length} selected</span>
+                        <div className="h-6 w-px bg-orange-200 hidden sm:block"></div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-orange-700 uppercase tracking-wide mr-2 hidden sm:inline">Set Status:</span>
+                            <button
+                                className="px-3 py-1.5 bg-white text-green-600 text-xs font-bold rounded-lg border border-green-200 hover:bg-green-50 transition-colors shadow-sm"
+                                onClick={() => onBatchStatusUpdate('Done')}
+                            >
+                                ✓ Done
+                            </button>
+                            <button
+                                className="px-3 py-1.5 bg-white text-blue-600 text-xs font-bold rounded-lg border border-blue-200 hover:bg-blue-50 transition-colors shadow-sm"
+                                onClick={() => onBatchStatusUpdate('Progress')}
+                            >
+                                ⏳ Progress
+                            </button>
+                            <button
+                                className="px-3 py-1.5 bg-white text-orange-600 text-xs font-bold rounded-lg border border-orange-200 hover:bg-orange-50 transition-colors shadow-sm"
+                                onClick={() => onBatchStatusUpdate('Hold')}
+                            >
+                                ⏸ Hold
+                            </button>
+                        </div>
+                        <div className="flex-1"></div>
+                        <button
+                            className="px-3 py-1.5 text-gray-500 hover:text-gray-700 text-xs font-semibold"
+                            onClick={() => onSelectionChange([])}
+                        >
+                            ✕ Clear Selection
+                        </button>
+                    </div>
+                ) : (
                     <div className="flex-1"></div>
-                    <button
-                        className="px-3 py-1.5 text-gray-500 hover:text-gray-700 text-xs font-semibold"
-                        onClick={() => onSelectionChange([])}
-                    >
-                        ✕ Clear Selection
-                    </button>
-                </div>
-            )}
+                )}
+
+                <button
+                    onClick={() => setIsGrouped(!isGrouped)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border shadow-sm ${
+                        isGrouped 
+                            ? 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100' 
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    }`}
+                >
+                    {isGrouped ? (
+                        <>
+                            <span>📂</span> Grouped by Status
+                        </>
+                    ) : (
+                        <>
+                            <span>📄</span> List View
+                        </>
+                    )}
+                </button>
+             </div>
 
             <div className="bg-white rounded-xl shadow-custom overflow-hidden border border-gray-200/60">
                 <div className="overflow-x-auto">
@@ -228,87 +341,53 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                                 <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {workOrders.length === 0 ? (
-                                <tr>
-                                    <td colSpan="13" className="px-4 py-8 text-center text-gray-400">
-                                        No work orders match your search.
-                                    </td>
-                                </tr>
-                            ) : (
-                                workOrders.map((wo, index) => (
-                                    <tr key={wo._id} className={`hover:bg-gray-50 transition-colors ${selectedIds.includes(wo._id) ? 'bg-blue-50/50' : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')}`}>
-                                    <td className="px-4 py-3 border-r border-gray-100/50">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedIds.includes(wo._id)}
-                                            onChange={() => handleSelectOne(wo._id)}
-                                            className="rounded border-gray-300 text-accent-coral focus:ring-accent-coral"
-                                        />
-                                    </td>
-                                    <td className="px-4 py-3 text-center text-gray-400 font-medium">{wo.quarterSequence}</td>
-                                    <td className="px-4 py-3 text-center">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                                            wo.clientStatus === 'New Client' 
-                                                ? 'bg-purple-100 text-purple-800 border-purple-200' 
-                                                : (wo.clientStatus === 'Existing' ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-gray-100 text-gray-800 border-gray-200')
-                                        }`}>
-                                            {wo.clientStatus || '-'}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-3 font-semibold text-gray-800">{wo.clientName}</td>
-                                    <td className="px-4 py-3 text-gray-600">{wo.sales || '-'}</td>
-                                    <td className="px-4 py-3 text-gray-600">
-                                        <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-xs font-medium border border-indigo-100">
-                                            {wo.services || '-'}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-3 text-gray-700 text-xs">{wo.detailRequest || '-'}</td>
-                                    <td className="px-4 py-3 whitespace-nowrap text-gray-600 font-mono text-xs">{formatDate(wo.dueDate)}</td>
-                                    <td className="px-4 py-3 text-gray-600 text-xs text-center">
-                                        <StatusCell 
-                                            value={wo.requestBarang} 
-                                            type="requestBarang" 
-                                            onUpdate={(val) => onStatusUpdate(wo._id, 'requestBarang', val)}
-                                        />
-                                    </td>
-                                    <td className="px-4 py-3 text-gray-600 text-xs text-center">
-                                        <StatusCell 
-                                            value={wo.requestJasa} 
-                                            type="requestJasa" 
-                                            onUpdate={(val) => onStatusUpdate(wo._id, 'requestJasa', val)}
-                                        />
-                                    </td>
-                                    <td className="px-4 py-3 text-gray-600 text-xs italic">{wo.keterangan || '-'}</td>
-                                    <td className="px-4 py-3 whitespace-nowrap">
-                                        <StatusCell 
-                                            value={wo.status} 
-                                            type="status" 
-                                            onUpdate={(val) => onStatusUpdate(wo._id, 'status', val)}
-                                        />
-                                    </td>
-                                    <td className="px-4 py-3 text-right whitespace-nowrap">
-                                        <div className="flex items-center justify-end gap-1">
-                                            <button
-                                                className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                                onClick={() => onEdit(wo)}
-                                                title="Edit"
-                                            >
-                                                ✏️
-                                            </button>
-                                            <button
-                                                className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                onClick={() => onDelete(wo._id)}
-                                                title="Delete"
-                                            >
-                                                🗑️
-                                            </button>
-                                        </div>
-                                    </td>
+                        
+                        {isGrouped ? (
+                            <>
+                                {groupedWOs['New Client'].length > 0 && (
+                                    <tbody className="divide-y divide-gray-100 border-b border-gray-200">
+                                        <tr className="bg-purple-50/50">
+                                            <td colSpan="13" className="px-4 py-2 font-bold text-purple-800 border-l-4 border-purple-400">
+                                                New Client ({groupedWOs['New Client'].length})
+                                            </td>
+                                        </tr>
+                                        {renderRows(groupedWOs['New Client'])}
+                                    </tbody>
+                                )}
+                                {groupedWOs['Existing'].length > 0 && (
+                                    <tbody className="divide-y divide-gray-100 border-b border-gray-200">
+                                        <tr className="bg-blue-50/50">
+                                            <td colSpan="13" className="px-4 py-2 font-bold text-blue-800 border-l-4 border-blue-400">
+                                                Existing Client ({groupedWOs['Existing'].length})
+                                            </td>
+                                        </tr>
+                                        {renderRows(groupedWOs['Existing'])}
+                                    </tbody>
+                                )}
+                                {groupedWOs['Other'].length > 0 && (
+                                    <tbody className="divide-y divide-gray-100 border-b border-gray-200">
+                                        <tr className="bg-gray-50/50">
+                                            <td colSpan="13" className="px-4 py-2 font-bold text-gray-700 border-l-4 border-gray-400">
+                                                Other ({groupedWOs['Other'].length})
+                                            </td>
+                                        </tr>
+                                        {renderRows(groupedWOs['Other'])}
+                                    </tbody>
+                                )}
+                            </>
+                        ) : (
+                            <tbody className="divide-y divide-gray-100">
+                                {workOrders.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="13" className="px-4 py-8 text-center text-gray-400">
+                                            No work orders match your search.
+                                        </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
+                                ) : (
+                                    renderRows(workOrders)
+                                )}
+                            </tbody>
+                        )}
                     </table>
                 </div>
             </div>

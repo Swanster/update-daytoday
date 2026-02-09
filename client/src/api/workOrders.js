@@ -13,6 +13,12 @@ export const workOrdersApi = {
         return response.data;
     },
 
+    getReport: async (quarter, year, isYearly) => {
+        const params = { quarter, year, isYearly };
+        const response = await api.get(`${API_URL}/report`, { params });
+        return response.data;
+    },
+
     getQuarters: async () => {
         const response = await api.get(`${API_URL}/quarters`);
         return response.data;

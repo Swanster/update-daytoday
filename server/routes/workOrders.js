@@ -46,6 +46,99 @@ router.get('/quarters', auth, async (req, res) => {
     }
 });
 
+// Get report data
+router.get('/report', auth, async (req, res) => {
+    try {
+        const { quarter, year, isYearly } = req.query;
+        let query = {};
+
+        if (isYearly === 'true' && year) {
+            query.year = parseInt(year);
+        } else if (quarter && year) {
+            query.quarter = quarter;
+            query.year = parseInt(year);
+        }
+
+        const workOrders = await WorkOrder.find(query).sort({ quarterSequence: 1 });
+
+        // Calculate summary stats
+        const summary = {
+            total: workOrders.length,
+            done: workOrders.filter(w => w.status === 'Done' || w.status === 'Complete').length,
+            progress: workOrders.filter(w => w.status === 'Progress' || w.status === 'On Progress').length,
+            hold: workOrders.filter(w => w.status === 'Hold').length,
+            noStatus: workOrders.filter(w => !w.status).length
+        };
+
+        // Calculate percentages
+        summary.donePercent = summary.total > 0 ? Math.round((summary.done / summary.total) * 100) : 0;
+        summary.progressPercent = summary.total > 0 ? Math.round((summary.progress / summary.total) * 100) : 0;
+        summary.holdPercent = summary.total > 0 ? Math.round((summary.hold / summary.total) * 100) : 0;
+
+        // Calculate Client Status stats (New vs Existing)
+        const clientStatusStats = {
+            'New Client': { total: 0, done: 0, progress: 0, hold: 0 },
+            'Existing': { total: 0, done: 0, progress: 0, hold: 0 }
+        };
+
+        // Calculate Service stats
+        const serviceStats = {};
+
+        workOrders.forEach(wo => {
+            // Client Status Stats
+            const status = wo.clientStatus || 'Existing'; // Default to Existing if not set
+            // Normalize status to handle potential variations if any, though select enforces specific values
+            const normStatus = status === 'New Client' ? 'New Client' : 'Existing';
+            
+            if (!clientStatusStats[normStatus]) {
+                 clientStatusStats[normStatus] = { total: 0, done: 0, progress: 0, hold: 0 };
+            }
+            
+            clientStatusStats[normStatus].total++;
+            if (wo.status === 'Done' || wo.status === 'Complete') clientStatusStats[normStatus].done++;
+            else if (wo.status === 'Progress' || wo.status === 'On Progress') clientStatusStats[normStatus].progress++;
+            else if (wo.status === 'Hold') clientStatusStats[normStatus].hold++;
+
+            // Service Stats
+            let service = wo.services || 'OTHER';
+            if (!serviceStats[service]) {
+                serviceStats[service] = { total: 0, done: 0, progress: 0, hold: 0 };
+            }
+            serviceStats[service].total++;
+            if (wo.status === 'Done' || wo.status === 'Complete') serviceStats[service].done++;
+            else if (wo.status === 'Progress' || wo.status === 'On Progress') serviceStats[service].progress++;
+            else if (wo.status === 'Hold') serviceStats[service].hold++;
+        });
+
+        // Quarterly trend (if yearly)
+        let quarterlyTrend = [];
+        if (isYearly === 'true') {
+            const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+            for (const q of quarters) {
+                const qKey = `${q}-${year}`;
+                const qWOs = workOrders.filter(w => w.quarter === qKey);
+                quarterlyTrend.push({
+                    quarter: qKey,
+                    total: qWOs.length,
+                    done: qWOs.filter(w => w.status === 'Done' || w.status === 'Complete').length,
+                    progress: qWOs.filter(w => w.status === 'Progress' || w.status === 'On Progress').length,
+                    hold: qWOs.filter(w => w.status === 'Hold').length
+                });
+            }
+        }
+
+        res.json({
+            summary,
+            clientStatusStats,
+            serviceStats,
+            workOrders,
+            quarterlyTrend
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // Create new work order
 router.post('/', auth, async (req, res) => {
     try {
