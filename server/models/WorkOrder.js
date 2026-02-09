@@ -16,7 +16,6 @@ const WorkOrderSchema = new mongoose.Schema({
     },
     services: {
         type: String,
-        enum: ['KEPONET', 'MEGALOS', 'VLEPO', 'TAAS', 'FIBERZONE APPS', 'WAS', 'FTTR', 'INTERNET BANDWITH', 'OTHER'],
         default: 'OTHER'
     },
     detailRequest: {
