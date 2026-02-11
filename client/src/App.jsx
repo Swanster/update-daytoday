@@ -436,6 +436,32 @@ function App() {
         }
     };
 
+    // Handle individual Project status update (field update)
+    const handleProjectStatusUpdate = async (id, field, value) => {
+        try {
+            const updateData = { [field]: value };
+            await projectsApi.update(id, updateData);
+            toast.success('Status updated successfully');
+            await fetchData();
+        } catch (err) {
+            console.error('Project status update error:', err);
+            toast.error('Failed to update status');
+        }
+    };
+
+    // Handle individual Daily status update (field update)
+    const handleDailyStatusUpdate = async (id, field, value) => {
+        try {
+            const updateData = { [field]: value };
+            await dailiesApi.update(id, updateData);
+            toast.success('Status updated successfully');
+            await fetchData();
+        } catch (err) {
+            console.error('Daily status update error:', err);
+            toast.error('Failed to update status');
+        }
+    };
+
 
 
     // Handle client click from dashboard - navigate to Client tab
@@ -809,6 +835,7 @@ function App() {
                         onSelectionChange={setSelectedProjectIds}
                         onBatchStatusUpdate={handleBatchStatusUpdate}
                         onAddEntry={handleAddEntryForProject}
+                        onStatusUpdate={handleProjectStatusUpdate}
                     />
                 ) : activeTab === 'wo' ? (
                      <WOTable 
@@ -829,6 +856,7 @@ function App() {
                         onSelectionChange={setSelectedDailyIds}
                         onBatchStatusUpdate={handleDailyBatchStatusUpdate}
                         onAddEntry={handleAddEntryForClient}
+                        onStatusUpdate={handleDailyStatusUpdate}
                     />
                 )}
             </main>

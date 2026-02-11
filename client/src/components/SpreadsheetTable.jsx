@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
 import AttachmentViewer from './AttachmentViewer';
+import StatusCell from './StatusCell';
 
-export default function SpreadsheetTable({ projects, onEdit, onDelete, selectedIds = [], onSelectionChange, onBatchStatusUpdate, onAddEntry }) {
+export default function SpreadsheetTable({ projects, onEdit, onDelete, selectedIds = [], onSelectionChange, onBatchStatusUpdate, onAddEntry, onStatusUpdate }) {
+    const [expandedId, setExpandedId] = useState(null);
     // Group projects by name for merged cell display
     const groupedProjects = useMemo(() => {
         const groups = {};
@@ -119,7 +121,7 @@ export default function SpreadsheetTable({ projects, onEdit, onDelete, selectedI
             )}
 
             <div className="bg-white rounded-xl shadow-custom overflow-hidden border border-gray-200/60">
-                <div className="overflow-x-auto">
+                <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-sm text-left border-collapse">
                         <thead className="bg-gray-50 text-gray-600 font-semibold uppercase text-xs">
                             <tr>
@@ -197,7 +199,7 @@ export default function SpreadsheetTable({ projects, onEdit, onDelete, selectedI
                                             <div className="flex flex-wrap gap-1">
                                                 {entry.services && entry.services.length > 0 ? (
                                                     (Array.isArray(entry.services) ? entry.services : [entry.services]).map((cat, idx) => (
-                                                        <span key={idx} className="bg-gray-100 text-gray-600 border border-gray-200 px-2 py-0.5 rounded textxs font-medium">{cat}</span>
+                                                        <span key={idx} className="bg-gray-100 text-gray-600 border border-gray-200 px-2 py-0.5 rounded text-xs font-medium">{cat}</span>
                                                     ))
                                                 ) : <span className="text-gray-300">-</span>}
                                             </div>
@@ -206,27 +208,33 @@ export default function SpreadsheetTable({ projects, onEdit, onDelete, selectedI
                                         {/* Report Survey */}
                                         <td className="px-4 py-3 whitespace-nowrap">
                                             {entry.reportSurvey ? (
-                                                <span className={getStatusBadgeClass(entry.reportSurvey)}>
-                                                    {entry.reportSurvey}
-                                                </span>
+                                                <StatusCell
+                                                    value={entry.reportSurvey}
+                                                    type="reportSurvey"
+                                                    onUpdate={(val) => onStatusUpdate(entry._id, 'reportSurvey', val)}
+                                                />
                                             ) : <span className="text-gray-300">-</span>}
                                         </td>
 
                                         {/* WO */}
                                         <td className="px-4 py-3 whitespace-nowrap">
                                             {entry.wo ? (
-                                                <span className={getStatusBadgeClass(entry.wo)}>
-                                                    {entry.wo}
-                                                </span>
+                                                <StatusCell
+                                                    value={entry.wo}
+                                                    type="wo"
+                                                    onUpdate={(val) => onStatusUpdate(entry._id, 'wo', val)}
+                                                />
                                             ) : <span className="text-gray-300">-</span>}
                                         </td>
 
                                         {/* Material */}
                                         <td className="px-4 py-3 whitespace-nowrap">
                                             {entry.material ? (
-                                                <span className={getStatusBadgeClass(entry.material)}>
-                                                    {entry.material}
-                                                </span>
+                                                <StatusCell
+                                                    value={entry.material}
+                                                    type="material"
+                                                    onUpdate={(val) => onStatusUpdate(entry._id, 'material', val)}
+                                                />
                                             ) : <span className="text-gray-300">-</span>}
                                         </td>
 
@@ -264,9 +272,11 @@ export default function SpreadsheetTable({ projects, onEdit, onDelete, selectedI
                                         {/* Status */}
                                         <td className="px-4 py-3 whitespace-nowrap">
                                             {entry.status ? (
-                                                <span className={getStatusBadgeClass(entry.status)}>
-                                                    {entry.status}
-                                                </span>
+                                                <StatusCell
+                                                    value={entry.status}
+                                                    type="status"
+                                                    onUpdate={(val) => onStatusUpdate(entry._id, 'status', val)}
+                                                />
                                             ) : <span className="text-gray-300">-</span>}
                                         </td>
 
@@ -303,6 +313,147 @@ export default function SpreadsheetTable({ projects, onEdit, onDelete, selectedI
                             })}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Mobile Expandable Card View */}
+                <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/50">
+                    {projectNames.map((projectName) => {
+                         const projectEntries = groupedProjects[projectName];
+                         return projectEntries.map((entry) => (
+                            <div key={entry._id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                                {/* Card Header / Preview */}
+                                <div 
+                                    className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                                    onClick={() => setExpandedId(expandedId === entry._id ? null : entry._id)}
+                                >
+                                    <div className="flex justify-between items-start gap-3">
+                                        <div className="flex-1">
+                                            <h4
+                                                className="font-bold text-gray-800 text-sm flex items-center gap-1 cursor-pointer hover:text-accent-coral transition-colors"
+                                                onClick={(e) => { e.stopPropagation(); onAddEntry && onAddEntry(entry.projectName); }}
+                                            >
+                                                {entry.projectName}
+                                                <span className="text-accent-coral text-[10px]">＋</span>
+                                            </h4>
+                                            
+                                            {/* Preview: Progress (Truncated) */}
+                                            <div className="mt-1 text-xs text-gray-600 flex items-start gap-1">
+                                                <span className="text-gray-400 shrink-0">📈</span>
+                                                <span className="line-clamp-2 opacity-80">
+                                                    {entry.progress || '-'}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div onClick={(e) => e.stopPropagation()}>
+                                            <StatusCell
+                                                value={entry.status}
+                                                type="status"
+                                                onUpdate={(val) => onStatusUpdate(entry._id, 'status', val)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-center mt-1">
+                                        <span className={`text-gray-300 text-[10px] transform transition-transform ${expandedId === entry._id ? 'rotate-180' : ''}`}>▼</span>
+                                    </div>
+                                </div>
+
+                                {/* Expanded Details */}
+                                {expandedId === entry._id && (
+                                    <div className="px-4 pb-4 pt-0 border-t border-gray-50 bg-gray-50/30 animate-slide-down">
+                                        <div className="flex flex-col gap-3 mt-3">
+                                            
+                                            <div className="flex justify-between text-xs text-gray-500">
+                                                <span>📅 {formatDate(entry.date)}</span>
+                                                {entry.dueDate && <span>Due: {formatDate(entry.dueDate)}</span>}
+                                            </div>
+
+                                            <div className="bg-white p-2 rounded border border-gray-100">
+                                                <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Full Progress</span>
+                                                <div className="text-xs text-gray-700 whitespace-pre-wrap">
+                                                    {entry.progress || '-'}
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-2 text-xs">
+                                                <div className="bg-white p-2 rounded border border-gray-100">
+                                                    <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Service</span>
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {entry.services && (Array.isArray(entry.services) ? entry.services : [entry.services]).map((s, idx) => (
+                                                             <span key={idx} className="text-gray-600">{s}</span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="bg-white p-2 rounded border border-gray-100">
+                                                    <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">PIC</span>
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {entry.picTeam && entry.picTeam.map((p, idx) => (
+                                                             <span key={idx} className="bg-indigo-50 text-indigo-700 px-1 py-0.5 rounded">{p}</span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Statuses Grid */}
+                                            <div className="grid grid-cols-3 gap-2 text-[10px]">
+                                                <div className="bg-white p-1.5 rounded border border-gray-100 text-center">
+                                                    <span className="text-gray-400 block mb-1">Report</span>
+                                                    {entry.reportSurvey ? (
+                                                        <StatusCell
+                                                            value={entry.reportSurvey}
+                                                            type="reportSurvey"
+                                                            onUpdate={(val) => onStatusUpdate(entry._id, 'reportSurvey', val)}
+                                                        />
+                                                    ) : '-'}
+                                                </div>
+                                                <div className="bg-white p-1.5 rounded border border-gray-100 text-center">
+                                                    <span className="text-gray-400 block mb-1">WO</span>
+                                                    {entry.wo ? (
+                                                        <StatusCell
+                                                            value={entry.wo}
+                                                            type="wo"
+                                                            onUpdate={(val) => onStatusUpdate(entry._id, 'wo', val)}
+                                                        />
+                                                    ) : '-'}
+                                                </div>
+                                                <div className="bg-white p-1.5 rounded border border-gray-100 text-center">
+                                                    <span className="text-gray-400 block mb-1">Material</span>
+                                                    {entry.material ? (
+                                                        <StatusCell
+                                                            value={entry.material}
+                                                            type="material"
+                                                            onUpdate={(val) => onStatusUpdate(entry._id, 'material', val)}
+                                                        />
+                                                    ) : '-'}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex gap-2 mt-2 pt-3 border-t border-gray-100">
+                                                <button
+                                                    className="flex-1 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors"
+                                                    onClick={(e) => { e.stopPropagation(); onAddEntry && onAddEntry(entry.projectName); }}
+                                                >
+                                                    ＋ Quick Add
+                                                </button>
+                                                <button
+                                                    className="flex-1 py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
+                                                    onClick={(e) => { e.stopPropagation(); onEdit(entry); }}
+                                                >
+                                                    ✏️ Edit
+                                                </button>
+                                                <button
+                                                    className="flex-1 py-2 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors"
+                                                    onClick={(e) => { e.stopPropagation(); onDelete(entry._id); }}
+                                                >
+                                                    🗑️ Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ));
+                    })}
                 </div>
             </div>
 

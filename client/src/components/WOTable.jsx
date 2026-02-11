@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
+import StatusCell from './StatusCell';
 
 export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = [], onSelectionChange, onBatchStatusUpdate, onStatusUpdate }) {
+    const [expandedId, setExpandedId] = useState(null);
     
     // Check if all are selected
     const allSelected = workOrders.length > 0 && selectedIds.length === workOrders.length;
@@ -39,117 +41,14 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
         const statusLower = status.toLowerCase();
         
         if (statusLower.includes('done') || statusLower.includes('complete')) {
-            return `${baseClasses} bg-green-100 text-green-800 border-green-200`;
+            return baseClasses + " bg-green-100 text-green-800 border-green-200";
         } else if (statusLower.includes('progress')) {
-            return `${baseClasses} bg-blue-100 text-blue-800 border-blue-200`;
+            return baseClasses + " bg-blue-100 text-blue-800 border-blue-200";
         } else if (statusLower.includes('hold')) {
-            return `${baseClasses} bg-orange-100 text-orange-800 border-orange-200`;
+            return baseClasses + " bg-orange-100 text-orange-800 border-orange-200";
         } else {
-            return `${baseClasses} bg-gray-100 text-gray-800 border-gray-200`;
+            return baseClasses + " bg-gray-100 text-gray-800 border-gray-200";
         }
-    };
-
-    // Status Cell Component for Inline Editing
-    const StatusCell = ({ value, type, onUpdate }) => {
-        const [isOpen, setIsOpen] = useState(false);
-        const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
-        const buttonRef = useRef(null);
-
-        const options = {
-            requestBarang: ['Progress', 'Done'],
-            requestJasa: ['No Need', 'Progress', 'Done'],
-            status: ['Progress', 'Done', 'Hold']
-        };
-
-        const handleOpen = (e) => {
-            e.stopPropagation();
-            if (isOpen) {
-                setIsOpen(false);
-                return;
-            }
-
-            // Calculate position
-            if (buttonRef.current) {
-                const rect = buttonRef.current.getBoundingClientRect();
-                const viewportHeight = window.innerHeight;
-                const spaceBelow = viewportHeight - rect.bottom;
-                
-                // If closely near bottom, show above
-                const showAbove = spaceBelow < 150; // Approximating dropdown height
-                
-                setDropdownPos({
-                    top: showAbove ? rect.top - 10 : rect.bottom + 5,
-                    left: rect.left,
-                    transform: showAbove ? 'translateY(-100%)' : 'none'
-                });
-            }
-            setIsOpen(true);
-        };
-
-        const getBadgeClass = (val) => {
-            const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border cursor-pointer hover:opacity-80 transition-opacity select-none";
-            const valLower = (val || '').toLowerCase();
-            
-            if (valLower.includes('done') || valLower.includes('complete')) {
-                return `${baseClasses} bg-green-100 text-green-800 border-green-200`;
-            } else if (valLower.includes('progress')) {
-                return `${baseClasses} bg-blue-100 text-blue-800 border-blue-200`;
-            } else if (valLower.includes('hold')) {
-                return `${baseClasses} bg-orange-100 text-orange-800 border-orange-200`;
-            } else if (valLower.includes('no need')) {
-                return `${baseClasses} bg-gray-100 text-gray-800 border-gray-200`;
-            } else {
-                return `${baseClasses} bg-gray-100 text-gray-800 border-gray-200`;
-            }
-        };
-
-        return (
-            <>
-                <span 
-                    ref={buttonRef}
-                    className={getBadgeClass(value)}
-                    onClick={handleOpen}
-                >
-                    {value || '-'}
-                </span>
-                
-                {isOpen && (
-                    <div 
-                        className="fixed inset-0 z-[9999] isolate" // Portal-like behavior via fixed position
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setIsOpen(false);
-                        }} 
-                    >
-                        <div 
-                            className="absolute bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-scale-in w-32"
-                            style={{ 
-                                top: dropdownPos.top, 
-                                left: dropdownPos.left,
-                                transform: dropdownPos.transform
-                            }}
-                        >
-                            {options[type].map((opt) => (
-                                <div 
-                                    key={opt}
-                                    className={`px-4 py-2 text-xs font-medium cursor-pointer hover:bg-gray-50 flex items-center justify-between ${
-                                        value === opt ? 'text-indigo-600 bg-indigo-50' : 'text-gray-700'
-                                    }`}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onUpdate(opt);
-                                        setIsOpen(false);
-                                    }}
-                                >
-                                    {opt}
-                                    {value === opt && <span>✓</span>}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </>
-        );
     };
 
     if (workOrders.length === 0) {
@@ -313,8 +212,7 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                 </button>
              </div>
 
-            <div className="bg-white rounded-xl shadow-custom overflow-hidden border border-gray-200/60">
-                <div className="overflow-x-auto">
+                <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-sm text-left border-collapse">
                         <thead className="bg-gray-50 text-gray-600 font-semibold uppercase text-xs">
                             <tr>
@@ -390,7 +288,135 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                         )}
                     </table>
                 </div>
-            </div>
+
+                {/* Mobile Expandable Card View */}
+                <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/50">
+                    {workOrders.map((wo) => (
+                        <div key={wo._id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                             {/* Card Header / Preview */}
+                             <div 
+                                className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                                onClick={() => setExpandedId(expandedId === wo._id ? null : wo._id)}
+                            >
+                                <div className="flex justify-between items-start gap-3">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${
+                                                wo.clientStatus === 'New Client' 
+                                                    ? 'bg-purple-50 text-purple-700 border-purple-100' 
+                                                    : (wo.clientStatus === 'Existing' ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-gray-50 text-gray-600 border-gray-100')
+                                            }`}>
+                                                {wo.clientStatus === 'New Client' ? 'New' : 'Ex'}
+                                            </span>
+                                            <h4 className="font-bold text-gray-800 text-sm truncate">{wo.clientName}</h4>
+                                        </div>
+                                        
+                                        {/* Preview: Detail Request (Truncated) */}
+                                        <div className="text-xs text-gray-600 flex items-start gap-1">
+                                             <span className="text-gray-400 shrink-0">📝</span>
+                                             <span className="line-clamp-2 opacity-80">
+                                                {wo.detailRequest || '-'}
+                                             </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col items-end gap-1">
+                                        <StatusCell 
+                                            value={wo.status} 
+                                            type="status" 
+                                            onUpdate={(val) => onStatusUpdate(wo._id, 'status', val)}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex justify-center mt-1">
+                                    <span className={`text-gray-300 text-[10px] transform transition-transform ${expandedId === wo._id ? 'rotate-180' : ''}`}>▼</span>
+                                </div>
+                            </div>
+
+                            {/* Expanded Details */}
+                            {expandedId === wo._id && (
+                                <div className="px-4 pb-4 pt-0 border-t border-gray-50 bg-gray-50/30 animate-slide-down">
+                                    <div className="flex flex-col gap-3 mt-3">
+                                        
+                                        <div className="grid grid-cols-2 gap-2 text-xs">
+                                            <div className="bg-white p-2 rounded border border-gray-100">
+                                                <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">No WO</span>
+                                                <span className="font-mono text-gray-700">{wo.quarterSequence || '-'}</span>
+                                            </div>
+                                             <div className="bg-white p-2 rounded border border-gray-100">
+                                                <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Due Date</span>
+                                                <span className="font-mono text-gray-700">{formatDate(wo.dueDate)}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white p-2 rounded border border-gray-100">
+                                            <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Full Detail Request</span>
+                                            <div className="text-xs text-gray-700 whitespace-pre-wrap">
+                                                {wo.detailRequest || '-'}
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-2 text-xs">
+                                            <div className="bg-white p-2 rounded border border-gray-100">
+                                                <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Service</span>
+                                                <span className="text-gray-700">{wo.services || '-'}</span>
+                                            </div>
+                                            <div className="bg-white p-2 rounded border border-gray-100">
+                                                <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Sales</span>
+                                                <span className="text-gray-700">{wo.sales || '-'}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-2 text-xs">
+                                            <div className="bg-white p-2 rounded border border-gray-100 flex flex-col justify-between">
+                                                <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Req Barang</span>
+                                                <div className="self-start">
+                                                    <StatusCell 
+                                                        value={wo.requestBarang} 
+                                                        type="requestBarang" 
+                                                        onUpdate={(val) => onStatusUpdate(wo._id, 'requestBarang', val)}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="bg-white p-2 rounded border border-gray-100 flex flex-col justify-between">
+                                                <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Req Jasa</span>
+                                                <div className="self-start">
+                                                    <StatusCell 
+                                                        value={wo.requestJasa} 
+                                                        type="requestJasa" 
+                                                        onUpdate={(val) => onStatusUpdate(wo._id, 'requestJasa', val)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {wo.keterangan && (
+                                            <div className="bg-orange-50 p-2 rounded border border-orange-100">
+                                                <span className="text-[10px] font-bold text-orange-600 uppercase block mb-1">Keterangan</span>
+                                                <span className="text-xs text-orange-800 italic">{wo.keterangan}</span>
+                                            </div>
+                                        )}
+
+                                        <div className="flex gap-2 mt-2 pt-3 border-t border-gray-100">
+                                             <button
+                                                className="flex-1 py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
+                                                onClick={(e) => { e.stopPropagation(); onEdit(wo); }}
+                                            >
+                                                ✏️ Edit
+                                            </button>
+                                            <button
+                                                className="flex-1 py-2 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors"
+                                                onClick={(e) => { e.stopPropagation(); onDelete(wo._id); }}
+                                            >
+                                                🗑️ Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
         </div>
     );
 }

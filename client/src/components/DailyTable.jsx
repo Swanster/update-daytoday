@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import AttachmentViewer from './AttachmentViewer';
+import StatusCell from './StatusCell';
 
-export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = [], onSelectionChange, onBatchStatusUpdate, onAddEntry }) {
+export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = [], onSelectionChange, onBatchStatusUpdate, onAddEntry, onStatusUpdate }) {
     // Group by client name for display
     const groupedDailies = useMemo(() => {
         const groups = {};
@@ -32,13 +33,13 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
         const statusLower = status.toLowerCase();
         
         if (statusLower.includes('done') || statusLower.includes('complete')) {
-            return `${baseClasses} bg-green-100 text-green-800 border-green-200`;
+            return baseClasses + " bg-green-100 text-green-800 border-green-200";
         } else if (statusLower.includes('progress')) {
-            return `${baseClasses} bg-blue-100 text-blue-800 border-blue-200`;
+            return baseClasses + " bg-blue-100 text-blue-800 border-blue-200";
         } else if (statusLower.includes('hold')) {
-            return `${baseClasses} bg-orange-100 text-orange-800 border-orange-200`;
+            return baseClasses + " bg-orange-100 text-orange-800 border-orange-200";
         } else {
-            return `${baseClasses} bg-gray-100 text-gray-800 border-gray-200`;
+            return baseClasses + " bg-gray-100 text-gray-800 border-gray-200";
         }
     };
 
@@ -47,11 +48,17 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
         const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border";
         const actionLower = action.toLowerCase();
         
-        if (actionLower.includes('monitor')) return `${baseClasses} bg-indigo-100 text-indigo-800 border-indigo-200`;
-        if (actionLower.includes('config')) return `${baseClasses} bg-purple-100 text-purple-800 border-purple-200`;
-        if (actionLower.includes('install')) return `${baseClasses} bg-teal-100 text-teal-800 border-teal-200`;
+        if (actionLower.includes('monitor')) {
+            return baseClasses + " bg-indigo-100 text-indigo-800 border-indigo-200";
+        }
+        if (actionLower.includes('config')) {
+            return baseClasses + " bg-purple-100 text-purple-800 border-purple-200";
+        }
+        if (actionLower.includes('install')) {
+            return baseClasses + " bg-teal-100 text-teal-800 border-teal-200";
+        }
         
-        return `${baseClasses} bg-gray-100 text-gray-800 border-gray-200`;
+        return baseClasses + " bg-gray-100 text-gray-800 border-gray-200";
     };
 
     // Check if all dailies are selected
@@ -78,6 +85,17 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
 
     // Attachment viewer state
     const [viewingAttachments, setViewingAttachments] = useState(null);
+    
+    // Mobile expand state
+    const [expandedId, setExpandedId] = useState(null);
+
+    const toggleExpand = (id) => {
+        if (expandedId === id) {
+            setExpandedId(null);
+        } else {
+            setExpandedId(id);
+        }
+    };
 
     if (dailies.length === 0) {
         return (
@@ -130,7 +148,7 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
             )}
 
             <div className="bg-white rounded-xl shadow-custom overflow-hidden border border-gray-200/60">
-                <div className="overflow-x-auto">
+                <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-sm text-left border-collapse">
                         <thead className="bg-gray-50 text-gray-600 font-semibold uppercase text-xs">
                             <tr>
@@ -162,11 +180,21 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
                                 // Alternate colors by CLIENT, not by row
                                 const clientColorClass = clientIndex % 2 === 0 ? 'bg-gray-100' : 'bg-white';
 
-                                return clientEntries.map((entry, entryIndex) => (
-                                    <tr
-                                        key={entry._id}
-                                        className={`${clientColorClass} ${selectedIds.includes(entry._id) ? 'bg-blue-50/50' : ''} hover:bg-gray-50 transition-colors group`}
-                                    >
+                                return clientEntries.map((entry, entryIndex) => {
+                                    const isSelected = selectedIds.includes(entry._id);
+                                    
+                                    // Calculate row class name explicitly to avoid parser issues
+                                    let rowClassName = clientColorClass;
+                                    if (isSelected) {
+                                        rowClassName += ' bg-blue-50/50';
+                                    }
+                                    rowClassName += ' hover:bg-gray-50 transition-colors group';
+                                    
+                                    return (
+                                        <tr
+                                            key={entry._id}
+                                            className={rowClassName}
+                                        >
                                         {/* Checkbox */}
                                         <td className="px-4 py-3 border-r border-gray-100/50">
                                             <input
@@ -188,17 +216,25 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
                                         )}
 
                                         {/* Client Name - merged for same clients, clickable to add entry */}
-                                        {entryIndex === 0 && (
-                                            <td
-                                                className={`px-4 py-3 font-semibold text-gray-800 border-r border-gray-100/50 align-top cursor-pointer hover:text-accent-coral transition-colors relative ${clientEntries.length > 1 ? 'align-top pt-4' : ''}`}
-                                                rowSpan={clientEntries.length}
-                                                onClick={() => onAddEntry && onAddEntry(clientName)}
-                                                title="Click to add new entry for this client"
-                                            >
-                                                {clientName}
-                                                <span className="absolute top-2 right-2 text-xs opacity-0 group-hover:opacity-100 text-accent-coral bg-orange-100 px-1 rounded transition-opacity">+</span>
-                                            </td>
-                                        )}
+                                        {entryIndex === 0 && (() => {
+                                            const clientRowSpan = clientEntries.length;
+                                            let clientClassName = "px-4 py-3 font-semibold text-gray-800 border-r border-gray-100/50 align-top cursor-pointer hover:text-accent-coral transition-colors relative";
+                                            if (clientEntries.length > 1) {
+                                                clientClassName += " align-top pt-4";
+                                            }
+                                            
+                                            return (
+                                                <td
+                                                    className={clientClassName}
+                                                    rowSpan={clientRowSpan}
+                                                    onClick={() => onAddEntry && onAddEntry(clientName)}
+                                                    title="Click to add new entry for this client"
+                                                >
+                                                    {clientName}
+                                                    <span className="absolute top-2 right-2 text-xs opacity-0 group-hover:opacity-100 text-accent-coral bg-orange-100 px-1 rounded transition-opacity">+</span>
+                                                </td>
+                                            );
+                                        })()}
 
                                         {/* Services/Categories */}
                                         <td className="px-4 py-3">
@@ -262,24 +298,29 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
                                         {/* Status */}
                                         <td className="px-4 py-3 whitespace-nowrap">
                                             {entry.status ? (
-                                                <span className={getStatusBadgeClass(entry.status)}>
-                                                    {entry.status}
-                                                </span>
+                                                <StatusCell
+                                                    value={entry.status}
+                                                    type="status"
+                                                    onUpdate={(val) => onStatusUpdate(entry._id, 'status', val)}
+                                                />
                                             ) : <span className="text-gray-300">-</span>}
                                         </td>
 
                                         {/* Actions */}
                                         <td className="px-4 py-3 text-right whitespace-nowrap">
                                             <div className="flex items-center justify-end gap-1">
-                                                {entry.attachments && entry.attachments.length > 0 && (
-                                                    <button
-                                                        className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
-                                                        title={`${entry.attachments.length} file(s) attached - Click to view`}
-                                                        onClick={() => setViewingAttachments(entry)}
-                                                    >
-                                                        📎<span className="text-xs font-bold ml-0.5">{entry.attachments.length}</span>
-                                                    </button>
-                                                )}
+                                                {entry.attachments && entry.attachments.length > 0 && (() => {
+                                                    const attachTitle = entry.attachments.length + " file(s) attached - Click to view";
+                                                    return (
+                                                        <button
+                                                            className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                                                            title={attachTitle}
+                                                            onClick={() => setViewingAttachments(entry)}
+                                                        >
+                                                            📎<span className="text-xs font-bold ml-0.5">{entry.attachments.length}</span>
+                                                        </button>
+                                                    );
+                                                })()}
                                                 <button
                                                     className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                                     onClick={() => onEdit(entry)}
@@ -297,10 +338,141 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
                                             </div>
                                         </td>
                                     </tr>
-                                ));
+                                    );
+                                });
                             })}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Mobile Expandable Card View */}
+                <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/50">
+                    {clientNames.map((clientName) => {
+                        const clientEntries = groupedDailies[clientName];
+                        return clientEntries.map((entry) => (
+                            <div key={entry._id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                                {/* Card Header / Preview - Click to Expand */}
+                                <div 
+                                    className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                                    onClick={() => toggleExpand(entry._id)}
+                                >
+                                    <div className="flex justify-between items-start gap-3">
+                                        <div className="flex-1">
+                                            <h4
+                                                className="font-bold text-gray-800 text-sm flex items-center gap-1 cursor-pointer hover:text-accent-coral transition-colors"
+                                                onClick={(e) => { e.stopPropagation(); onAddEntry && onAddEntry(entry.clientName); }}
+                                            >
+                                                {entry.clientName}
+                                                <span className="text-accent-coral text-[10px]">＋</span>
+                                            </h4>
+                                            
+                                            {/* Preview: Issue & Action (Truncated) */}
+                                            <div className="mt-1 text-xs text-gray-600 space-y-1">
+                                                <div className="flex items-start gap-1">
+                                                     <span className="text-gray-400 shrink-0">⚠️</span>
+                                                     <span className="line-clamp-1 opacity-80">
+                                                        {entry.caseIssue && (Array.isArray(entry.caseIssue) ? entry.caseIssue.join(', ') : entry.caseIssue) || '-'}
+                                                     </span>
+                                                </div>
+                                                 <div className="flex items-start gap-1">
+                                                     <span className="text-gray-400 shrink-0">📝</span>
+                                                     <span className="line-clamp-1 opacity-80">
+                                                        {entry.detailAction ? entry.detailAction.split('\n')[0] : '-'}
+                                                     </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Status Badge - Inline Editable */}
+                                        <div onClick={(e) => e.stopPropagation()}>
+                                            <StatusCell
+                                                value={entry.status}
+                                                type="status"
+                                                onUpdate={(val) => onStatusUpdate(entry._id, 'status', val)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-center mt-1">
+                                        <span className={"text-gray-300 text-[10px] transform transition-transform " + (expandedId === entry._id ? "rotate-180" : "")}>▼</span>
+                                    </div>
+                                </div>
+
+                                {/* Expanded Details */}
+                                {expandedId === entry._id && (
+                                    <div className="px-4 pb-4 pt-0 border-t border-gray-50 bg-gray-50/30 animate-slide-down">
+                                        <div className="flex flex-col gap-3 mt-3">
+                                            <div className="flex justify-between text-xs text-gray-500">
+                                                <span>📅 {formatDate(entry.date)}</span>
+                                                <span>No: {entry.quarterSequence || '-'}</span>
+                                            </div>
+
+                                            {/* Full Issue */}
+                                            {entry.caseIssue && (
+                                                <div className="bg-white p-2 rounded border border-gray-100">
+                                                    <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Items / Issues</span>
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {(Array.isArray(entry.caseIssue) ? entry.caseIssue : [entry.caseIssue]).map((ct, idx) => (
+                                                            <span key={idx} className="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-[10px]">{ct}</span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Full Detail Action */}
+                                            <div className="bg-white p-2 rounded border border-gray-100">
+                                                <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Detailed Action</span>
+                                                <div className="text-xs text-gray-700 whitespace-pre-wrap">
+                                                    {entry.detailAction || '-'}
+                                                </div>
+                                            </div>
+
+                                            {/* Info Rows */}
+                                            <div className="grid grid-cols-2 gap-2 text-xs">
+                                                <div className="bg-white p-2 rounded border border-gray-100">
+                                                    <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Service</span>
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {entry.services && (Array.isArray(entry.services) ? entry.services : [entry.services]).map((s, idx) => (
+                                                             <span key={idx} className="text-gray-600">{s}</span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="bg-white p-2 rounded border border-gray-100">
+                                                    <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">PIC</span>
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {entry.picTeam && entry.picTeam.map((p, idx) => (
+                                                             <span key={idx} className="bg-teal-50 text-teal-700 px-1 py-0.5 rounded">{p}</span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Action Buttons */}
+                                            <div className="flex gap-2 mt-2 pt-3 border-t border-gray-100">
+                                                <button
+                                                    className="flex-1 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors"
+                                                    onClick={(e) => { e.stopPropagation(); onAddEntry && onAddEntry(entry.clientName); }}
+                                                >
+                                                    ＋ Quick Add
+                                                </button>
+                                                 <button
+                                                    className="flex-1 py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
+                                                    onClick={(e) => { e.stopPropagation(); onEdit(entry); }}
+                                                >
+                                                    ✏️ Edit
+                                                </button>
+                                                <button
+                                                    className="flex-1 py-2 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors"
+                                                    onClick={(e) => { e.stopPropagation(); onDelete(entry._id); }}
+                                                >
+                                                    🗑️ Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ));
+                    })}
                 </div>
             </div>
 

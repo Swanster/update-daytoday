@@ -281,23 +281,29 @@ function Dashboard({ user, onClientClick }) {
                             </div>
                         ) : (
                             <div className="flex flex-col flex-1">
-                                <div className="overflow-x-auto flex-1">
+                                {/* Desktop Table View */}
+                                <div className="hidden md:block overflow-x-auto flex-1">
                                     <table className="w-full text-sm text-left">
                                         <thead className="bg-gray-50 text-gray-500 font-semibold uppercase text-xs border-b border-gray-100 sticky top-0 z-10">
                                             <tr>
                                                 <th className="px-4 py-3">Project Name</th>
                                                 <th className="px-4 py-3">Due Date</th>
                                                 <th className="px-4 py-3">Timeline</th>
-                                                <th className="px-4 py-3 hidden md:table-cell">Service</th>
-                                                <th className="px-4 py-3 hidden sm:table-cell">Material</th>
-                                                <th className="px-4 py-3 hidden sm:table-cell">Vendor</th>
+                                                <th className="px-4 py-3 hidden lg:table-cell">Service</th>
+                                                <th className="px-4 py-3 hidden xl:table-cell">Material</th>
+                                                <th className="px-4 py-3 hidden xl:table-cell">Desc/WO</th>
                                                 <th className="px-4 py-3">Action</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100">
                                             {paginatedOverdue.map((item) => (
                                                 <tr key={item._id} className={`hover:bg-gray-50 transition-colors ${item.isOverdue ? 'bg-red-50/30' : ''}`}>
-                                                    <td className="px-4 py-3 font-medium text-gray-800">{item.name}</td>
+                                                    <td className="px-4 py-3 font-medium text-gray-800">
+                                                        {item.name}
+                                                        <div className="lg:hidden mt-1 text-xs text-gray-500">
+                                                            {Array.isArray(item.services) && item.services.slice(0, 2).join(', ')}
+                                                        </div>
+                                                    </td>
                                                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{formatDate(item.dueDate)}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap">
                                                         {item.daysUntilDue !== null ? (
@@ -311,14 +317,14 @@ function Dashboard({ user, onClientClick }) {
                                                             <span className="text-gray-400">-</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-4 py-3 hidden md:table-cell">
+                                                    <td className="px-4 py-3 hidden lg:table-cell">
                                                         <div className="flex flex-wrap gap-1">
                                                             {Array.isArray(item.services) && item.services.slice(0, 2).map((svc, idx) => (
                                                                 <span key={idx} className="bg-blue-50 text-blue-700 border border-blue-100 px-1.5 py-0.5 rounded text-[10px]">{svc}</span>
                                                             ))}
                                                         </div>
                                                     </td>
-                                                    <td className="px-4 py-3 hidden sm:table-cell">
+                                                    <td className="px-4 py-3 hidden xl:table-cell">
                                                         <button
                                                             className={`text-xs px-2 py-1 rounded transition-colors ${item.material === 'Done Installation' ? 'bg-green-100 text-green-700 cursor-default' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                                                             onClick={() => item.material !== 'Done Installation' && handleUpdateField(item._id, 'material', 'Done Installation')}
@@ -327,7 +333,7 @@ function Dashboard({ user, onClientClick }) {
                                                             {updatingField === `${item._id}-material` ? '...' : item.material === 'Done Installation' ? 'Done' : 'Mark Done'}
                                                         </button>
                                                     </td>
-                                                    <td className="px-4 py-3 hidden sm:table-cell">
+                                                    <td className="px-4 py-3 hidden xl:table-cell">
                                                         <button
                                                             className={`text-xs px-2 py-1 rounded transition-colors ${item.wo === 'Done' ? 'bg-green-100 text-green-700 cursor-default' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                                                             onClick={() => item.wo !== 'Done' && handleUpdateField(item._id, 'wo', 'Done')}
@@ -350,9 +356,62 @@ function Dashboard({ user, onClientClick }) {
                                         </tbody>
                                     </table>
                                 </div>
+
+                                {/* Mobile Card View */}
+                                <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/50">
+                                    {paginatedOverdue.map((item) => (
+                                        <div key={item._id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-3">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <h4 className="font-bold text-gray-800 text-sm">{item.name}</h4>
+                                                    <div className="flex flex-wrap gap-1 mt-1">
+                                                        {Array.isArray(item.services) && item.services.map((svc, idx) => (
+                                                            <span key={idx} className="bg-blue-50 text-blue-700 border border-blue-100 px-1.5 py-0.5 rounded text-[10px]">{svc}</span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                {item.daysUntilDue !== null && (
+                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${item.isOverdue ? 'bg-red-50 text-red-600 border-red-100' : 'bg-green-50 text-green-600 border-green-100'}`}>
+                                                        {item.isOverdue ? `${item.daysUntilDue}d Late` : `${item.daysUntilDue}d Left`}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            
+                                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                                                <span>📅 {formatDate(item.dueDate)}</span>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-2 mt-1">
+                                                <button
+                                                    className={`text-xs px-2 py-1.5 rounded border text-center transition-colors ${item.material === 'Done Installation' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
+                                                    onClick={() => item.material !== 'Done Installation' && handleUpdateField(item._id, 'material', 'Done Installation')}
+                                                    disabled={item.material === 'Done Installation' || updatingField === `${item._id}-material`}
+                                                >
+                                                    {updatingField === `${item._id}-material` ? '...' : item.material === 'Done Installation' ? 'Material: Done' : 'Material: Pending'}
+                                                </button>
+                                                <button
+                                                    className={`text-xs px-2 py-1.5 rounded border text-center transition-colors ${item.wo === 'Done' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
+                                                    onClick={() => item.wo !== 'Done' && handleUpdateField(item._id, 'wo', 'Done')}
+                                                    disabled={item.wo === 'Done' || updatingField === `${item._id}-wo`}
+                                                >
+                                                    {updatingField === `${item._id}-wo` ? '...' : item.wo === 'Done' ? 'WO: Done' : 'WO: Pending'}
+                                                </button>
+                                            </div>
+
+                                            <button
+                                                className="w-full text-white bg-green-500 hover:bg-green-600 shadow-sm px-4 py-2 rounded-lg text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-2 mt-1"
+                                                onClick={() => handleMarkDone(item._id, item.type)}
+                                                disabled={markingDone === item._id}
+                                            >
+                                                {markingDone === item._id ? 'Processing...' : '✓ Mark Project as Done'}
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+
                                 {/* Pagination Controls */}
                                 {totalPages > 1 && (
-                                    <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+                                    <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between bg-white md:bg-gray-50/50 sticky bottom-0 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:shadow-none">
                                         <button
                                             onClick={() => handlePageChange(currentPage - 1)}
                                             disabled={currentPage === 1}

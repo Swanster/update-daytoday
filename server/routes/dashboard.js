@@ -18,14 +18,33 @@ router.get('/stats', auth, adminOrSuperuser, async (req, res) => {
         const startOfMonth = new Date(year, month, 1);
         const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
 
-        // Active projects (status = Progress)
-        const activeProjects = await Project.countDocuments({ status: 'Progress' });
+        // Active projects (latest status = Progress)
+        const activeProjectsCount = await Project.aggregate([
+            { $sort: { createdAt: -1 } },
+            { $group: {
+                _id: "$projectName",
+                latestStatus: { $first: "$status" }
+            }},
+            { $match: { latestStatus: 'Progress' } },
+            { $count: "count" }
+        ]);
+        const activeProjects = activeProjectsCount.length > 0 ? activeProjectsCount[0].count : 0;
 
-        // Completed projects this quarter
-        const completedThisQuarter = await Project.countDocuments({
-            status: 'Done',
-            quarter: currentQuarter
-        });
+        // Completed projects this quarter (latest status = Done)
+        const completedCount = await Project.aggregate([
+            { $sort: { createdAt: -1 } },
+            { $group: {
+                _id: "$projectName",
+                latestStatus: { $first: "$status" },
+                latestQuarter: { $first: "$quarter" }
+            }},
+            { $match: { 
+                latestStatus: 'Done',
+                latestQuarter: currentQuarter
+            }},
+            { $count: "count" }
+        ]);
+        const completedThisQuarter = completedCount.length > 0 ? completedCount[0].count : 0;
 
         // Daily entries this month
         const dailiesThisMonth = await Daily.countDocuments({
@@ -77,8 +96,6 @@ router.get('/overdue', auth, adminOrSuperuser, async (req, res) => {
         // Aggregate projects in progress, grouped by projectName
         // Shows only one entry per client/project with latest status
         const groupedProjects = await Project.aggregate([
-            // Match only projects in progress
-            { $match: { status: 'Progress' } },
             // Sort by updatedAt descending to get latest first
             { $sort: { updatedAt: -1 } },
             // Group by projectName, keeping the latest entry's data
@@ -99,6 +116,8 @@ router.get('/overdue', auth, adminOrSuperuser, async (req, res) => {
                     entryCount: { $sum: 1 }
                 }
             },
+            // Match only projects where latest status is Progress
+            { $match: { status: 'Progress' } },
             // Sort by due date (nulls last), then by createdAt
             { $sort: { dueDate: 1, createdAt: -1 } },
             // Limit results
@@ -280,12 +299,26 @@ router.patch('/mark-done', auth, async (req, res) => {
         if (type === 'project') {
             Model = Project;
             entityType = 'PROJECT';
-            item = await Project.findByIdAndUpdate(
-                id,
-                { $set: { status: 'Done' } },
-                { new: true }
+            
+            // First find the project to get its name
+            const projectToUpdate = await Project.findById(id);
+            
+            if (!projectToUpdate) {
+                return res.status(404).json({ message: 'Project not found' });
+            }
+            
+            itemName = projectToUpdate.projectName;
+            
+            // Update ALL projects with this name to 'Done' (if they are not already done)
+            // ensuring this marks the entire project lifecycle as complete
+            await Project.updateMany(
+                { projectName: itemName, status: { $ne: 'Done' } },
+                { $set: { status: 'Done' } }
             );
-            itemName = item?.projectName;
+            
+            // Return the updated document that was requested
+            item = await Project.findById(id);
+            
         } else {
             Model = Daily;
             entityType = 'DAILY';
@@ -309,7 +342,7 @@ router.patch('/mark-done', auth, async (req, res) => {
             entityName: itemName,
             userId: req.user._id,
             username: req.user.username,
-            details: `Marked ${type} as Done from dashboard: ${itemName}`
+            details: `Marked ${type} (all entries) as Done from dashboard: ${itemName}`
         });
 
         res.json({ message: `${type} marked as Done`, item });
