@@ -287,7 +287,7 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
 
             {/* Stats Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 md:gap-8">
-                <div onClick={() => onNavigateToProject?.('Progress')} className="bg-white/90 backdrop-blur-xl rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-custom-lg hover:-translate-y-1 transition-all duration-300 border border-ch-soft/50 relative overflow-hidden group cursor-pointer">
+                <div onClick={() => onNavigateToProject?.('Progress')} className="bg-white rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-custom-lg hover:-translate-y-1 transition-[transform,box-shadow] duration-300 border border-ch-soft/50 relative overflow-hidden group cursor-pointer">
                     <div className="absolute -top-6 -right-6 p-4 opacity-[0.03] group-hover:scale-125 group-hover:opacity-10 transition-all duration-500 text-8xl">📁</div>
                     <div className="absolute top-0 left-0 w-1 h-full bg-ch-primary rounded-l-2xl"></div>
                     <div className="relative z-10 pl-2">
@@ -296,7 +296,7 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
                     </div>
                 </div>
 
-                <div onClick={() => onNavigateToProject?.('Done')} className="bg-white/90 backdrop-blur-xl rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-custom-lg hover:-translate-y-1 transition-all duration-300 border border-ch-soft/50 relative overflow-hidden group cursor-pointer">
+                <div onClick={() => onNavigateToProject?.('Done')} className="bg-white rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-custom-lg hover:-translate-y-1 transition-[transform,box-shadow] duration-300 border border-ch-soft/50 relative overflow-hidden group cursor-pointer">
                     <div className="absolute -top-6 -right-6 p-4 opacity-[0.03] group-hover:scale-125 group-hover:opacity-10 transition-all duration-500 text-8xl">✅</div>
                     <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500 rounded-l-2xl"></div>
                     <div className="relative z-10 pl-2">
@@ -305,7 +305,7 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
                     </div>
                 </div>
 
-                <div onClick={() => onNavigateToDaily?.()} className="bg-white/90 backdrop-blur-xl rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-custom-lg hover:-translate-y-1 transition-all duration-300 border border-ch-soft/50 relative overflow-hidden group cursor-pointer">
+                <div onClick={() => onNavigateToDaily?.()} className="bg-white rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-custom-lg hover:-translate-y-1 transition-[transform,box-shadow] duration-300 border border-ch-soft/50 relative overflow-hidden group cursor-pointer">
                     <div className="absolute -top-6 -right-6 p-4 opacity-[0.03] group-hover:scale-125 group-hover:opacity-10 transition-all duration-500 text-8xl">📅</div>
                     <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 rounded-l-2xl"></div>
                     <div className="relative z-10 pl-2">
@@ -314,7 +314,7 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
                     </div>
                 </div>
 
-                <div onClick={() => onNavigateToProject?.('Hold')} className="bg-white/90 backdrop-blur-xl rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-custom-lg hover:-translate-y-1 transition-all duration-300 border border-ch-soft/50 relative overflow-hidden group cursor-pointer">
+                <div onClick={() => onNavigateToProject?.('Hold')} className="bg-white rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-custom-lg hover:-translate-y-1 transition-[transform,box-shadow] duration-300 border border-ch-soft/50 relative overflow-hidden group cursor-pointer">
                     <div className="absolute -top-6 -right-6 p-4 opacity-[0.03] group-hover:scale-125 group-hover:opacity-10 transition-all duration-500 text-8xl">⏸️</div>
                     <div className="absolute top-0 left-0 w-1 h-full bg-amber-500 rounded-l-2xl"></div>
                     <div className="relative z-10 pl-2">
@@ -323,7 +323,7 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
                     </div>
                 </div>
 
-                <div onClick={() => onNavigateToWO?.('Progress')} className="bg-white/90 backdrop-blur-xl rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-custom-lg hover:-translate-y-1 transition-all duration-300 border border-ch-soft/50 relative overflow-hidden group cursor-pointer">
+                <div onClick={() => onNavigateToWO?.('Progress')} className="bg-white rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-custom-lg hover:-translate-y-1 transition-[transform,box-shadow] duration-300 border border-ch-soft/50 relative overflow-hidden group cursor-pointer">
                     <div className="absolute -top-6 -right-6 p-4 opacity-[0.03] group-hover:scale-125 group-hover:opacity-10 transition-all duration-500 text-8xl">🛠️</div>
                     <div className="absolute top-0 left-0 w-1 h-full bg-orange-500 rounded-l-2xl"></div>
                     <div className="relative z-10 pl-2">
@@ -332,7 +332,7 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
                     </div>
                 </div>
 
-                <div onClick={() => onNavigateToWO?.('Done')} className="bg-white/90 backdrop-blur-xl rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-custom-lg hover:-translate-y-1 transition-all duration-300 border border-ch-soft/50 relative overflow-hidden group cursor-pointer">
+                <div onClick={() => onNavigateToWO?.('Done')} className="bg-white rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-custom-lg hover:-translate-y-1 transition-[transform,box-shadow] duration-300 border border-ch-soft/50 relative overflow-hidden group cursor-pointer">
                     <div className="absolute -top-6 -right-6 p-4 opacity-[0.03] group-hover:scale-125 group-hover:opacity-10 transition-all duration-500 text-8xl">✔️</div>
                     <div className="absolute top-0 left-0 w-1 h-full bg-teal-500 rounded-l-2xl"></div>
                     <div className="relative z-10 pl-2">
@@ -353,7 +353,7 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
                         </h3>
                     </div>
 
-                    <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm overflow-hidden border border-ch-soft/50 flex flex-col flex-1">
+                    <div className="bg-white rounded-3xl shadow-sm overflow-hidden border border-ch-soft/50 flex flex-col flex-1">
                         {overdue.length === 0 ? (
                             <div className="p-12 text-center text-ch-primary flex flex-col items-center justify-center flex-1">
                                 <span className="text-5xl mb-4 opacity-40">📋</span>
@@ -365,7 +365,7 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
                                 {/* Desktop Table View */}
                                 <div className="hidden md:block overflow-x-auto flex-1">
                                     <table className="w-full text-sm text-left">
-                                        <thead className="bg-ch-light/80 backdrop-blur-md text-ch-primary font-bold uppercase text-[10px] tracking-widest border-b border-ch-soft sticky top-0 z-10">
+                                        <thead className="bg-ch-light text-ch-primary font-bold uppercase text-[10px] tracking-widest border-b border-ch-soft sticky top-0 z-10">
                                             <tr>
                                                 <th className="px-5 py-4">Project Name</th>
                                                 <th className="px-5 py-4">Due Date</th>
@@ -441,7 +441,7 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
                                 {/* Mobile Card View */}
                                 <div className="md:hidden flex flex-col gap-4 p-4 bg-ch-light/50">
                                     {paginatedOverdue.map((item) => (
-                                        <div key={item._id} className="bg-white/90 backdrop-blur-xl p-5 rounded-2xl shadow-sm border border-ch-soft flex flex-col gap-4">
+                                        <div key={item._id} className="bg-white p-5 rounded-2xl shadow-sm border border-ch-soft flex flex-col gap-4">
                                             <div className="flex justify-between items-start">
                                                 <div>
                                                     <h4 className="font-bold text-ch-dark text-base">{item.name}</h4>
@@ -526,7 +526,7 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
                         </h3>
                     </div>
                     
-                    <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-custom p-5 border border-ch-soft flex-1 overflow-y-auto">
+                    <div className="bg-white rounded-2xl shadow-custom p-5 border border-ch-soft flex-1 overflow-y-auto">
                          {progressWOs.length === 0 ? (
                             <div className="text-center text-ch-primary py-12 h-full flex flex-col items-center justify-center">
                                 <span className="text-4xl mb-3 opacity-40">🛠️</span>

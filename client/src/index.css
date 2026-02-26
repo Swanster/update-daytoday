@@ -12,13 +12,13 @@
   }
 }
 @layer components {
-  /* Glassmorphism Utilities */
+  /* Glassmorphism Utilities (optimized: no backdrop-blur for scroll perf) */
   .glass {
-    @apply bg-white/70 backdrop-blur-xl border border-white/50 shadow-custom-lg rounded-3xl;
+    @apply bg-white/[0.97] border border-white/50 shadow-custom-lg rounded-3xl;
   }
   
   .glass-dark {
-    @apply bg-ch-dark/90 backdrop-blur-xl border border-ch-dark/50 shadow-custom-lg rounded-3xl text-white;
+    @apply bg-ch-dark/[0.97] border border-ch-dark/50 shadow-custom-lg rounded-3xl text-white;
   }
 
   .btn {
@@ -63,4 +63,14 @@
 
 .animate-slide-up {
   animation: slideUp 0.3s ease-out;
+}
+
+/* Respect user preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

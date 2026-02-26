@@ -624,8 +624,8 @@ function App() {
         <div className="min-h-screen bg-ch-light text-ch-dark font-lexend flex flex-col">
             <VersionCheck />
             {/* Header - Sticky Top */}
-            <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-white shadow-sm transition-all duration-300">
-                <header className="px-6 py-4 flex justify-between items-center max-w-7xl mx-auto w-full">
+            <div className="sticky top-0 z-50 bg-white/[0.97] border-b border-white shadow-sm will-change-transform">
+                <header className="px-6 py-4 flex justify-between items-center w-full">
                 <h1 className="text-xl md:text-2xl font-extrabold flex items-center gap-3 truncate text-ch-dark tracking-tight">
                     <span className="text-2xl bg-ch-soft p-2 rounded-xl text-ch-primary">📊</span> 
                     <span className="hidden md:inline bg-gradient-to-r from-ch-primary to-ch-primary bg-clip-text text-transparent">Daily Activity Infrastructure Engineer</span>
@@ -690,10 +690,10 @@ function App() {
             </header>
 
             {/* Desktop Tab Navigation */}
-            <div className="hidden md:flex flex-wrap px-6 pt-4 pb-2 gap-3 max-w-7xl mx-auto w-full">
+            <div className="hidden md:flex flex-wrap px-6 pt-4 pb-2 gap-3 w-full">
                 {isAdminOrSuper() && (
                     <button
-                        className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2
+                        className={`px-6 py-2.5 rounded-full font-bold text-sm transition-colors flex items-center gap-2
                             ${activeTab === 'dashboard' ? 'bg-ch-dark text-white shadow-md shadow-ch-dark/20' : 'bg-white text-ch-primary border border-ch-soft hover:bg-ch-soft hover:text-ch-dark'}`}
                         onClick={() => { setActiveTab('dashboard'); setSearchTerm(''); }}
                     >
@@ -702,7 +702,7 @@ function App() {
                 )}
                 {isAdminOrSuper() && (
                     <button
-                        className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2
+                        className={`px-6 py-2.5 rounded-full font-bold text-sm transition-colors flex items-center gap-2
                             ${activeTab === 'client' ? 'bg-ch-dark text-white shadow-md shadow-ch-dark/20' : 'bg-white text-ch-primary border border-ch-soft hover:bg-ch-soft hover:text-ch-dark'}`}
                         onClick={() => { setActiveTab('client'); setSearchTerm(''); setSelectedClientName(null); }}
                     >
@@ -710,14 +710,14 @@ function App() {
                     </button>
                 )}
                 <button
-                    className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2
+                    className={`px-6 py-2.5 rounded-full font-bold text-sm transition-colors flex items-center gap-2
                         ${activeTab === 'wo' ? 'bg-ch-dark text-white shadow-md shadow-ch-dark/20' : 'bg-white text-ch-primary border border-ch-soft hover:bg-ch-soft hover:text-ch-dark'}`}
                     onClick={() => { setActiveTab('wo'); setSearchTerm(''); }}
                 >
                     🛠️ WO
                 </button>
                 <button
-                    className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2
+                    className={`px-6 py-2.5 rounded-full font-bold text-sm transition-colors flex items-center gap-2
                         ${activeTab === 'project' ? 'bg-ch-dark text-white shadow-md shadow-ch-dark/20' : 'bg-white text-ch-primary border border-ch-soft hover:bg-ch-soft hover:text-ch-dark'}`}
                     onClick={() => { setActiveTab('project'); setSearchTerm(''); }}
                 >
@@ -725,7 +725,7 @@ function App() {
                 </button>
 
                 <button
-                    className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2
+                    className={`px-6 py-2.5 rounded-full font-bold text-sm transition-colors flex items-center gap-2
                         ${activeTab === 'daily' ? 'bg-ch-dark text-white shadow-md shadow-ch-dark/20' : 'bg-white text-ch-primary border border-ch-soft hover:bg-ch-soft hover:text-ch-dark'}`}
                     onClick={() => { setActiveTab('daily'); setSearchTerm(''); }}
                 >
@@ -735,7 +735,7 @@ function App() {
 
             {/* Search and Sort Controls */}
             {activeTab !== 'dashboard' && activeTab !== 'client' && (
-                <div className="bg-white/80 backdrop-blur-xl p-5 shadow-sm border-y border-ch-soft flex flex-col md:flex-row gap-4 items-center justify-between sticky top-[72px] md:static z-40 max-w-7xl mx-auto w-full my-2 rounded-2xl md:rounded-3xl md:mx-4 lg:mx-auto">
+                <div className="bg-white/[0.97] p-5 shadow-sm border-y border-ch-soft flex flex-col md:flex-row gap-4 items-center justify-between sticky top-[72px] md:static z-40 w-full my-2 rounded-2xl md:rounded-3xl md:mx-4 will-change-transform">
                     <div className="relative w-full md:w-96 group">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ch-primary group-focus-within:text-ch-dark transition-colors">🔍</span>
                         <input
@@ -904,10 +904,10 @@ function App() {
             </main>
 
             {/* Mobile Bottom Navigation Bar */}
-            <div className="md:hidden fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl text-ch-primary shadow-[0_-4px_20px_rgba(0,0,0,0.05)] flex justify-around items-center p-2 z-[60] border-t border-ch-soft pb-safe">
+            <div className="md:hidden fixed bottom-0 left-0 w-full bg-white text-ch-primary shadow-[0_-4px_20px_rgba(0,0,0,0.05)] flex justify-around items-center p-2 z-[60] border-t border-ch-soft pb-safe will-change-transform">
                 {isAdminOrSuper() && (
                     <button 
-                        className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'dashboard' ? 'text-ch-primary bg-ch-soft' : 'hover:text-ch-primary'}`}
+                        className={`flex flex-col items-center p-2 rounded-xl transition-colors ${activeTab === 'dashboard' ? 'text-ch-primary bg-ch-soft' : 'hover:text-ch-primary'}`}
                         onClick={() => { setActiveTab('dashboard'); setSearchTerm(''); }}
                     >
                         <span className="text-xl mb-0.5">📊</span>
@@ -916,7 +916,7 @@ function App() {
                 )}
                 {isAdminOrSuper() && (
                     <button 
-                        className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'client' ? 'text-ch-primary bg-ch-soft' : 'hover:text-ch-primary'}`}
+                        className={`flex flex-col items-center p-2 rounded-xl transition-colors ${activeTab === 'client' ? 'text-ch-primary bg-ch-soft' : 'hover:text-ch-primary'}`}
                         onClick={() => { setActiveTab('client'); setSearchTerm(''); setSelectedClientName(null); }}
                     >
                         <span className="text-xl mb-0.5">🏢</span>
@@ -924,21 +924,21 @@ function App() {
                     </button>
                 )}
                 <button 
-                    className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'project' ? 'text-ch-primary bg-ch-soft' : 'hover:text-ch-primary'}`}
+                    className={`flex flex-col items-center p-2 rounded-xl transition-colors ${activeTab === 'project' ? 'text-ch-primary bg-ch-soft' : 'hover:text-ch-primary'}`}
                     onClick={() => { setActiveTab('project'); setSearchTerm(''); }}
                 >
                     <span className="text-xl mb-0.5">📋</span>
                     <span className="text-[10px] font-bold">Project</span>
                 </button>
                 <button 
-                    className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'wo' ? 'text-ch-primary bg-ch-soft' : 'hover:text-ch-primary'}`}
+                    className={`flex flex-col items-center p-2 rounded-xl transition-colors ${activeTab === 'wo' ? 'text-ch-primary bg-ch-soft' : 'hover:text-ch-primary'}`}
                     onClick={() => { setActiveTab('wo'); setSearchTerm(''); }}
                 >
                     <span className="text-xl mb-0.5">🛠️</span>
                     <span className="text-[10px] font-bold">WO</span>
                 </button>
                 <button 
-                    className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'daily' ? 'text-ch-primary bg-ch-soft' : 'hover:text-ch-primary'}`}
+                    className={`flex flex-col items-center p-2 rounded-xl transition-colors ${activeTab === 'daily' ? 'text-ch-primary bg-ch-soft' : 'hover:text-ch-primary'}`}
                     onClick={() => { setActiveTab('daily'); setSearchTerm(''); }}
                 >
                     <span className="text-xl mb-0.5">📅</span>

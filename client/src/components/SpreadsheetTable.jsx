@@ -71,7 +71,7 @@ export default function SpreadsheetTable({ projects, onEdit, onDelete, selectedI
 
     if (projects.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center p-12 text-center text-ch-primary bg-white/80 backdrop-blur-xl rounded-2xl shadow-custom border border-ch-soft mb-6">
+            <div className="flex flex-col items-center justify-center p-12 text-center text-ch-primary bg-white/95 rounded-2xl shadow-custom border border-ch-soft mb-6">
                 <div className="text-5xl mb-4 opacity-40">📋</div>
                 <h3 className="text-xl font-extrabold text-ch-dark mb-2">No Projects Yet</h3>
                 <p className="font-medium">Click the "Add Entry" button to create your first project entry.</p>
@@ -98,7 +98,7 @@ export default function SpreadsheetTable({ projects, onEdit, onDelete, selectedI
         <div className="flex flex-col gap-4">
             {/* Batch Action Bar */}
             {selectedIds.length > 0 && (
-                <div className="flex flex-wrap items-center gap-4 bg-ch-soft/80 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-ch-soft animate-slide-up sticky top-0 z-20">
+                <div className="flex flex-wrap items-center gap-4 bg-ch-soft p-4 rounded-2xl shadow-sm border border-ch-soft animate-slide-up sticky top-0 z-20">
                     <span className="text-sm font-bold text-ch-dark px-2">{selectedIds.length} selected</span>
                     <div className="h-6 w-px bg-ch-soft hidden sm:block"></div>
                     <div className="flex items-center gap-2">
@@ -132,9 +132,9 @@ export default function SpreadsheetTable({ projects, onEdit, onDelete, selectedI
                 </div>
             )}
 
-            <div className="hidden md:block overflow-x-auto bg-white/80 backdrop-blur-xl rounded-2xl shadow-custom overflow-hidden border border-ch-soft">
+            <div className="hidden md:block overflow-x-auto bg-white/95 rounded-2xl shadow-custom overflow-hidden border border-ch-soft">
                 <table className="w-full text-sm text-left border-collapse">
-                    <thead className="bg-ch-light/80 backdrop-blur-md text-ch-primary font-bold uppercase text-[10px] tracking-widest sticky top-0 z-10">
+                    <thead className="bg-ch-light text-ch-primary font-bold uppercase text-[10px] tracking-widest sticky top-0 z-10">
                         <tr>
                             <th className="p-4 w-4 border-b border-ch-soft">
                                 <input

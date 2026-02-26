@@ -323,13 +323,15 @@
   }
 }
 
-/* Improve touch scrolling */
+/* Improve touch scrolling + GPU acceleration */
 .spreadsheet-container,
 .modal-body,
 .report-preview,
 .attachment-modal-body {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 /* Prevent text selection on buttons */
