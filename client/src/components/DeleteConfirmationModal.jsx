@@ -41,9 +41,9 @@ const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, itemName, itemTyp
                     <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-3xl mb-4 shadow-inner">
                         🗑️
                     </div>
-                    <h3 className="text-xl font-bold text-gray-800">Delete {itemType}?</h3>
-                    <p className="text-gray-500 text-sm mt-2 leading-relaxed">
-                        Are you sure you want to delete <span className="font-bold text-gray-700">"{itemName}"</span>?
+                    <h3 className="text-xl font-bold text-ch-dark">Delete {itemType}?</h3>
+                    <p className="text-ch-primary text-sm mt-2 leading-relaxed">
+                        Are you sure you want to delete <span className="font-bold text-ch-dark">"{itemName}"</span>?
                         <br />
                         This action cannot be undone.
                     </p>
@@ -54,7 +54,7 @@ const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, itemName, itemTyp
                     <button 
                         onClick={onClose}
                         disabled={isDeleting}
-                        className="flex-1 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 focus:ring-2 focus:ring-gray-200 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 px-4 py-2.5 bg-white border border-ch-soft text-ch-dark font-semibold rounded-xl hover:bg-ch-light focus:ring-2 focus:ring-ch-soft transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Cancel
                     </button>

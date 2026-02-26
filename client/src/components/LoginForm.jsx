@@ -64,19 +64,24 @@ export default function LoginForm({ onLogin }) {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
-            <div className="w-full max-w-md glass p-8 rounded-2xl shadow-2xl animate-scale-in transition-all duration-300">
+        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-ch-primary via-purple-500 to-pink-500 relative overflow-hidden">
+            {/* Decorative background elements */}
+            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-ch-primary rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
+            <div className="absolute top-[20%] right-[-10%] w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
+            <div className="absolute bottom-[-10%] left-[20%] w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-4000"></div>
+            
+            <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 p-8 sm:p-10 rounded-3xl shadow-2xl relative z-10 animate-fade-in-up">
                 <div className="text-center mb-8">
-                    <div className="mb-4 inline-block p-3 rounded-full bg-white/20 backdrop-blur-sm shadow-inner">
-                        <span className="text-4xl filter drop-shadow-md">📊</span>
+                    <div className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md shadow-inner border border-white/30 transform hover:scale-110 transition-transform duration-300">
+                        <span className="text-3xl filter drop-shadow-md">📊</span>
                     </div>
-                    <h1 className="text-2xl font-bold text-white tracking-tight drop-shadow-sm mb-2">Daily Activity</h1>
-                    <p className="text-white/80 font-medium">{isRegister ? 'Create your account' : 'Sign in to continue'}</p>
+                    <h1 className="text-3xl font-extrabold text-white tracking-tight drop-shadow-sm mb-2">Daily Activity</h1>
+                    <p className="text-white/80 font-medium text-sm">{isRegister ? 'Create your account' : 'Sign in to continue'}</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
-                        <label className="block text-sm font-semibold text-white mb-2 ml-1">Username</label>
+                        <label className="block text-xs font-bold text-white/90 uppercase tracking-wider mb-2 ml-1">Username</label>
                         <input
                             type="text"
                             name="username"
@@ -85,26 +90,26 @@ export default function LoginForm({ onLogin }) {
                             placeholder="Enter username"
                             required
                             minLength={3}
-                            className="w-full px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all backdrop-blur-sm shadow-sm"
+                            className="w-full px-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:bg-white/20 transition-all backdrop-blur-md shadow-sm text-sm font-medium"
                         />
                     </div>
 
                     {isRegister && (
                         <div className="animate-slide-up">
-                            <label className="block text-sm font-semibold text-white mb-2 ml-1">Display Name</label>
+                            <label className="block text-xs font-bold text-white/90 uppercase tracking-wider mb-2 ml-1">Display Name</label>
                             <input
                                 type="text"
                                 name="displayName"
                                 value={formData.displayName}
                                 onChange={handleChange}
                                 placeholder="Your display name"
-                                className="w-full px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all backdrop-blur-sm shadow-sm"
+                                className="w-full px-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:bg-white/20 transition-all backdrop-blur-md shadow-sm text-sm font-medium"
                             />
                         </div>
                     )}
 
                     <div>
-                        <label className="block text-sm font-semibold text-white mb-2 ml-1">Password</label>
+                        <label className="block text-xs font-bold text-white/90 uppercase tracking-wider mb-2 ml-1">Password</label>
                         <input
                             type="password"
                             name="password"
@@ -113,13 +118,13 @@ export default function LoginForm({ onLogin }) {
                             placeholder="Enter password"
                             required
                             minLength={6}
-                            className="w-full px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all backdrop-blur-sm shadow-sm"
+                            className="w-full px-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:bg-white/20 transition-all backdrop-blur-md shadow-sm text-sm font-medium"
                         />
                     </div>
 
                     {isRegister && (
                         <div className="animate-slide-up">
-                            <label className="block text-sm font-semibold text-white mb-2 ml-1">Re-Enter Password</label>
+                            <label className="block text-xs font-bold text-white/90 uppercase tracking-wider mb-2 ml-1">Re-Enter Password</label>
                             <input
                                 type="password"
                                 name="confirmPassword"
@@ -128,7 +133,7 @@ export default function LoginForm({ onLogin }) {
                                 placeholder="Confirm your password"
                                 required
                                 minLength={6}
-                                className="w-full px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all backdrop-blur-sm shadow-sm"
+                                className="w-full px-4 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:bg-white/20 transition-all backdrop-blur-md shadow-sm text-sm font-medium"
                             />
                         </div>
                     )}
@@ -147,12 +152,12 @@ export default function LoginForm({ onLogin }) {
 
                     <button 
                         type="submit" 
-                        className="w-full py-3.5 px-4 bg-white text-indigo-600 font-bold rounded-xl hover:bg-opacity-90 hover:scale-[1.02] focus:ring-4 focus:ring-white/30 transition-all duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed transform"
+                        className="w-full py-4 px-4 bg-white text-ch-primary font-extrabold rounded-xl hover:bg-ch-light focus:ring-4 focus:ring-white/30 transition-all duration-300 shadow-[0_8px_16px_rgba(0,0,0,0.1)] hover:shadow-[0_12px_20px_rgba(0,0,0,0.15)] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed mt-2 transform"
                         disabled={loading}
                     >
                         {loading ? (
                             <span className="flex items-center justify-center gap-2">
-                                <svg className="animate-spin h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <svg className="animate-spin h-5 w-5 text-ch-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
@@ -163,11 +168,11 @@ export default function LoginForm({ onLogin }) {
                 </form>
 
                 <div className="mt-8 text-center">
-                    <p className="text-white/80">
+                    <p className="text-white/80 text-sm font-medium">
                         {isRegister ? 'Already have an account?' : "Don't have an account?"}
                         <button
                             type="button"
-                            className="ml-2 font-bold text-white hover:text-white hover:underline transition-all focus:outline-none focus:ring-2 focus:ring-white/50 rounded px-1"
+                            className="ml-2 font-bold text-white hover:text-ch-soft hover:underline transition-all focus:outline-none focus:ring-2 focus:ring-white/50 rounded px-1 group"
                             onClick={() => {
                                 setIsRegister(!isRegister);
                                 setError('');
@@ -175,6 +180,7 @@ export default function LoginForm({ onLogin }) {
                             }}
                         >
                             {isRegister ? 'Sign In' : 'Register'}
+                            <span className="inline-block transition-transform group-hover:translate-x-1 ml-0.5">→</span>
                         </button>
                     </p>
                 </div>

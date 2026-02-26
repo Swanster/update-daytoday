@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { clientsApi } from '../api/clients';
 import { dailiesApi } from '../api/dailies';
-// import './ClientTab.css'; // Removed custom CSS
+import { toast } from 'react-toastify';
 
 function ClientTab({ user, selectedClientName, onClientSelect }) {
     const [clients, setClients] = useState([]);
@@ -119,9 +119,10 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
                 description: '',
                 attachment: null
             });
+            toast.success('Entry added successfully!');
         } catch (err) {
             console.error('Add entry error:', err);
-            alert('Failed to add entry: ' + (err.response?.data?.message || err.message));
+            toast.error('Failed to add entry: ' + (err.response?.data?.message || err.message));
         } finally {
             setSubmitting(false);
         }
@@ -156,8 +157,8 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center h-full text-indigo-500">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mb-4"></div>
+            <div className="flex flex-col items-center justify-center h-full text-ch-primary">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-ch-primary mb-4"></div>
                 <p className="animate-pulse">Loading clients...</p>
             </div>
         );
@@ -170,7 +171,7 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
                 <h3 className="text-xl font-bold mb-2">Error Loading Clients</h3>
                 <p className="mb-4">{error}</p>
                 <button 
-                    className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors shadow-sm"
+                    className="px-4 py-2 bg-ch-primary text-white rounded-lg hover:bg-ch-primary transition-colors shadow-sm"
                     onClick={fetchClients}
                 >
                     Retry
@@ -180,30 +181,30 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
     }
 
     return (
-        <div className="flex h-[calc(100vh-theme(spacing.24))] md:h-[calc(100vh-theme(spacing.20))] bg-white rounded-xl shadow-custom overflow-hidden border border-gray-100">
+        <div className="flex h-[calc(100vh-theme(spacing.24))] md:h-[calc(100vh-theme(spacing.20))] bg-white rounded-xl shadow-custom overflow-hidden border border-ch-soft">
             {/* Client List Panel */}
-            <div className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-gray-100 bg-white z-10 ${selectedClient ? 'hidden md:flex' : 'flex'}`}>
-                <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+            <div className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-ch-soft bg-white z-10 ${selectedClient ? 'hidden md:flex' : 'flex'}`}>
+                <div className="p-4 border-b border-ch-soft bg-ch-light/50">
                     <div className="flex items-center justify-between mb-3">
-                        <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                        <h3 className="font-bold text-ch-dark flex items-center gap-2">
                              🏢 Clients
                         </h3>
-                        <span className="bg-indigo-100 text-indigo-600 text-xs px-2 py-0.5 rounded-full font-bold">
+                        <span className="bg-ch-soft text-ch-primary text-xs px-2 py-0.5 rounded-full font-bold">
                             {clients.length}
                         </span>
                     </div>
                     <div className="relative">
-                        <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+                        <span className="absolute left-3 top-2.5 text-ch-primary">🔍</span>
                         <input
                             type="text"
                             placeholder="Search clients..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                            className="w-full pl-9 pr-8 py-2 bg-white border border-ch-soft rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ch-primary/20 focus:border-ch-primary transition-all"
                         />
                         {searchTerm && (
                             <button 
-                                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                                className="absolute right-3 top-2.5 text-ch-primary hover:text-ch-dark"
                                 onClick={() => setSearchTerm('')}
                             >
                                 ✕
@@ -213,15 +214,15 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
                 </div>
                 <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
                     {filteredClients.length === 0 ? (
-                        <div className="text-center py-8 text-gray-400 text-sm">No clients found</div>
+                        <div className="text-center py-8 text-ch-primary text-sm">No clients found</div>
                     ) : (
                         filteredClients.map((client) => (
                             <div
                                 key={client.clientName}
-                                className={`p-3 rounded-lg cursor-pointer transition-all border border-transparent ${selectedClient?.clientName === client.clientName ? 'bg-indigo-50 border-indigo-100 shadow-sm' : 'hover:bg-gray-50 hover:border-gray-100'}`}
+                                className={`p-3 rounded-lg cursor-pointer transition-all border border-transparent ${selectedClient?.clientName === client.clientName ? 'bg-ch-soft border-ch-soft shadow-sm' : 'hover:bg-ch-light hover:border-ch-soft'}`}
                                 onClick={() => handleClientClick(client)}
                             >
-                                <div className={`font-semibold text-sm mb-1.5 ${selectedClient?.clientName === client.clientName ? 'text-indigo-700' : 'text-gray-700'}`}>
+                                <div className={`font-semibold text-sm mb-1.5 ${selectedClient?.clientName === client.clientName ? 'text-ch-dark' : 'text-ch-dark'}`}>
                                     {client.clientName}
                                 </div>
                                 <div className="flex gap-2">
@@ -244,33 +245,33 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
             </div>
 
             {/* Client Detail Panel */}
-            <div className={`flex-1 flex flex-col bg-gray-50/30 overflow-hidden relative ${!selectedClient ? 'hidden md:flex' : 'flex'}`}>
+            <div className={`flex-1 flex flex-col bg-ch-light/30 overflow-hidden relative ${!selectedClient ? 'hidden md:flex' : 'flex'}`}>
                 {!selectedClient ? (
-                    <div className="flex-1 flex flex-col items-center justify-center text-gray-400 bg-gray-50/50">
+                    <div className="flex-1 flex flex-col items-center justify-center text-ch-primary bg-ch-light/50">
                         <div className="text-5xl mb-4 opacity-50">👈</div>
-                        <h3 className="text-xl font-bold text-gray-600 mb-2">Select a Client</h3>
+                        <h3 className="text-xl font-bold text-ch-dark mb-2">Select a Client</h3>
                         <p className="text-sm">Click on a client from the list to view their activity history</p>
                     </div>
                 ) : detailLoading ? (
-                    <div className="flex-1 flex flex-col items-center justify-center text-indigo-500">
-                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500 mb-4"></div>
+                    <div className="flex-1 flex flex-col items-center justify-center text-ch-primary">
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-ch-primary mb-4"></div>
                         <p className="animate-pulse">Loading client details...</p>
                     </div>
                 ) : clientDetail ? (
                     <>
                         {/* Client Header */}
-                        <div className="px-6 py-4 bg-white border-b border-gray-100 flex items-center justify-between shadow-sm z-10">
+                        <div className="px-6 py-4 bg-white border-b border-ch-soft flex items-center justify-between shadow-sm z-10">
                             <div className="flex items-center gap-3">
                                 <button 
-                                    className="md:hidden p-2 -ml-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                    className="md:hidden p-2 -ml-2 text-ch-primary hover:text-ch-dark hover:bg-ch-soft rounded-lg transition-colors"
                                     onClick={handleBackToList}
                                 >
                                     ←
                                 </button>
-                                <h2 className="text-xl font-bold text-gray-800 truncate">{clientDetail.clientName}</h2>
+                                <h2 className="text-xl font-bold text-ch-dark truncate">{clientDetail.clientName}</h2>
                             </div>
                             <button 
-                                className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors text-sm font-medium"
+                                className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-ch-soft text-ch-primary rounded-lg hover:bg-ch-soft transition-colors text-sm font-medium"
                                 onClick={() => {/* Extra action if needed */}}
                             >
                                 🏢 Profile
@@ -280,15 +281,15 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
                         <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-6 space-y-6">
                             {/* Summary Cards */}
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
-                                <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+                                <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-ch-soft flex flex-col items-center justify-center text-center">
                                     <div className="text-2xl mb-1">📅</div>
-                                    <div className="text-lg font-bold text-gray-800">{clientDetail.summary.totalDaily}</div>
-                                    <div className="text-[10px] uppercase tracking-wide text-gray-400 font-bold">Daily Entries</div>
+                                    <div className="text-lg font-bold text-ch-dark">{clientDetail.summary.totalDaily}</div>
+                                    <div className="text-[10px] uppercase tracking-wide text-ch-primary font-bold">Daily Entries</div>
                                 </div>
-                                <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+                                <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-ch-soft flex flex-col items-center justify-center text-center">
                                     <div className="text-2xl mb-1">📋</div>
-                                    <div className="text-lg font-bold text-gray-800">{clientDetail.summary.totalProjects}</div>
-                                    <div className="text-[10px] uppercase tracking-wide text-gray-400 font-bold">Projects</div>
+                                    <div className="text-lg font-bold text-ch-dark">{clientDetail.summary.totalProjects}</div>
+                                    <div className="text-[10px] uppercase tracking-wide text-ch-primary font-bold">Projects</div>
                                 </div>
                                 <div className="bg-orange-50 p-3 md:p-4 rounded-xl shadow-sm border border-orange-100 flex flex-col items-center justify-center text-center">
                                     <div className="text-2xl mb-1">⚠️</div>
@@ -300,36 +301,36 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
                                     <div className="text-lg font-bold text-green-600">{clientDetail.summary.doneDaily + clientDetail.summary.doneProjects}</div>
                                     <div className="text-[10px] uppercase tracking-wide text-green-400 font-bold">Resolved</div>
                                 </div>
-                                <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+                                <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-ch-soft flex flex-col items-center justify-center text-center">
                                     <div className="text-2xl mb-1">🏃</div>
-                                    <div className="text-lg font-bold text-gray-800">{clientDetail.summary.onsiteCount}</div>
-                                    <div className="text-[10px] uppercase tracking-wide text-gray-400 font-bold">Onsite</div>
+                                    <div className="text-lg font-bold text-ch-dark">{clientDetail.summary.onsiteCount}</div>
+                                    <div className="text-[10px] uppercase tracking-wide text-ch-primary font-bold">Onsite</div>
                                 </div>
-                                <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
+                                <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-ch-soft flex flex-col items-center justify-center text-center">
                                     <div className="text-2xl mb-1">💻</div>
-                                    <div className="text-lg font-bold text-gray-800">{clientDetail.summary.remoteCount}</div>
-                                    <div className="text-[10px] uppercase tracking-wide text-gray-400 font-bold">Remote</div>
+                                    <div className="text-lg font-bold text-ch-dark">{clientDetail.summary.remoteCount}</div>
+                                    <div className="text-[10px] uppercase tracking-wide text-ch-primary font-bold">Remote</div>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {/* Case Breakdown */}
                                 {clientDetail.caseBreakdown && clientDetail.caseBreakdown.length > 0 && (
-                                    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                                        <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-4">🔥 Most Common Cases</h3>
+                                    <div className="bg-white p-5 rounded-xl shadow-sm border border-ch-soft">
+                                        <h3 className="text-sm font-bold text-ch-dark uppercase tracking-wide mb-4">🔥 Most Common Cases</h3>
                                         <div className="space-y-3">
                                             {clientDetail.caseBreakdown.map((item, index) => (
                                                 <div key={index} className="flex items-center gap-3">
-                                                    <div className="w-24 text-xs font-semibold text-gray-600 truncate" title={item.caseType}>
+                                                    <div className="w-24 text-xs font-semibold text-ch-dark truncate" title={item.caseType}>
                                                         {item.caseType}
                                                     </div>
-                                                    <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+                                                    <div className="flex-1 bg-ch-soft rounded-full h-2 overflow-hidden">
                                                         <div
                                                             className="h-full bg-gradient-to-r from-orange-400 to-pink-500 rounded-full"
                                                             style={{ width: `${(item.count / getMaxCount(clientDetail.caseBreakdown)) * 100}%` }}
                                                         ></div>
                                                     </div>
-                                                    <div className="w-8 text-xs font-bold text-gray-700 text-right">{item.count}</div>
+                                                    <div className="w-8 text-xs font-bold text-ch-dark text-right">{item.count}</div>
                                                 </div>
                                             ))}
                                         </div>
@@ -338,13 +339,13 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
 
                                 {/* Services Breakdown */}
                                 {clientDetail.servicesBreakdown && clientDetail.servicesBreakdown.length > 0 && (
-                                    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                                        <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-4">🛠️ Services Provided</h3>
+                                    <div className="bg-white p-5 rounded-xl shadow-sm border border-ch-soft">
+                                        <h3 className="text-sm font-bold text-ch-dark uppercase tracking-wide mb-4">🛠️ Services Provided</h3>
                                         <div className="flex flex-wrap gap-2">
                                             {clientDetail.servicesBreakdown.map((item, index) => (
-                                                <span key={index} className="inline-flex items-center px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100 text-xs font-medium">
+                                                <span key={index} className="inline-flex items-center px-2.5 py-1 rounded-lg bg-ch-soft text-ch-dark border border-ch-soft text-xs font-medium">
                                                     {item.service} 
-                                                    <span className="ml-1.5 px-1.5 py-0.5 bg-white text-indigo-600 rounded shadow-sm text-[10px] font-bold">
+                                                    <span className="ml-1.5 px-1.5 py-0.5 bg-white text-ch-primary rounded shadow-sm text-[10px] font-bold">
                                                         {item.count}
                                                     </span>
                                                 </span>
@@ -356,13 +357,13 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
 
                             {/* Activity by Year */}
                             {clientDetail.activityByYear && clientDetail.activityByYear.length > 0 && (
-                                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-4">📊 Activity by Year</h3>
+                                <div className="bg-white p-5 rounded-xl shadow-sm border border-ch-soft">
+                                    <h3 className="text-sm font-bold text-ch-dark uppercase tracking-wide mb-4">📊 Activity by Year</h3>
                                     <div className="space-y-4">
                                         {clientDetail.activityByYear.map((item) => (
                                             <div key={item.year} className="flex items-center gap-4">
-                                                <div className="w-12 text-sm font-bold text-gray-700">{item.year}</div>
-                                                <div className="flex-1 flex gap-1 h-3 bg-gray-100 rounded-full overflow-hidden">
+                                                <div className="w-12 text-sm font-bold text-ch-dark">{item.year}</div>
+                                                <div className="flex-1 flex gap-1 h-3 bg-ch-soft rounded-full overflow-hidden">
                                                     <div
                                                         className="h-full bg-blue-400 hover:bg-blue-500 transition-colors"
                                                         style={{ width: `${(item.daily / item.total) * 100}%` }}
@@ -374,11 +375,11 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
                                                         title={`Projects: ${item.projects}`}
                                                     ></div>
                                                 </div>
-                                                <div className="w-12 text-sm font-bold text-gray-700 text-right">{item.total}</div>
+                                                <div className="w-12 text-sm font-bold text-ch-dark text-right">{item.total}</div>
                                             </div>
                                         ))}
                                     </div>
-                                    <div className="flex justify-end gap-4 mt-3 text-xs font-medium text-gray-500">
+                                    <div className="flex justify-end gap-4 mt-3 text-xs font-medium text-ch-primary">
                                         <span className="flex items-center gap-1"><div className="w-2 h-2 bg-blue-400 rounded-full"></div> Daily</span>
                                         <span className="flex items-center gap-1"><div className="w-2 h-2 bg-emerald-400 rounded-full"></div> Projects</span>
                                     </div>
@@ -386,18 +387,18 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
                             )}
 
                             {/* Activity History */}
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                                <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gray-50/30">
-                                    <h3 className="text-lg font-bold text-gray-800">📋 Activity History</h3>
-                                    <div className="flex p-1 bg-gray-100 rounded-lg">
+                            <div className="bg-white rounded-xl shadow-sm border border-ch-soft overflow-hidden">
+                                <div className="p-4 border-b border-ch-soft flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-ch-light/30">
+                                    <h3 className="text-lg font-bold text-ch-dark">📋 Activity History</h3>
+                                    <div className="flex p-1 bg-ch-soft rounded-lg">
                                         <button
-                                            className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold rounded-md transition-all ${activeSubTab === 'daily' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                            className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold rounded-md transition-all ${activeSubTab === 'daily' ? 'bg-white text-ch-primary shadow-sm' : 'text-ch-primary hover:text-ch-dark'}`}
                                             onClick={() => setActiveSubTab('daily')}
                                         >
                                             📅 Daily ({clientDetail.dailyEntries?.length || 0})
                                         </button>
                                         <button
-                                            className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold rounded-md transition-all ${activeSubTab === 'projects' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                            className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold rounded-md transition-all ${activeSubTab === 'projects' ? 'bg-white text-emerald-600 shadow-sm' : 'text-ch-primary hover:text-ch-dark'}`}
                                             onClick={() => setActiveSubTab('projects')}
                                         >
                                             📋 Projects ({clientDetail.projectEntries?.length || 0})
@@ -408,7 +409,7 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
                                 <div className="overflow-x-auto">
                                     {activeSubTab === 'daily' ? (
                                         <table className="w-full text-sm text-left border-collapse">
-                                            <thead className="bg-gray-50 text-gray-600 font-semibold uppercase text-xs">
+                                            <thead className="bg-ch-light text-ch-dark font-semibold uppercase text-xs">
                                                 <tr>
                                                     <th className="px-4 py-3 whitespace-nowrap">Date</th>
                                                     <th className="px-4 py-3">Case/Issue</th>
@@ -417,21 +418,21 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
                                                     <th className="px-4 py-3 whitespace-nowrap">PIC Team</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-gray-100">
+                                            <tbody className="divide-y divide-ch-soft">
                                                 {clientDetail.dailyEntries?.length === 0 ? (
                                                     <tr>
-                                                        <td colSpan="5" className="p-8 text-center text-gray-400">No daily entries</td>
+                                                        <td colSpan="5" className="p-8 text-center text-ch-primary">No daily entries</td>
                                                     </tr>
                                                 ) : (
                                                     clientDetail.dailyEntries?.map((entry) => (
-                                                        <tr key={entry._id} className="hover:bg-gray-50 transition-colors">
-                                                            <td className="px-4 py-3 font-mono text-xs whitespace-nowrap text-gray-600">{formatDate(entry.date)}</td>
+                                                        <tr key={entry._id} className="hover:bg-ch-light transition-colors">
+                                                            <td className="px-4 py-3 font-mono text-xs whitespace-nowrap text-ch-dark">{formatDate(entry.date)}</td>
                                                             <td className="px-4 py-3 max-w-xs truncate" title={entry.caseIssue}>{entry.caseIssue || '-'}</td>
                                                             <td className="px-4 py-3 whitespace-nowrap">
                                                                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
-                                                                    entry.action?.toLowerCase().includes('monitor') ? 'bg-indigo-50 text-indigo-700 border-indigo-100' : 
+                                                                    entry.action?.toLowerCase().includes('monitor') ? 'bg-ch-soft text-ch-dark border-ch-soft' : 
                                                                     entry.action?.toLowerCase().includes('config') ? 'bg-purple-50 text-purple-700 border-purple-100' : 
-                                                                    'bg-gray-50 text-gray-700 border-gray-100'
+                                                                    'bg-ch-light text-ch-dark border-ch-soft'
                                                                 }`}>
                                                                     {entry.action || '-'}
                                                                 </span>
@@ -447,10 +448,10 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
                                                             <td className="px-4 py-3">
                                                                 <div className="flex flex-wrap gap-1">
                                                                     {entry.picTeam?.slice(0, 2).map((pic, idx) => (
-                                                                        <span key={idx} className="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-[10px] border border-gray-200">{pic}</span>
+                                                                        <span key={idx} className="bg-ch-soft text-ch-dark px-1.5 py-0.5 rounded text-[10px] border border-ch-soft">{pic}</span>
                                                                     ))}
                                                                     {entry.picTeam?.length > 2 && (
-                                                                        <span className="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-[10px] border border-gray-200">+{entry.picTeam.length - 2}</span>
+                                                                        <span className="bg-ch-soft text-ch-dark px-1.5 py-0.5 rounded text-[10px] border border-ch-soft">+{entry.picTeam.length - 2}</span>
                                                                     )}
                                                                 </div>
                                                             </td>
@@ -459,10 +460,10 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
                                                 )}
                                                 {/* Add Entry Row */}
                                                 <tr 
-                                                    className="bg-indigo-50/50 hover:bg-indigo-50 cursor-pointer transition-colors border-t-2 border-dashed border-indigo-100"
+                                                    className="bg-ch-soft/50 hover:bg-ch-soft cursor-pointer transition-colors border-t-2 border-dashed border-ch-soft"
                                                     onClick={() => setShowAddModal(true)}
                                                 >
-                                                    <td colSpan="5" className="p-3 text-center text-indigo-600 font-bold text-sm">
+                                                    <td colSpan="5" className="p-3 text-center text-ch-primary font-bold text-sm">
                                                         <span className="flex items-center justify-center gap-2">➕ Add New Entry</span>
                                                     </td>
                                                 </tr>
@@ -470,7 +471,7 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
                                         </table>
                                     ) : (
                                         <table className="w-full text-sm text-left border-collapse">
-                                            <thead className="bg-gray-50 text-gray-600 font-semibold uppercase text-xs">
+                                            <thead className="bg-ch-light text-ch-dark font-semibold uppercase text-xs">
                                                 <tr>
                                                     <th className="px-4 py-3 whitespace-nowrap">Date</th>
                                                     <th className="px-4 py-3 whitespace-nowrap">Quarter</th>
@@ -479,16 +480,16 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
                                                     <th className="px-4 py-3 whitespace-nowrap">PIC Team</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-gray-100">
+                                            <tbody className="divide-y divide-ch-soft">
                                                 {clientDetail.projectEntries?.length === 0 ? (
                                                     <tr>
-                                                        <td colSpan="5" className="p-8 text-center text-gray-400">No project entries</td>
+                                                        <td colSpan="5" className="p-8 text-center text-ch-primary">No project entries</td>
                                                     </tr>
                                                 ) : (
                                                     clientDetail.projectEntries?.map((entry) => (
-                                                        <tr key={entry._id} className="hover:bg-gray-50 transition-colors">
-                                                            <td className="px-4 py-3 font-mono text-xs whitespace-nowrap text-gray-600">{formatDate(entry.date)}</td>
-                                                            <td className="px-4 py-3 text-gray-700">{entry.quarter || '-'}</td>
+                                                        <tr key={entry._id} className="hover:bg-ch-light transition-colors">
+                                                            <td className="px-4 py-3 font-mono text-xs whitespace-nowrap text-ch-dark">{formatDate(entry.date)}</td>
+                                                            <td className="px-4 py-3 text-ch-dark">{entry.quarter || '-'}</td>
                                                             <td className="px-4 py-3">
                                                                 <div className="flex flex-wrap gap-1">
                                                                     {Array.isArray(entry.services) ? (
@@ -511,7 +512,7 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
                                                             <td className="px-4 py-3">
                                                                 <div className="flex flex-wrap gap-1">
                                                                     {entry.picTeam?.slice(0, 2).map((pic, idx) => (
-                                                                        <span key={idx} className="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-[10px] border border-gray-200">{pic}</span>
+                                                                        <span key={idx} className="bg-ch-soft text-ch-dark px-1.5 py-0.5 rounded text-[10px] border border-ch-soft">{pic}</span>
                                                                     ))}
                                                                 </div>
                                                             </td>
@@ -537,62 +538,62 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
             {showAddModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setShowAddModal(false)}>
                     <div 
-                        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-scale-in border border-gray-100" 
+                        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-scale-in border border-ch-soft" 
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
-                            <h3 className="font-bold text-lg text-gray-800">➕ Add Entry for {selectedClient?.clientName}</h3>
-                            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-gray-400 hover:text-gray-600 hover:bg-gray-100 border border-gray-200 transition-all shadow-sm" onClick={() => setShowAddModal(false)}>✕</button>
+                        <div className="px-6 py-4 border-b border-ch-soft bg-ch-light flex items-center justify-between">
+                            <h3 className="font-bold text-lg text-ch-dark">➕ Add Entry for {selectedClient?.clientName}</h3>
+                            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-ch-primary hover:text-ch-dark hover:bg-ch-soft border border-ch-soft transition-all shadow-sm" onClick={() => setShowAddModal(false)}>✕</button>
                         </div>
                         <form onSubmit={handleAddEntry}>
                             <div className="p-6 space-y-4">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">📅 Date</label>
+                                    <label className="block text-sm font-semibold text-ch-dark mb-1.5">📅 Date</label>
                                     <input
                                         type="date"
                                         value={newEntry.date}
                                         onChange={(e) => setNewEntry(prev => ({ ...prev, date: e.target.value }))}
                                         required
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono text-sm"
+                                        className="w-full px-4 py-2.5 bg-ch-light border border-ch-soft rounded-xl focus:outline-none focus:ring-2 focus:ring-ch-primary/20 focus:border-ch-primary transition-all font-mono text-sm"
                                     />
                                 </div>
                                 
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">👤 PIC</label>
+                                    <label className="block text-sm font-semibold text-ch-dark mb-1.5">👤 PIC</label>
                                     <input
                                         type="text"
                                         placeholder="Enter names (comma separated)"
                                         value={newEntry.picInput || ''}
                                         onChange={handlePicChange}
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm mb-2"
+                                        className="w-full px-4 py-2.5 bg-ch-light border border-ch-soft rounded-xl focus:outline-none focus:ring-2 focus:ring-ch-primary/20 focus:border-ch-primary transition-all text-sm mb-2"
                                     />
                                     {newEntry.picTeam.length > 0 && (
                                         <div className="flex flex-wrap gap-2">
                                             {newEntry.picTeam.map((pic, idx) => (
-                                                <span key={idx} className="px-2 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-medium border border-indigo-100">{pic}</span>
+                                                <span key={idx} className="px-2 py-1 bg-ch-soft text-ch-dark rounded-lg text-xs font-medium border border-ch-soft">{pic}</span>
                                             ))}
                                         </div>
                                     )}
                                 </div>
                                 
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">📝 Description</label>
+                                    <label className="block text-sm font-semibold text-ch-dark mb-1.5">📝 Description</label>
                                     <textarea
                                         placeholder="Describe the activity..."
                                         value={newEntry.description}
                                         onChange={(e) => setNewEntry(prev => ({ ...prev, description: e.target.value }))}
                                         rows={3}
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
+                                        className="w-full px-4 py-2.5 bg-ch-light border border-ch-soft rounded-xl focus:outline-none focus:ring-2 focus:ring-ch-primary/20 focus:border-ch-primary transition-all text-sm"
                                     />
                                 </div>
                                 
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">📎 Attachment</label>
+                                    <label className="block text-sm font-semibold text-ch-dark mb-1.5">📎 Attachment</label>
                                     <div className="relative">
                                         <input
                                             type="file"
                                             onChange={(e) => setNewEntry(prev => ({ ...prev, attachment: e.target.files[0] }))}
-                                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all"
+                                            className="block w-full text-sm text-ch-primary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-ch-soft file:text-ch-dark hover:file:bg-ch-soft transition-all"
                                         />
                                     </div>
                                     {newEntry.attachment && (
@@ -603,11 +604,11 @@ function ClientTab({ user, selectedClientName, onClientSelect }) {
                                 </div>
                             </div>
                             
-                            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
-                                <button type="button" className="px-4 py-2 text-gray-600 font-bold text-sm hover:bg-gray-200/50 rounded-xl transition-colors" onClick={() => setShowAddModal(false)}>
+                            <div className="px-6 py-4 bg-ch-light border-t border-ch-soft flex justify-end gap-3">
+                                <button type="button" className="px-4 py-2 text-ch-dark font-bold text-sm hover:bg-ch-soft/50 rounded-xl transition-colors" onClick={() => setShowAddModal(false)}>
                                     Cancel
                                 </button>
-                                <button type="submit" className="px-6 py-2 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-500/30 transition-all shadow-md disabled:opacity-70 disabled:cursor-not-allowed" disabled={submitting}>
+                                <button type="submit" className="px-6 py-2 bg-ch-primary text-white font-bold text-sm rounded-xl hover:bg-ch-dark focus:ring-4 focus:ring-ch-primary/30 transition-all shadow-md disabled:opacity-70 disabled:cursor-not-allowed" disabled={submitting}>
                                     {submitting ? 'Adding...' : 'Add Entry'}
                                 </button>
                             </div>

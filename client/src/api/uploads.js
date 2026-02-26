@@ -4,13 +4,14 @@ const API_URL = '/api/uploads';
 
 export const uploadsApi = {
     // Upload a single file
-    uploadFile: async (file) => {
+    uploadFile: async (file, onUploadProgress) => {
         const formData = new FormData();
         formData.append('file', file);
         const response = await api.post(API_URL, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
-            }
+            },
+            onUploadProgress
         });
         return response.data;
     },

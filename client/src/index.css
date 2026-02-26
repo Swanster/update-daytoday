@@ -4,34 +4,33 @@
 
 @layer base {
   body {
-    @apply bg-bg-cream text-text-dark font-lexend min-h-screen text-sm;
+    @apply bg-ch-light text-ch-dark font-lexend min-h-screen text-sm antialiased selection:bg-ch-soft selection:text-ch-dark;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold;
+    @apply font-extrabold tracking-tight text-ch-dark;
   }
 }
-
 @layer components {
   /* Glassmorphism Utilities */
   .glass {
-    @apply bg-white/30 backdrop-blur-md border border-white/20 shadow-custom;
+    @apply bg-white/70 backdrop-blur-xl border border-white/50 shadow-custom-lg rounded-3xl;
   }
   
   .glass-dark {
-    @apply bg-primary-dark/95 backdrop-blur-md border border-gray-700 shadow-custom text-white;
+    @apply bg-ch-dark/90 backdrop-blur-xl border border-ch-dark/50 shadow-custom-lg rounded-3xl text-white;
   }
 
   .btn {
-    @apply px-4 py-2 rounded-lg font-semibold transition-all duration-300 flex items-center gap-2 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed;
+    @apply px-5 py-2.5 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2;
   }
 
   .btn-primary {
-    @apply bg-accent-coral text-white shadow-custom-sm hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#ff6b47];
+    @apply bg-ch-primary text-white shadow-sm hover:-translate-y-px hover:shadow-md hover:bg-brand-600 focus:ring-ch-primary;
   }
 
   .card {
-    @apply bg-white rounded-xl shadow-custom p-6 transition-all duration-300 hover:shadow-lg;
+    @apply bg-white rounded-3xl shadow-custom border border-ch-soft/50 p-6 transition-all duration-300 hover:shadow-custom-lg hover:-translate-y-1;
   }
 }
 

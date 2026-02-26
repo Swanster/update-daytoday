@@ -498,11 +498,13 @@ function App() {
     // Work Order Filter State
     const [woFilterStatus, setWoFilterStatus] = useState('All');
 
+    // Project Filter State
+    const [projectFilterStatus, setProjectFilterStatus] = useState('All');
     // Filter and sort Projects
     const filteredProjects = useMemo(() => {
         let result = [...projects];
 
-        // Filter by search term
+        // 1. Search Filter
         if (searchTerm.trim()) {
             const term = searchTerm.toLowerCase();
             result = result.filter(p =>
@@ -512,7 +514,16 @@ function App() {
             );
         }
 
-        // Sort
+        // 2. Status Filter
+        if (projectFilterStatus !== 'All') {
+             if (projectFilterStatus === 'Done') {
+                result = result.filter(p => p.status === 'Done' || p.status === 'Complete');
+             } else {
+                result = result.filter(p => p.status === projectFilterStatus);
+             }
+        }
+
+        // 3. Sort
         result.sort((a, b) => {
             switch (sortBy) {
                 case 'name':
@@ -528,7 +539,7 @@ function App() {
         });
 
         return result;
-    }, [projects, searchTerm, sortBy]);
+    }, [projects, searchTerm, sortBy, projectFilterStatus]);
 
     // Filter and sort Work Orders
     const filteredWorkOrders = useMemo(() => {
@@ -610,28 +621,28 @@ function App() {
     }
 
     return (
-        <div className="min-h-screen bg-bg-cream text-text-dark font-lexend flex flex-col">
+        <div className="min-h-screen bg-ch-light text-ch-dark font-lexend flex flex-col">
             <VersionCheck />
             {/* Header - Sticky Top */}
-            <div className="sticky top-0 z-50 bg-primary-dark text-white shadow-lg transition-all duration-300">
-                <header className="px-4 py-3 flex justify-between items-center">
-                <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2 truncate">
-                    <span className="text-2xl">📊</span> 
-                    <span className="hidden md:inline">DAILY ACTIVITY INFRASTRUCTURE ENGINEER</span>
-                    <span className="md:hidden">Daily Activity</span>
+            <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-white shadow-sm transition-all duration-300">
+                <header className="px-6 py-4 flex justify-between items-center max-w-7xl mx-auto w-full">
+                <h1 className="text-xl md:text-2xl font-extrabold flex items-center gap-3 truncate text-ch-dark tracking-tight">
+                    <span className="text-2xl bg-ch-soft p-2 rounded-xl text-ch-primary">📊</span> 
+                    <span className="hidden md:inline bg-gradient-to-r from-ch-primary to-ch-primary bg-clip-text text-transparent">Daily Activity Infrastructure Engineer</span>
+                    <span className="md:hidden bg-gradient-to-r from-ch-primary to-ch-primary bg-clip-text text-transparent">Daily Activity</span>
                 </h1>
 
-                <div className="flex items-center gap-3">
-                    {/* Quarter Selector - Hidden on very small screens if needed, or compacted */}
-                    <div className="flex items-center gap-2 bg-white/10 rounded-lg px-2 py-1">
-                        <label className="hidden md:block text-sm font-semibold">Quarter:</label>
+                <div className="flex items-center gap-4">
+                    {/* Quarter Selector */}
+                    <div className="flex items-center gap-2 bg-ch-soft hover:bg-ch-soft transition-colors rounded-xl px-3 py-1.5 border border-ch-soft/50">
+                        <label className="hidden md:block text-sm font-semibold text-ch-dark">Quarter:</label>
                         <select
-                            className="bg-transparent border-none text-white text-sm font-semibold focus:ring-0 cursor-pointer outline-none"
+                            className="bg-transparent border-none text-ch-dark text-sm font-bold focus:ring-0 cursor-pointer outline-none"
                             value={selectedQuarter ? `${selectedQuarter.quarter}|${selectedQuarter.year}` : ''}
                             onChange={handleQuarterChange}
                         >
                             {quarters.map((q, idx) => (
-                                <option key={idx} value={`${q.quarter}|${q.year}`} className="text-black">
+                                <option key={idx} value={`${q.quarter}|${q.year}`}>
                                     {q.quarter}
                                 </option>
                             ))}
@@ -641,37 +652,37 @@ function App() {
                     {(activeTab === 'project' || activeTab === 'daily' || activeTab === 'wo') && (
                         <>
                             <button 
-                                className="hidden md:flex bg-accent-coral text-white px-4 py-1.5 rounded-lg font-semibold items-center gap-1 shadow-md hover:bg-[#ff6b47] hover:-translate-y-0.5 transition-all active:scale-95"
+                                className="hidden md:flex bg-ch-primary text-white px-5 py-2 rounded-xl font-bold items-center gap-2 shadow-sm shadow-ch-soft hover:bg-ch-dark hover:shadow-md hover:-translate-y-0.5 transition-all active:scale-[0.98]"
                                 onClick={handleAddClick}
                             >
-                                <span>+</span> Add Entry
+                                <span className="text-ch-soft text-lg leading-none">+</span> Add Entry
                             </button>
-                             {/* Mobile Add Button (Icon only) */}
+                             {/* Mobile Add Button */}
                             <button 
-                                className="md:hidden w-8 h-8 flex items-center justify-center bg-accent-coral text-white rounded-full shadow-md active:scale-90"
+                                className="md:hidden w-10 h-10 flex items-center justify-center bg-ch-primary text-white rounded-xl shadow-md active:scale-[0.98]"
                                 onClick={handleAddClick}
                             >
-                                +
+                                <span className="text-xl">+</span>
                             </button>
                         </>
                     )}
 
                     {/* User Menu */}
-                    <div className="flex items-center gap-3 ml-2">
+                    <div className="flex items-center gap-3 ml-2 border-l border-ch-soft pl-4">
                         <div className="hidden md:flex flex-col items-end leading-tight">
-                            <span className="font-semibold text-sm">{user.displayName || user.username}</span>
-                            {user.role !== 'user' && <span className="text-xs opacity-75 uppercase tracking-wider">{user.role}</span>}
+                            <span className="font-bold text-sm text-ch-dark">{user.displayName || user.username}</span>
+                            {user.role !== 'user' && <span className="text-[10px] font-bold text-ch-primary uppercase tracking-widest bg-ch-soft px-2 py-0.5 rounded-full mt-0.5">{user.role}</span>}
                         </div>
 
                         {/* Admin-only buttons - Desktop */}
                         {isAdminOrSuper() && (
-                            <div className="hidden md:flex gap-2">
-                                <button className="p-1.5 hover:bg-white/10 rounded-full transition-colors" onClick={() => setIsUserMgmtOpen(true)} title="User Management">👥</button>
-                                <button className="p-1.5 hover:bg-white/10 rounded-full transition-colors" onClick={() => setIsActivityOpen(true)} title="Activity Log">📋</button>
+                            <div className="hidden md:flex gap-1.5">
+                                <button className="p-2 hover:bg-ch-soft text-ch-primary rounded-xl transition-colors" onClick={() => setIsUserMgmtOpen(true)} title="User Management">👥</button>
+                                <button className="p-2 hover:bg-ch-soft text-ch-primary rounded-xl transition-colors" onClick={() => setIsActivityOpen(true)} title="Activity Log">📋</button>
                             </div>
                         )}
 
-                        <button className="text-xl p-1.5 hover:bg-white/10 rounded-full transition-colors text-gray-300 hover:text-white" onClick={handleLogout} title="Logout">
+                        <button className="text-xl p-2 hover:bg-red-50 hover:text-red-500 text-ch-primary rounded-xl transition-colors" onClick={handleLogout} title="Logout">
                             🚪
                         </button>
                     </div>
@@ -679,11 +690,11 @@ function App() {
             </header>
 
             {/* Desktop Tab Navigation */}
-            <div className="hidden md:flex px-6 gap-1 overflow-x-auto">
+            <div className="hidden md:flex flex-wrap px-6 pt-4 pb-2 gap-3 max-w-7xl mx-auto w-full">
                 {isAdminOrSuper() && (
                     <button
-                        className={`px-6 py-2.5 rounded-t-lg font-semibold text-sm transition-all flex items-center gap-2
-                            ${activeTab === 'dashboard' ? 'bg-bg-cream text-primary-dark shadow-sm translate-y-[1px]' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
+                        className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2
+                            ${activeTab === 'dashboard' ? 'bg-ch-dark text-white shadow-md shadow-ch-dark/20' : 'bg-white text-ch-primary border border-ch-soft hover:bg-ch-soft hover:text-ch-dark'}`}
                         onClick={() => { setActiveTab('dashboard'); setSearchTerm(''); }}
                     >
                         📊 Dashboard
@@ -691,31 +702,31 @@ function App() {
                 )}
                 {isAdminOrSuper() && (
                     <button
-                        className={`px-6 py-2.5 rounded-t-lg font-semibold text-sm transition-all flex items-center gap-2
-                            ${activeTab === 'client' ? 'bg-bg-cream text-primary-dark shadow-sm translate-y-[1px]' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
+                        className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2
+                            ${activeTab === 'client' ? 'bg-ch-dark text-white shadow-md shadow-ch-dark/20' : 'bg-white text-ch-primary border border-ch-soft hover:bg-ch-soft hover:text-ch-dark'}`}
                         onClick={() => { setActiveTab('client'); setSearchTerm(''); setSelectedClientName(null); }}
                     >
                         🏢 Client
                     </button>
                 )}
                 <button
-                    className={`px-6 py-2.5 rounded-t-lg font-semibold text-sm transition-all flex items-center gap-2
-                        ${activeTab === 'wo' ? 'bg-bg-cream text-primary-dark shadow-sm translate-y-[1px]' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
+                    className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2
+                        ${activeTab === 'wo' ? 'bg-ch-dark text-white shadow-md shadow-ch-dark/20' : 'bg-white text-ch-primary border border-ch-soft hover:bg-ch-soft hover:text-ch-dark'}`}
                     onClick={() => { setActiveTab('wo'); setSearchTerm(''); }}
                 >
                     🛠️ WO
                 </button>
                 <button
-                    className={`px-6 py-2.5 rounded-t-lg font-semibold text-sm transition-all flex items-center gap-2
-                        ${activeTab === 'project' ? 'bg-bg-cream text-primary-dark shadow-sm translate-y-[1px]' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
+                    className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2
+                        ${activeTab === 'project' ? 'bg-ch-dark text-white shadow-md shadow-ch-dark/20' : 'bg-white text-ch-primary border border-ch-soft hover:bg-ch-soft hover:text-ch-dark'}`}
                     onClick={() => { setActiveTab('project'); setSearchTerm(''); }}
                 >
                     📋 Project
                 </button>
 
                 <button
-                    className={`px-6 py-2.5 rounded-t-lg font-semibold text-sm transition-all flex items-center gap-2
-                        ${activeTab === 'daily' ? 'bg-bg-cream text-primary-dark shadow-sm translate-y-[1px]' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
+                    className={`px-6 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2
+                        ${activeTab === 'daily' ? 'bg-ch-dark text-white shadow-md shadow-ch-dark/20' : 'bg-white text-ch-primary border border-ch-soft hover:bg-ch-soft hover:text-ch-dark'}`}
                     onClick={() => { setActiveTab('daily'); setSearchTerm(''); }}
                 >
                     📅 Daily
@@ -724,30 +735,30 @@ function App() {
 
             {/* Search and Sort Controls */}
             {activeTab !== 'dashboard' && activeTab !== 'client' && (
-                <div className="bg-white p-4 shadow-sm border-b border-gray-200 flex flex-col md:flex-row gap-4 items-center justify-between sticky top-[60px] md:static z-40">
+                <div className="bg-white/80 backdrop-blur-xl p-5 shadow-sm border-y border-ch-soft flex flex-col md:flex-row gap-4 items-center justify-between sticky top-[72px] md:static z-40 max-w-7xl mx-auto w-full my-2 rounded-2xl md:rounded-3xl md:mx-4 lg:mx-auto">
                     <div className="relative w-full md:w-96 group">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-accent-coral transition-colors">🔍</span>
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ch-primary group-focus-within:text-ch-dark transition-colors">🔍</span>
                         <input
                             type="text"
                             placeholder={activeTab === 'project' ? 'Search projects...' : (activeTab === 'wo' ? 'Search work orders...' : 'Search daily activities...')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-10 py-2 border-2 border-gray-200 rounded-full text-sm focus:outline-none focus:border-accent-coral focus:ring-4 focus:ring-accent-coral/10 transition-all bg-gray-50 focus:bg-white text-gray-800"
+                            className="w-full pl-12 pr-10 py-3 border border-ch-soft rounded-full text-sm focus:outline-none focus:border-ch-primary focus:ring-4 focus:ring-ch-primary/20 transition-all bg-ch-light focus:bg-white text-ch-dark shadow-sm"
                         />
                         {searchTerm && (
-                            <button className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-accent-coral" onClick={() => setSearchTerm('')}>✕</button>
+                            <button className="absolute right-3 top-1/2 -translate-y-1/2 text-ch-primary hover:text-ch-primary bg-ch-soft hover:bg-ch-soft rounded-full w-6 h-6 flex items-center justify-center transition-colors" onClick={() => setSearchTerm('')}>✕</button>
                         )}
                     </div>
                     
                     <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
                          {/* WO Status Filter */}
                          {activeTab === 'wo' && (
-                             <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1.5 shrink-0">
-                                <label className="text-xs font-bold text-gray-600">Status:</label>
+                             <div className="flex items-center gap-2 bg-ch-soft rounded-lg px-3 py-1.5 shrink-0">
+                                <label className="text-xs font-bold text-ch-dark">Status:</label>
                                 <select 
                                     value={woFilterStatus} 
                                     onChange={(e) => setWoFilterStatus(e.target.value)}
-                                    className="bg-transparent border-none text-sm font-medium focus:ring-0 cursor-pointer text-gray-800"
+                                    className="bg-transparent border-none text-sm font-medium focus:ring-0 cursor-pointer text-ch-dark"
                                 >
                                     <option value="All">All</option>
                                     <option value="Progress">Progress</option>
@@ -757,12 +768,29 @@ function App() {
                             </div>
                          )}
 
-                         <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1.5 shrink-0">
-                            <label className="text-xs font-bold text-gray-600">Sort:</label>
+                         {/* Project Status Filter */}
+                         {activeTab === 'project' && (
+                             <div className="flex items-center gap-2 bg-ch-soft rounded-lg px-3 py-1.5 shrink-0">
+                                <label className="text-xs font-bold text-ch-dark">Status:</label>
+                                <select 
+                                    value={projectFilterStatus} 
+                                    onChange={(e) => setProjectFilterStatus(e.target.value)}
+                                    className="bg-transparent border-none text-sm font-medium focus:ring-0 cursor-pointer text-ch-dark"
+                                >
+                                    <option value="All">All</option>
+                                    <option value="Progress">Progress</option>
+                                    <option value="Done">Done</option>
+                                    <option value="Hold">Hold</option>
+                                </select>
+                            </div>
+                         )}
+
+                         <div className="flex items-center gap-2 bg-ch-soft rounded-lg px-3 py-1.5 shrink-0">
+                            <label className="text-xs font-bold text-ch-dark">Sort:</label>
                             <select 
                                 value={sortBy} 
                                 onChange={(e) => setSortBy(e.target.value)}
-                                className="bg-transparent border-none text-sm font-medium focus:ring-0 cursor-pointer text-gray-800"
+                                className="bg-transparent border-none text-sm font-medium focus:ring-0 cursor-pointer text-ch-dark"
                             >
                                 <option value="sequence">Sequence (No.)</option>
                                 <option value="name">{activeTab === 'project' ? 'Project Name' : (activeTab === 'wo' ? 'Client Name' : 'Client Name')}</option>
@@ -775,23 +803,23 @@ function App() {
                         {isAdminOrSuper() && (
                             <>
                                 {activeTab === 'project' && (
-                                     <button className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-accent-coral hover:border-accent-coral transition-all shrink-0 flex items-center gap-1" onClick={handleCarryForward}>
+                                     <button className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-ch-dark hover:bg-ch-light hover:text-accent-coral hover:border-accent-coral transition-all shrink-0 flex items-center gap-1" onClick={handleCarryForward}>
                                         📥 <span className="hidden sm:inline">Carry Fwd</span>
                                     </button>
                                 )}
-                                <button className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-accent-coral hover:border-accent-coral transition-all shrink-0 flex items-center gap-1" onClick={() => setIsCSVImportOpen(true)}>
+                                <button className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-ch-dark hover:bg-ch-light hover:text-accent-coral hover:border-accent-coral transition-all shrink-0 flex items-center gap-1" onClick={() => setIsCSVImportOpen(true)}>
                                     📤 <span className="hidden sm:inline">Import</span>
                                 </button>
-                                <button className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-accent-coral hover:border-accent-coral transition-all shrink-0 flex items-center gap-1" onClick={() => setIsReportOpen(true)}>
+                                <button className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-ch-dark hover:bg-ch-light hover:text-accent-coral hover:border-accent-coral transition-all shrink-0 flex items-center gap-1" onClick={() => setIsReportOpen(true)}>
                                     📊 <span className="hidden sm:inline">Report</span>
                                 </button>
                                 
                                 {/* More Menu for Management (Hidden on Mobile usually, but let's keep accessible) */}
                                 <div className="flex gap-1">
-                                    <button className="p-2 bg-gray-100 rounded-lg hover:bg-accent-coral hover:text-white transition-colors" onClick={() => setIsCategoryMgmtOpen(true)} title="Manage Categories">🏷️</button>
-                                    <button className="p-2 bg-gray-100 rounded-lg hover:bg-accent-coral hover:text-white transition-colors" onClick={() => setIsCaseTypeMgmtOpen(true)} title="Manage Case Types">📋</button>
+                                    <button className="p-2 bg-ch-soft rounded-lg hover:bg-accent-coral hover:text-white transition-colors" onClick={() => setIsCategoryMgmtOpen(true)} title="Manage Categories">🏷️</button>
+                                    <button className="p-2 bg-ch-soft rounded-lg hover:bg-accent-coral hover:text-white transition-colors" onClick={() => setIsCaseTypeMgmtOpen(true)} title="Manage Case Types">📋</button>
                                     {user?.role === 'superuser' && (
-                                         <button className="p-2 bg-gray-100 rounded-lg hover:bg-accent-coral hover:text-white transition-colors" onClick={() => setIsPicMemberMgmtOpen(true)} title="Manage PICs">👥</button>
+                                         <button className="p-2 bg-ch-soft rounded-lg hover:bg-accent-coral hover:text-white transition-colors" onClick={() => setIsPicMemberMgmtOpen(true)} title="Manage PICs">👥</button>
                                     )}
                                 </div>
                             </>
@@ -803,7 +831,21 @@ function App() {
 
             <main className="flex-1 p-4 md:p-6 overflow-x-hidden md:overflow-visible pb-24 md:pb-6">
                 {activeTab === 'dashboard' ? (
-                    <Dashboard user={user} onClientClick={handleClientClick} />
+                    <Dashboard 
+                        user={user} 
+                        onClientClick={handleClientClick} 
+                        onNavigateToWO={(status) => {
+                            setActiveTab('wo');
+                            setWoFilterStatus(status);
+                        }}
+                        onNavigateToProject={(status) => {
+                            setActiveTab('project');
+                            setProjectFilterStatus(status);
+                        }}
+                        onNavigateToDaily={() => {
+                            setActiveTab('daily');
+                        }}
+                    />
                 ) : activeTab === 'client' ? (
                     <ClientTab
                         user={user}
@@ -813,7 +855,7 @@ function App() {
                 ) : loading ? (
                      <div className="flex flex-col items-center justify-center py-20">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-coral"></div>
-                        <p className="mt-4 text-gray-500 font-medium">Loading data...</p>
+                        <p className="mt-4 text-ch-primary font-medium">Loading data...</p>
                     </div>
                 ) : error ? (
                     <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-lg max-w-2xl mx-auto my-10 shadow-sm">
@@ -862,53 +904,53 @@ function App() {
             </main>
 
             {/* Mobile Bottom Navigation Bar */}
-            <div className="md:hidden fixed bottom-0 left-0 w-full bg-primary-dark text-gray-400 flex justify-around items-center p-2 z-50 border-t border-gray-700 pb-safe">
+            <div className="md:hidden fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-xl text-ch-primary shadow-[0_-4px_20px_rgba(0,0,0,0.05)] flex justify-around items-center p-2 z-[60] border-t border-ch-soft pb-safe">
                 {isAdminOrSuper() && (
                     <button 
-                        className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'dashboard' ? 'text-accent-coral bg-white/10' : 'hover:text-white'}`}
+                        className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'dashboard' ? 'text-ch-primary bg-ch-soft' : 'hover:text-ch-primary'}`}
                         onClick={() => { setActiveTab('dashboard'); setSearchTerm(''); }}
                     >
                         <span className="text-xl mb-0.5">📊</span>
-                        <span className="text-[10px] font-medium">Dash</span>
+                        <span className="text-[10px] font-bold">Dash</span>
                     </button>
                 )}
                 {isAdminOrSuper() && (
                     <button 
-                        className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'client' ? 'text-accent-coral bg-white/10' : 'hover:text-white'}`}
+                        className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'client' ? 'text-ch-primary bg-ch-soft' : 'hover:text-ch-primary'}`}
                         onClick={() => { setActiveTab('client'); setSearchTerm(''); setSelectedClientName(null); }}
                     >
                         <span className="text-xl mb-0.5">🏢</span>
-                        <span className="text-[10px] font-medium">Client</span>
+                        <span className="text-[10px] font-bold">Client</span>
                     </button>
                 )}
                 <button 
-                    className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'project' ? 'text-accent-coral bg-white/10' : 'hover:text-white'}`}
+                    className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'project' ? 'text-ch-primary bg-ch-soft' : 'hover:text-ch-primary'}`}
                     onClick={() => { setActiveTab('project'); setSearchTerm(''); }}
                 >
                     <span className="text-xl mb-0.5">📋</span>
-                    <span className="text-[10px] font-medium">Project</span>
+                    <span className="text-[10px] font-bold">Project</span>
                 </button>
                 <button 
-                    className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'wo' ? 'text-accent-coral bg-white/10' : 'hover:text-white'}`}
+                    className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'wo' ? 'text-ch-primary bg-ch-soft' : 'hover:text-ch-primary'}`}
                     onClick={() => { setActiveTab('wo'); setSearchTerm(''); }}
                 >
                     <span className="text-xl mb-0.5">🛠️</span>
-                    <span className="text-[10px] font-medium">WO</span>
+                    <span className="text-[10px] font-bold">WO</span>
                 </button>
                 <button 
-                    className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'daily' ? 'text-accent-coral bg-white/10' : 'hover:text-white'}`}
+                    className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'daily' ? 'text-ch-primary bg-ch-soft' : 'hover:text-ch-primary'}`}
                     onClick={() => { setActiveTab('daily'); setSearchTerm(''); }}
                 >
                     <span className="text-xl mb-0.5">📅</span>
-                    <span className="text-[10px] font-medium">Daily</span>
+                    <span className="text-[10px] font-bold">Daily</span>
                 </button>
                  {isAdminOrSuper() && (
                      <button 
-                        className="flex flex-col items-center p-2 rounded-xl hover:text-white"
+                        className="flex flex-col items-center p-2 rounded-xl hover:text-ch-primary"
                         onClick={() => setIsActivityOpen(true)}
                     >
                         <span className="text-xl mb-0.5">⋮</span>
-                        <span className="text-[10px] font-medium">Menu</span>
+                        <span className="text-[10px] font-bold">Menu</span>
                     </button>
                  )}
             </div>

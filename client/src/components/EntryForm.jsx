@@ -3,6 +3,7 @@ import { projectsApi } from '../api/projects';
 import { categoriesApi } from '../api/categories';
 import { picMembersApi } from '../api/picMembers';
 import FileUpload from './FileUpload';
+import { toast } from 'react-toastify';
 
 export default function EntryForm({ isOpen, onClose, onSave, editData, user }) {
     const [formData, setFormData] = useState({
@@ -212,61 +213,63 @@ export default function EntryForm({ isOpen, onClose, onSave, editData, user }) {
         e.preventDefault();
 
         if (!formData.projectName.trim()) {
-            alert('Project Name is required');
+            toast.warning('Project Name is required');
             return;
         }
 
         try {
             await onSave(formData);
+            toast.success(editData ? 'Project updated successfully!' : 'Project created successfully!');
             onClose();
         } catch (error) {
             console.error('Error saving project:', error);
-            alert('Failed to save project. Please try again.');
+            toast.error('Failed to save project. Please try again.');
         }
     };
 
     if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in" onClick={(e) => e.target === e.currentTarget && onClose()}>
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-scale-in border border-gray-100">
+        <div className="fixed inset-0 bg-ch-dark/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 py-8 overflow-y-auto animate-fade-in" onClick={(e) => { if(e.target === e.currentTarget) onClose(); }}>
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl my-auto relative transform transition-all animate-fade-in-up overflow-hidden flex flex-col animate-scale-in border border-ch-soft">
                 
                 {/* Header */}
-                <div className="bg-white px-8 py-6 border-b border-gray-100 flex justify-between items-center sticky top-0 z-10 shadow-sm">
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-                            <span className="bg-indigo-50 text-indigo-600 p-2 rounded-xl">
-                                {editData ? '✏️' : '📝'}
-                            </span>
-                            {editData ? 'Edit Project Entry' : 'New Project Entry'}
-                        </h2>
-                        <p className="text-gray-500 text-sm mt-1 ml-1">Fill in the project details below.</p>
+                <div className="bg-white px-8 py-6 border-b border-ch-soft flex justify-center items-center sticky top-0 z-10 shadow-sm">
+                    <div className="w-full max-w-2xl flex justify-between items-center">
+                        <div>
+                            <h2 className="text-2xl font-bold text-ch-dark flex items-center gap-3">
+                                <span className="bg-ch-soft text-ch-primary p-2 rounded-xl">
+                                    {editData ? '✏️' : '📝'}
+                                </span>
+                                {editData ? 'Edit Project Entry' : 'New Project Entry'}
+                            </h2>
+                            <p className="text-ch-primary text-sm mt-1 ml-1">Fill in the project details below.</p>
+                        </div>
+                        <button 
+                            onClick={onClose} 
+                            className="w-10 h-10 flex items-center justify-center rounded-full bg-ch-light text-ch-primary hover:text-ch-dark hover:bg-ch-soft transition-all"
+                        >
+                            ✕
+                        </button>
                     </div>
-                    <button 
-                        onClick={onClose} 
-                        className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all"
-                    >
-                        ✕
-                    </button>
                 </div>
 
                 {/* Form Content */}
                 <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-                    <div className="space-y-10">
+                    <div className="space-y-10 max-w-2xl mx-auto">
                         
                         {/* Section 1: Project Information */}
                         <section>
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="h-px bg-gray-200 flex-1"></div>
-                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider bg-white px-2">Project Information</span>
-                                <div className="h-px bg-gray-200 flex-1"></div>
+                                <div className="h-px bg-ch-soft flex-1"></div>
+                                <span className="text-xs font-bold text-ch-primary uppercase tracking-wider bg-white px-2">Project Information</span>
+                                <div className="h-px bg-ch-soft flex-1"></div>
                             </div>
 
                             <div className="space-y-6">
                                 {/* Project Name with Autocomplete */}
                                 <div className="relative z-20">
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                                        Project Name <span className="text-indigo-500">*</span>
+                                    <label className="block text-sm font-bold text-ch-dark mb-2">
+                                        Project Name <span className="text-ch-primary">*</span>
                                     </label>
                                     <input
                                         ref={projectNameRef}
@@ -277,28 +280,28 @@ export default function EntryForm({ isOpen, onClose, onSave, editData, user }) {
                                         onFocus={() => formData.projectName.length >= 2 && setShowSuggestions(true)}
                                         placeholder="Enter project name..."
                                         required
-                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-lg text-gray-700"
+                                        className="w-full px-4 py-3 bg-ch-light border border-ch-soft rounded-xl focus:outline-none focus:ring-2 focus:ring-ch-primary/20 focus:border-ch-primary transition-all font-medium text-lg text-ch-dark"
                                         autoComplete="off"
                                     />
                                     {showSuggestions && (suggestions.exact.length > 0 || suggestions.similar.length > 0) && (
-                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto z-30" ref={suggestionsRef}>
+                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-ch-soft rounded-xl shadow-lg max-h-60 overflow-auto z-30" ref={suggestionsRef}>
                                             {suggestions.exact.map((name, index) => (
                                                 <div
                                                     key={`exact-${index}`}
-                                                    className="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 last:border-0"
+                                                    className="px-4 py-3 hover:bg-ch-soft cursor-pointer border-b border-ch-soft last:border-0"
                                                     onClick={() => handleSuggestionClick(name)}
                                                 >
-                                                    <span className="font-semibold text-gray-800">{name}</span>
+                                                    <span className="font-semibold text-ch-dark">{name}</span>
                                                     <span className="ml-2 text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full font-bold">Existing</span>
                                                 </div>
                                             ))}
                                             {suggestions.similar.map((name, index) => (
                                                 <div
                                                     key={`similar-${index}`}
-                                                    className="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 last:border-0"
+                                                    className="px-4 py-3 hover:bg-ch-soft cursor-pointer border-b border-ch-soft last:border-0"
                                                     onClick={() => handleSuggestionClick(name)}
                                                 >
-                                                    <span className="text-gray-700">{name}</span>
+                                                    <span className="text-ch-dark">{name}</span>
                                                     <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold">Similar</span>
                                                 </div>
                                             ))}
@@ -313,18 +316,18 @@ export default function EntryForm({ isOpen, onClose, onSave, editData, user }) {
 
                                 {/* Category (Multi-select) */}
                                 <div className="relative" ref={categoryDropdownRef}>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Services</label>
+                                    <label className="block text-sm font-bold text-ch-dark mb-2">Services</label>
                                     <div
-                                        className="min-h-[52px] w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all cursor-pointer flex flex-wrap items-center gap-2"
+                                        className="min-h-[52px] w-full px-4 py-2 bg-ch-light border border-ch-soft rounded-xl focus-within:ring-2 focus-within:ring-ch-primary/20 focus-within:border-ch-primary transition-all cursor-pointer flex flex-wrap items-center gap-2"
                                         onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
                                     >
                                         {formData.services && formData.services.length > 0 ? (
                                             formData.services.map((cat, idx) => (
-                                                <span key={idx} className="inline-flex items-center px-3 py-1 rounded-lg bg-indigo-100 text-indigo-700 border border-indigo-200 text-sm font-semibold group transition-all hover:bg-indigo-200">
+                                                <span key={idx} className="inline-flex items-center px-3 py-1 rounded-lg bg-ch-soft text-ch-dark border border-ch-soft text-sm font-semibold group transition-all hover:bg-ch-soft">
                                                     {cat}
                                                     <button
                                                         type="button"
-                                                        className="ml-2 text-indigo-400 hover:text-indigo-800 transition-colors"
+                                                        className="ml-2 text-ch-primary hover:text-ch-dark transition-colors"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             removeCategory(cat);
@@ -335,25 +338,25 @@ export default function EntryForm({ isOpen, onClose, onSave, editData, user }) {
                                                 </span>
                                             ))
                                         ) : (
-                                            <span className="text-gray-400 font-medium">Select services...</span>
+                                            <span className="text-ch-primary font-medium">Select services...</span>
                                         )}
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">▼</div>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-ch-primary">▼</div>
                                     </div>
                                     {showCategoryDropdown && (
-                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto z-30 p-2 grid grid-cols-2 gap-1 animate-scale-in">
+                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-ch-soft rounded-xl shadow-lg max-h-60 overflow-auto z-30 p-2 grid grid-cols-2 gap-1 animate-scale-in">
                                             {categories.map((cat) => (
-                                                <label key={cat._id} className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors">
+                                                <label key={cat._id} className="flex items-center gap-3 px-3 py-2 hover:bg-ch-light rounded-lg cursor-pointer transition-colors">
                                                     <input
                                                         type="checkbox"
                                                         checked={(formData.services || []).includes(cat.name)}
                                                         onChange={() => toggleCategory(cat.name)}
-                                                        className="w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                                                        className="w-5 h-5 text-ch-primary rounded border-gray-300 focus:ring-ch-primary"
                                                     />
-                                                    <span className="text-sm font-medium text-gray-700">{cat.name}</span>
+                                                    <span className="text-sm font-medium text-ch-dark">{cat.name}</span>
                                                 </label>
                                             ))}
                                             {categories.length === 0 && (
-                                                <div className="col-span-2 text-center py-4 text-gray-400 text-sm">No categories available</div>
+                                                <div className="col-span-2 text-center py-4 text-ch-primary text-sm">No categories available</div>
                                             )}
                                         </div>
                                     )}
@@ -364,57 +367,57 @@ export default function EntryForm({ isOpen, onClose, onSave, editData, user }) {
                         {/* Section 2: Status & Progress */}
                         <section>
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="h-px bg-gray-200 flex-1"></div>
-                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider bg-white px-2">Status & Schedule</span>
-                                <div className="h-px bg-gray-200 flex-1"></div>
+                                <div className="h-px bg-ch-soft flex-1"></div>
+                                <span className="text-xs font-bold text-ch-primary uppercase tracking-wider bg-white px-2">Status & Schedule</span>
+                                <div className="h-px bg-ch-soft flex-1"></div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                 {/* Report Survey */}
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Report Survey</label>
+                                    <label className="block text-sm font-bold text-ch-dark mb-2">Report Survey</label>
                                     <div className="relative">
                                         <select 
                                             name="reportSurvey" 
                                             value={formData.reportSurvey} 
                                             onChange={handleInputChange}
-                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none cursor-pointer font-medium text-gray-700"
+                                            className="w-full px-4 py-3 bg-ch-light border border-ch-soft rounded-xl focus:outline-none focus:ring-2 focus:ring-ch-primary/20 focus:border-ch-primary transition-all appearance-none cursor-pointer font-medium text-ch-dark"
                                         >
                                             <option value="">Select...</option>
                                             <option value="Done">Done</option>
                                             <option value="Progress">Progress</option>
                                         </select>
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">▼</div>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-ch-primary">▼</div>
                                     </div>
                                 </div>
 
                                 {/* WO */}
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">WO</label>
+                                    <label className="block text-sm font-bold text-ch-dark mb-2">WO</label>
                                     <div className="relative">
                                         <select 
                                             name="wo" 
                                             value={formData.wo} 
                                             onChange={handleInputChange}
-                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none cursor-pointer font-medium text-gray-700"
+                                            className="w-full px-4 py-3 bg-ch-light border border-ch-soft rounded-xl focus:outline-none focus:ring-2 focus:ring-ch-primary/20 focus:border-ch-primary transition-all appearance-none cursor-pointer font-medium text-ch-dark"
                                         >
                                             <option value="">Select...</option>
                                             <option value="Done">Done</option>
                                             <option value="Progress">Progress</option>
                                         </select>
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">▼</div>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-ch-primary">▼</div>
                                     </div>
                                 </div>
 
                                 {/* Material */}
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Material</label>
+                                    <label className="block text-sm font-bold text-ch-dark mb-2">Material</label>
                                     <div className="relative">
                                         <select 
                                             name="material" 
                                             value={formData.material} 
                                             onChange={handleInputChange}
-                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none cursor-pointer font-medium text-gray-700"
+                                            className="w-full px-4 py-3 bg-ch-light border border-ch-soft rounded-xl focus:outline-none focus:ring-2 focus:ring-ch-primary/20 focus:border-ch-primary transition-all appearance-none cursor-pointer font-medium text-ch-dark"
                                         >
                                             <option value="">Select...</option>
                                             <option value="Request">Request</option>
@@ -423,26 +426,26 @@ export default function EntryForm({ isOpen, onClose, onSave, editData, user }) {
                                             <option value="Progress">Progress</option>
                                             <option value="Logistic">Logistic</option>
                                         </select>
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">▼</div>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-ch-primary">▼</div>
                                     </div>
                                 </div>
 
                                 {/* Status */}
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Status</label>
+                                    <label className="block text-sm font-bold text-ch-dark mb-2">Status</label>
                                     <div className="relative">
                                         <select 
                                             name="status" 
                                             value={formData.status} 
                                             onChange={handleInputChange}
-                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none cursor-pointer font-medium text-gray-700"
+                                            className="w-full px-4 py-3 bg-ch-light border border-ch-soft rounded-xl focus:outline-none focus:ring-2 focus:ring-ch-primary/20 focus:border-ch-primary transition-all appearance-none cursor-pointer font-medium text-ch-dark"
                                         >
                                             <option value="">Select...</option>
                                             <option value="Progress">Progress</option>
                                             <option value="Done">Done</option>
                                             <option value="Hold">Hold</option>
                                         </select>
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">▼</div>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-ch-primary">▼</div>
                                     </div>
                                 </div>
                             </div>
@@ -450,25 +453,25 @@ export default function EntryForm({ isOpen, onClose, onSave, editData, user }) {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                                 {/* Date */}
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Start Date</label>
+                                    <label className="block text-sm font-bold text-ch-dark mb-2">Start Date</label>
                                     <input
                                         type="date"
                                         name="date"
                                         value={formData.date}
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono text-gray-700"
+                                        className="w-full px-4 py-3 bg-ch-light border border-ch-soft rounded-xl focus:outline-none focus:ring-2 focus:ring-ch-primary/20 focus:border-ch-primary transition-all font-mono text-ch-dark"
                                     />
                                 </div>
 
                                 {/* Due Date */}
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Due Date</label>
+                                    <label className="block text-sm font-bold text-ch-dark mb-2">Due Date</label>
                                     <input
                                         type="date"
                                         name="dueDate"
                                         value={formData.dueDate}
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono text-gray-700"
+                                        className="w-full px-4 py-3 bg-ch-light border border-ch-soft rounded-xl focus:outline-none focus:ring-2 focus:ring-ch-primary/20 focus:border-ch-primary transition-all font-mono text-ch-dark"
                                     />
                                 </div>
                             </div>
@@ -477,17 +480,17 @@ export default function EntryForm({ isOpen, onClose, onSave, editData, user }) {
                         {/* Section 3: Team & Details */}
                         <section>
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="h-px bg-gray-200 flex-1"></div>
-                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider bg-white px-2">Team & Details</span>
-                                <div className="h-px bg-gray-200 flex-1"></div>
+                                <div className="h-px bg-ch-soft flex-1"></div>
+                                <span className="text-xs font-bold text-ch-primary uppercase tracking-wider bg-white px-2">Team & Details</span>
+                                <div className="h-px bg-ch-soft flex-1"></div>
                             </div>
 
                             <div className="space-y-6">
                                 {/* PIC Team (Multi-select) */}
                                 <div className="relative" ref={picDropdownRef}>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">PIC Team</label>
+                                    <label className="block text-sm font-bold text-ch-dark mb-2">PIC Team</label>
                                     <div
-                                        className="min-h-[52px] w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all cursor-pointer flex flex-wrap items-center gap-2"
+                                        className="min-h-[52px] w-full px-4 py-2 bg-ch-light border border-ch-soft rounded-xl focus-within:ring-2 focus-within:ring-ch-primary/20 focus-within:border-ch-primary transition-all cursor-pointer flex flex-wrap items-center gap-2"
                                         onClick={() => setShowPicDropdown(!showPicDropdown)}
                                     >
                                         {formData.picTeam && formData.picTeam.length > 0 ? (
@@ -507,25 +510,25 @@ export default function EntryForm({ isOpen, onClose, onSave, editData, user }) {
                                                 </span>
                                             ))
                                         ) : (
-                                            <span className="text-gray-400 font-medium">Select PIC members...</span>
+                                            <span className="text-ch-primary font-medium">Select PIC members...</span>
                                         )}
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">▼</div>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-ch-primary">▼</div>
                                     </div>
                                     {showPicDropdown && (
-                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto z-30 p-2 grid grid-cols-2 md:grid-cols-3 gap-1 animate-scale-in">
+                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-ch-soft rounded-xl shadow-lg max-h-60 overflow-auto z-30 p-2 grid grid-cols-2 md:grid-cols-3 gap-1 animate-scale-in">
                                             {picMembers.map((member) => (
-                                                <label key={member._id} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors">
+                                                <label key={member._id} className="flex items-center gap-2 px-3 py-2 hover:bg-ch-light rounded-lg cursor-pointer transition-colors">
                                                     <input
                                                         type="checkbox"
                                                         checked={(formData.picTeam || []).includes(member.name)}
                                                         onChange={() => togglePicMember(member.name)}
                                                         className="w-5 h-5 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
                                                     />
-                                                    <span className="text-sm font-medium text-gray-700">{member.name}</span>
+                                                    <span className="text-sm font-medium text-ch-dark">{member.name}</span>
                                                 </label>
                                             ))}
                                             {picMembers.length === 0 && (
-                                                <div className="col-span-3 text-center py-4 text-gray-400 text-sm">No PIC members available</div>
+                                                <div className="col-span-3 text-center py-4 text-ch-primary text-sm">No PIC members available</div>
                                             )}
                                         </div>
                                     )}
@@ -533,21 +536,21 @@ export default function EntryForm({ isOpen, onClose, onSave, editData, user }) {
 
                                 {/* Progress */}
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Progress Notes</label>
+                                    <label className="block text-sm font-bold text-ch-dark mb-2">Progress Notes</label>
                                     <textarea
                                         name="progress"
                                         value={formData.progress}
                                         onChange={handleInputChange}
                                         placeholder="Enter progress notes..."
                                         rows={4}
-                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-gray-700 leading-relaxed"
+                                        className="w-full px-4 py-3 bg-ch-light border border-ch-soft rounded-xl focus:outline-none focus:ring-2 focus:ring-ch-primary/20 focus:border-ch-primary transition-all text-ch-dark leading-relaxed"
                                     />
                                 </div>
 
                                 {/* File Attachments */}
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Attachments</label>
-                                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                                    <label className="block text-sm font-bold text-ch-dark mb-2">Attachments</label>
+                                    <div className="bg-ch-light border border-ch-soft rounded-xl p-4">
                                         <FileUpload
                                             existingFiles={editData?.attachments || []}
                                             onFilesChange={handleFilesChange}
@@ -561,20 +564,22 @@ export default function EntryForm({ isOpen, onClose, onSave, editData, user }) {
                     </div>
                     
                     {/* Footer Actions */}
-                    <div className="mt-10 pt-6 border-t border-gray-100 flex justify-end gap-4">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="px-6 py-3 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all transform active:scale-95"
-                        >
-                            {editData ? 'Update Entry' : 'Create Entry'}
-                        </button>
+                    <div className="mt-10 pt-6 border-t border-ch-soft flex justify-center gap-3 sticky bottom-0 bg-white p-4 -mx-8 -mb-8 z-20 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
+                        <div className="w-full max-w-2xl flex justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="px-6 py-2.5 text-ch-dark font-bold bg-ch-soft hover:bg-ch-soft rounded-xl transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                className="px-8 py-2.5 bg-ch-primary text-white font-bold rounded-xl shadow-md shadow-ch-soft hover:bg-ch-dark hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98]"
+                            >
+                                {editData ? 'Update Project' : 'Create Project'}
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>

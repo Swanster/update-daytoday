@@ -55,10 +55,10 @@ function ToastContainer({ toasts, onRemove }) {
                     key={toast.id}
                     className={`
                         pointer-events-auto min-w-[300px] max-w-sm bg-white rounded-xl shadow-lg border p-4 flex items-start gap-3 animate-slide-in transform transition-all duration-300
-                        ${toast.type === 'success' ? 'border-l-4 border-l-green-500 border-gray-100' : ''}
-                        ${toast.type === 'error' ? 'border-l-4 border-l-red-500 border-gray-100' : ''}
-                        ${toast.type === 'warning' ? 'border-l-4 border-l-amber-500 border-gray-100' : ''}
-                        ${toast.type === 'info' ? 'border-l-4 border-l-blue-500 border-gray-100' : ''}
+                        ${toast.type === 'success' ? 'border-l-4 border-l-green-500 border-ch-soft' : ''}
+                        ${toast.type === 'error' ? 'border-l-4 border-l-red-500 border-ch-soft' : ''}
+                        ${toast.type === 'warning' ? 'border-l-4 border-l-amber-500 border-ch-soft' : ''}
+                        ${toast.type === 'info' ? 'border-l-4 border-l-blue-500 border-ch-soft' : ''}
                     `}
                     onClick={() => onRemove(toast.id)}
                 >
@@ -79,7 +79,7 @@ function ToastContainer({ toasts, onRemove }) {
                         </p>
                     </div>
                     <button 
-                        className="text-gray-400 hover:text-gray-600 transition-colors w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 flex-shrink-0" 
+                        className="text-ch-primary hover:text-ch-dark transition-colors w-6 h-6 flex items-center justify-center rounded-full hover:bg-ch-soft flex-shrink-0" 
                         onClick={(e) => { e.stopPropagation(); onRemove(toast.id); }}
                     >
                         ×

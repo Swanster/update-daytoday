@@ -73,13 +73,13 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess, apiType = '
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={handleClose}>
             <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden glass animate-scale-in" onClick={(e) => e.stopPropagation()}>
-                <div className="px-6 py-4 border-b border-gray-100 bg-white/50 backdrop-blur-md flex items-center justify-between">
-                    <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <div className="px-6 py-4 border-b border-ch-soft bg-white/50 backdrop-blur-md flex items-center justify-between">
+                    <h2 className="text-xl font-bold text-ch-dark flex items-center gap-2">
                         <span className="text-green-500">📊</span>
                         Import TSV - {apiType === 'daily' ? 'Daily Activity' : 'Project'}
                     </h2>
                     <button 
-                        className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-gray-400 hover:text-gray-600 hover:bg-gray-100 border border-gray-200 transition-all shadow-sm"
+                        className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-ch-primary hover:text-ch-dark hover:bg-ch-soft border border-ch-soft transition-all shadow-sm"
                         onClick={handleClose}
                     >
                         &times;
@@ -92,7 +92,7 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess, apiType = '
                             relative border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer mb-6
                             ${dragging 
                                 ? 'border-green-500 bg-green-50/50 scale-[1.01]' 
-                                : 'border-gray-300 hover:border-green-400 hover:bg-gray-50'
+                                : 'border-gray-300 hover:border-green-400 hover:bg-ch-light'
                             }
                             ${file ? 'bg-green-50/30 border-green-200' : ''}
                         `}
@@ -112,14 +112,14 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess, apiType = '
                         {file ? (
                             <div className="flex flex-col items-center animate-fade-in">
                                 <span className="text-4xl mb-3">📄</span>
-                                <span className="text-sm font-bold text-gray-800 mb-1">{file.name}</span>
-                                <span className="text-xs text-gray-500 font-mono">({(file.size / 1024).toFixed(1)} KB)</span>
+                                <span className="text-sm font-bold text-ch-dark mb-1">{file.name}</span>
+                                <span className="text-xs text-ch-primary font-mono">({(file.size / 1024).toFixed(1)} KB)</span>
                             </div>
                         ) : (
                             <div className="flex flex-col items-center">
                                 <span className="text-4xl mb-3 text-gray-300">📁</span>
-                                <p className="text-sm font-bold text-gray-700 mb-1">Drag and drop a TSV file here</p>
-                                <p className="text-xs text-gray-500">or click to browse</p>
+                                <p className="text-sm font-bold text-ch-dark mb-1">Drag and drop a TSV file here</p>
+                                <p className="text-xs text-ch-primary">or click to browse</p>
                             </div>
                         )}
                     </div>
@@ -130,18 +130,18 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess, apiType = '
                         </div>
                     )}
 
-                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                        <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Expected TSV Format:</h4>
-                        <ul className="list-disc list-inside text-xs text-gray-600 space-y-1">
-                            <li className="break-words leading-relaxed font-mono bg-white px-2 py-1 rounded border border-gray-200 inline-block">{formatInfo}</li>
+                    <div className="bg-ch-light rounded-xl p-4 border border-ch-soft">
+                        <h4 className="text-xs font-bold text-ch-primary uppercase tracking-wide mb-2">Expected TSV Format:</h4>
+                        <ul className="list-disc list-inside text-xs text-ch-dark space-y-1">
+                            <li className="break-words leading-relaxed font-mono bg-white px-2 py-1 rounded border border-ch-soft inline-block">{formatInfo}</li>
                             <li>Multi-row entries for same {apiType === 'daily' ? 'client' : 'project'} will be grouped automatically</li>
                         </ul>
                     </div>
                 </div>
 
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+                <div className="px-6 py-4 bg-ch-light border-t border-ch-soft flex justify-end gap-3">
                     <button
-                        className="px-6 py-2.5 text-gray-600 font-bold text-sm hover:bg-gray-200/50 rounded-xl transition-colors"
+                        className="px-6 py-2.5 text-ch-dark font-bold text-sm hover:bg-ch-soft/50 rounded-xl transition-colors"
                         onClick={handleClose}
                         disabled={loading}
                     >

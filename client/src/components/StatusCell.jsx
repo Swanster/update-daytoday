@@ -39,19 +39,19 @@ export default function StatusCell({ value, type = 'status', onUpdate }) {
     };
 
     const getBadgeClass = (val) => {
-        const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border cursor-pointer hover:opacity-80 transition-opacity select-none";
+        const baseClasses = "inline-flex items-center px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider border cursor-pointer hover:shadow-md transition-all select-none shadow-sm";
         const valLower = (val || '').toLowerCase();
 
         if (valLower.includes('done') || valLower.includes('complete')) {
-            return baseClasses + " bg-green-100 text-green-800 border-green-200";
+            return baseClasses + " bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100";
         } else if (valLower.includes('progress')) {
-            return baseClasses + " bg-blue-100 text-blue-800 border-blue-200";
+            return baseClasses + " bg-ch-soft text-ch-dark border-ch-soft hover:bg-ch-soft";
         } else if (valLower.includes('hold')) {
-            return baseClasses + " bg-orange-100 text-orange-800 border-orange-200";
+            return baseClasses + " bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100";
         } else if (valLower.includes('no need')) {
-            return baseClasses + " bg-gray-100 text-gray-800 border-gray-200";
+            return baseClasses + " bg-ch-soft text-ch-dark border-ch-soft hover:bg-ch-soft";
         } else {
-            return baseClasses + " bg-gray-100 text-gray-800 border-gray-200";
+            return baseClasses + " bg-ch-light text-ch-dark border-ch-soft hover:bg-ch-soft";
         }
     };
 
@@ -74,36 +74,38 @@ export default function StatusCell({ value, type = 'status', onUpdate }) {
                     }}
                 >
                     <div
-                        className="absolute bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-scale-in w-32"
+                        className="absolute bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-ch-soft overflow-hidden animate-scale-in w-36 z-[100]"
                         style={{
                             top: dropdownPos.top,
                             left: dropdownPos.left,
                             transform: dropdownPos.transform
                         }}
                     >
-                        {options.map((opt) => {
-                            const isSelected = value === opt;
-                            let itemClass = "px-4 py-2 text-xs font-medium cursor-pointer hover:bg-gray-50 flex items-center justify-between";
-                            if (isSelected) {
-                                itemClass += " text-indigo-600 bg-indigo-50";
-                            } else {
-                                itemClass += " text-gray-700";
-                            }
-                            return (
-                                <div
-                                    key={opt}
-                                    className={itemClass}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onUpdate(opt);
-                                        setIsOpen(false);
-                                    }}
-                                >
-                                    {opt}
-                                    {isSelected && <span>✓</span>}
-                                </div>
-                            );
-                        })}
+                        <div className="py-1">
+                            {options.map((opt) => {
+                                const isSelected = value === opt;
+                                let itemClass = "px-4 py-2.5 text-xs font-bold cursor-pointer transition-colors flex items-center justify-between mx-1 rounded-xl";
+                                if (isSelected) {
+                                    itemClass += " text-ch-dark bg-ch-soft/80";
+                                } else {
+                                    itemClass += " text-ch-dark hover:bg-ch-light hover:text-ch-dark";
+                                }
+                                return (
+                                    <div
+                                        key={opt}
+                                        className={itemClass}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onUpdate(opt);
+                                            setIsOpen(false);
+                                        }}
+                                    >
+                                        <span className="tracking-wide">{opt}</span>
+                                        {isSelected && <span className="text-ch-primary font-extrabold flex items-center justify-center w-4 h-4 bg-ch-soft rounded-full text-[10px]">✓</span>}
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
             )}

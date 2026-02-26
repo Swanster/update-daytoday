@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import StatusCell from './StatusCell';
 
 export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = [], onSelectionChange, onBatchStatusUpdate, onStatusUpdate }) {
@@ -37,109 +37,131 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
 
     const getStatusBadgeClass = (status) => {
         if (!status) return '';
-        const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border";
+        const baseClasses = "inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border shadow-sm";
         const statusLower = status.toLowerCase();
         
         if (statusLower.includes('done') || statusLower.includes('complete')) {
-            return baseClasses + " bg-green-100 text-green-800 border-green-200";
+            return baseClasses + " bg-emerald-50 text-emerald-700 border-emerald-200";
         } else if (statusLower.includes('progress')) {
-            return baseClasses + " bg-blue-100 text-blue-800 border-blue-200";
+            return baseClasses + " bg-ch-soft text-ch-dark border-ch-soft";
         } else if (statusLower.includes('hold')) {
-            return baseClasses + " bg-orange-100 text-orange-800 border-orange-200";
+            return baseClasses + " bg-amber-50 text-amber-700 border-amber-200";
         } else {
-            return baseClasses + " bg-gray-100 text-gray-800 border-gray-200";
+            return baseClasses + " bg-ch-light text-ch-dark border-ch-soft";
         }
     };
 
     if (workOrders.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center p-12 text-center text-gray-400 bg-white rounded-xl shadow-custom border border-gray-100">
-                <div className="text-4xl mb-4 opacity-50">📋</div>
-                <h3 className="text-xl font-bold text-gray-700 mb-2">No Work Orders Yet</h3>
-                <p>Click "Add Entry" to create your first work order.</p>
+            <div className="flex flex-col items-center justify-center p-12 text-center text-ch-primary bg-white/80 backdrop-blur-xl rounded-2xl shadow-custom border border-ch-soft mb-6">
+                <div className="text-5xl mb-4 opacity-40">📋</div>
+                <h3 className="text-xl font-extrabold text-ch-dark mb-2">No Work Orders Yet</h3>
+                <p className="font-medium">Click "Add Entry" to create your first work order.</p>
             </div>
         );
     }
 
     const [isGrouped, setIsGrouped] = useState(true);
 
-    // Group work orders
-    const groupedWOs = {
-        'New Client': [],
-        'Existing': [],
-        'Other': []
-    };
+    // Group work orders by client name
+    const groupedWOs = {};
 
     if (isGrouped) {
         workOrders.forEach(wo => {
-            const status = wo.clientStatus === 'New Client' ? 'New Client' : (wo.clientStatus === 'Existing' ? 'Existing' : 'Other');
-            groupedWOs[status].push(wo);
+            const clientName = wo.clientName || 'Unknown';
+            if (!groupedWOs[clientName]) {
+                groupedWOs[clientName] = [];
+            }
+            groupedWOs[clientName].push(wo);
         });
     }
 
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
+    // Reset page if grouping changes or data changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [isGrouped, workOrders]);
+
+    const clientNames = Object.keys(groupedWOs).sort();
+    
+    // Calculate total pages based on view mode
+    const totalItems = isGrouped ? clientNames.length : workOrders.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+
+    // Slice for current page
+    const paginatedClientNames = isGrouped ? clientNames.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) : [];
+    const paginatedWorkOrders = !isGrouped ? workOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) : [];
+
     const renderRows = (orders) => {
         return orders.map((wo, index) => (
-            <tr key={wo._id} className={`hover:bg-gray-50 transition-colors ${selectedIds.includes(wo._id) ? 'bg-blue-50/50' : (index % 2 === 0 && !isGrouped ? 'bg-white' : 'bg-gray-50')}`}>
-                <td className="px-4 py-3 border-r border-gray-100/50">
+            <tr key={wo._id} className={`hover:bg-ch-soft/80 transition-colors duration-300 group relative ${selectedIds.includes(wo._id) ? 'bg-ch-soft/60' : (index % 2 === 0 && !isGrouped ? 'bg-white' : 'bg-ch-light/50')}`}>
+                {/* Selection Highlight bar on left */}
+                {selectedIds.includes(wo._id) && (
+                    <td className="absolute left-0 top-0 bottom-0 w-1 bg-ch-primary rounded-r z-10 pointer-events-none"></td>
+                )}
+                <td className="px-5 py-3 border-r border-ch-soft/50 relative z-10">
                     <input
                         type="checkbox"
                         checked={selectedIds.includes(wo._id)}
                         onChange={() => handleSelectOne(wo._id)}
-                        className="rounded border-gray-300 text-accent-coral focus:ring-accent-coral"
+                        className="rounded border-ch-soft text-ch-primary focus:ring-ch-primary focus:ring-offset-0 w-4 h-4 cursor-pointer transition-all"
                     />
                 </td>
-                <td className="px-4 py-3 text-center text-gray-400 font-medium">{wo.quarterSequence}</td>
-                <td className="px-4 py-3 text-center">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                <td className="px-5 py-3 text-center text-ch-primary font-bold border-r border-ch-soft/50">{wo.quarterSequence}</td>
+                <td className="px-5 py-3 text-center">
+                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest border shadow-sm ${
                         wo.clientStatus === 'New Client' 
-                            ? 'bg-purple-100 text-purple-800 border-purple-200' 
-                            : (wo.clientStatus === 'Existing' ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-gray-100 text-gray-800 border-gray-200')
+                            ? 'bg-purple-50 text-purple-700 border-purple-200' 
+                            : (wo.clientStatus === 'Existing' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-ch-light text-ch-dark border-ch-soft')
                     }`}>
                         {wo.clientStatus || '-'}
                     </span>
                 </td>
-                <td className="px-4 py-3 font-semibold text-gray-800">{wo.clientName}</td>
-                <td className="px-4 py-3 text-gray-600">{wo.sales || '-'}</td>
-                <td className="px-4 py-3 text-gray-600">
-                    <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-xs font-medium border border-indigo-100">
+                <td className="px-5 py-3 font-extrabold text-ch-dark">{wo.clientName}</td>
+                <td className="px-5 py-3 text-ch-dark font-medium text-xs">{wo.sales || '-'}</td>
+                <td className="px-5 py-3 text-ch-dark">
+                    <span className="bg-ch-soft text-ch-dark px-2 py-0.5 rounded-md text-[10px] font-bold border border-ch-soft hover:bg-ch-soft transition-colors shadow-sm">
                         {wo.services || '-'}
                     </span>
                 </td>
-                <td className="px-4 py-3 text-gray-700 text-xs">{wo.detailRequest || '-'}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-gray-600 font-mono text-xs">{formatDate(wo.dueDate)}</td>
-                <td className="px-4 py-3 text-gray-600 text-xs text-center">
+                <td className="px-5 py-3 text-ch-dark text-xs font-medium leading-relaxed max-w-sm whitespace-pre-wrap">{wo.detailRequest || '-'}</td>
+                <td className="px-5 py-3 whitespace-nowrap text-ch-dark font-medium text-xs font-mono">{formatDate(wo.dueDate)}</td>
+                <td className="px-5 py-3 text-ch-dark text-xs text-center border-l border-ch-soft/50">
                     <StatusCell 
                         value={wo.requestBarang} 
                         type="requestBarang" 
                         onUpdate={(val) => onStatusUpdate(wo._id, 'requestBarang', val)}
                     />
                 </td>
-                <td className="px-4 py-3 text-gray-600 text-xs text-center">
+                <td className="px-5 py-3 text-ch-dark text-xs text-center border-r border-ch-soft/50">
                     <StatusCell 
                         value={wo.requestJasa} 
                         type="requestJasa" 
                         onUpdate={(val) => onStatusUpdate(wo._id, 'requestJasa', val)}
                     />
                 </td>
-                <td className="px-4 py-3 text-gray-600 text-xs italic">{wo.keterangan || '-'}</td>
-                <td className="px-4 py-3 whitespace-nowrap">
+                <td className="px-5 py-3 text-amber-600 text-xs font-medium italic">{wo.keterangan || '-'}</td>
+                <td className="px-5 py-3 whitespace-nowrap">
                     <StatusCell 
                         value={wo.status} 
                         type="status" 
                         onUpdate={(val) => onStatusUpdate(wo._id, 'status', val)}
                     />
                 </td>
-                <td className="px-4 py-3 text-right whitespace-nowrap">
-                    <div className="flex items-center justify-end gap-1">
+                <td className="px-5 py-3 text-right whitespace-nowrap relative z-10">
+                    <div className="flex items-center justify-end gap-2">
                         <button
-                            className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            className="p-1.5 text-ch-primary hover:text-ch-primary hover:bg-ch-soft rounded-lg transition-all shadow-sm bg-white border border-ch-soft active:scale-95"
                             onClick={() => onEdit(wo)}
                             title="Edit"
                         >
                             ✏️
                         </button>
                         <button
-                            className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-1.5 text-ch-primary hover:text-red-600 hover:bg-red-50 rounded-lg transition-all shadow-sm bg-white border border-ch-soft active:scale-95"
                             onClick={() => onDelete(wo._id)}
                             title="Delete"
                         >
@@ -156,25 +178,25 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
              {/* Batch Action Bar & Group Toggle */}
              <div className="flex flex-wrap items-center justify-between gap-4">
                 {selectedIds.length > 0 ? (
-                    <div className="flex flex-wrap items-center gap-4 bg-orange-50 p-3 rounded-xl shadow-sm border border-orange-100 animate-slide-up flex-1">
-                        <span className="text-sm font-semibold text-orange-800 px-2">{selectedIds.length} selected</span>
-                        <div className="h-6 w-px bg-orange-200 hidden sm:block"></div>
+                    <div className="flex flex-wrap items-center gap-4 bg-ch-soft/80 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-ch-soft animate-slide-up flex-1 sticky top-0 z-20">
+                        <span className="text-sm font-bold text-ch-dark px-2">{selectedIds.length} selected</span>
+                        <div className="h-6 w-px bg-ch-soft hidden sm:block"></div>
                         <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium text-orange-700 uppercase tracking-wide mr-2 hidden sm:inline">Set Status:</span>
+                            <span className="text-[11px] font-bold text-ch-dark uppercase tracking-widest mr-2 hidden sm:inline">Change Status:</span>
                             <button
-                                className="px-3 py-1.5 bg-white text-green-600 text-xs font-bold rounded-lg border border-green-200 hover:bg-green-50 transition-colors shadow-sm"
+                                className="px-3 py-1.5 bg-white text-emerald-600 text-[11px] font-bold rounded-lg border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 transition-all shadow-sm active:scale-95 flex items-center gap-1.5"
                                 onClick={() => onBatchStatusUpdate('Done')}
                             >
                                 ✓ Done
                             </button>
                             <button
-                                className="px-3 py-1.5 bg-white text-blue-600 text-xs font-bold rounded-lg border border-blue-200 hover:bg-blue-50 transition-colors shadow-sm"
+                                className="px-3 py-1.5 bg-white text-ch-primary text-[11px] font-bold rounded-lg border border-ch-soft hover:bg-ch-soft hover:border-ch-primary transition-all shadow-sm active:scale-95 flex items-center gap-1.5"
                                 onClick={() => onBatchStatusUpdate('Progress')}
                             >
                                 ⏳ Progress
                             </button>
                             <button
-                                className="px-3 py-1.5 bg-white text-orange-600 text-xs font-bold rounded-lg border border-orange-200 hover:bg-orange-50 transition-colors shadow-sm"
+                                className="px-3 py-1.5 bg-white text-amber-600 text-[11px] font-bold rounded-lg border border-amber-200 hover:bg-amber-50 hover:border-amber-300 transition-all shadow-sm active:scale-95 flex items-center gap-1.5"
                                 onClick={() => onBatchStatusUpdate('Hold')}
                             >
                                 ⏸ Hold
@@ -182,10 +204,10 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                         </div>
                         <div className="flex-1"></div>
                         <button
-                            className="px-3 py-1.5 text-gray-500 hover:text-gray-700 text-xs font-semibold"
+                            className="px-3 py-1.5 text-ch-primary hover:text-ch-dark hover:bg-ch-soft/50 rounded-lg text-[11px] font-bold transition-colors flex items-center gap-1.5"
                             onClick={() => onSelectionChange([])}
                         >
-                            ✕ Clear Selection
+                            ✕ Clear
                         </button>
                     </div>
                 ) : (
@@ -194,15 +216,15 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
 
                 <button
                     onClick={() => setIsGrouped(!isGrouped)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border shadow-sm ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm active:scale-95 border ${
                         isGrouped 
-                            ? 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100' 
-                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                            ? 'bg-ch-soft text-ch-dark border-ch-soft hover:bg-ch-soft hover:border-ch-primary' 
+                            : 'bg-white text-ch-dark border-ch-soft hover:bg-ch-light hover:border-ch-soft'
                     }`}
                 >
                     {isGrouped ? (
                         <>
-                            <span>📂</span> Grouped by Status
+                            <span>📂</span> Grouped by Client
                         </>
                     ) : (
                         <>
@@ -212,77 +234,57 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                 </button>
              </div>
 
-                <div className="hidden md:block overflow-x-auto">
+                <div className="hidden md:block overflow-x-auto bg-white/80 backdrop-blur-xl rounded-2xl shadow-custom overflow-hidden border border-ch-soft mt-2">
                     <table className="w-full text-sm text-left border-collapse">
-                        <thead className="bg-gray-50 text-gray-600 font-semibold uppercase text-xs">
+                        <thead className="bg-ch-light/80 backdrop-blur-md text-ch-primary font-bold uppercase text-[10px] tracking-widest sticky top-0 z-10">
                             <tr>
-                                <th className="p-4 w-4 border-b border-gray-200">
+                                <th className="p-4 w-4 border-b border-ch-soft">
                                     <input
                                         type="checkbox"
                                         checked={allSelected}
                                         ref={el => { if (el) el.indeterminate = someSelected; }}
                                         onChange={handleSelectAll}
-                                        className="rounded border-gray-300 text-accent-coral focus:ring-accent-coral"
+                                        className="rounded border-ch-soft text-ch-primary focus:ring-ch-primary focus:ring-offset-0 w-4 h-4 cursor-pointer"
                                     />
                                 </th>
-                                <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap">No</th>
-                                <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap w-32">Status Client</th>
-                                <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap w-48">Client Name</th>
-                                <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap">Sales</th>
-                                <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap">Services</th>
-                                <th className="px-4 py-3 border-b border-gray-200 min-w-[200px]">Detail Request</th>
-                                <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap">Due Date</th>
-                                <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap">Request Barang</th>
-                                <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap">Request Jasa</th>
-                                <th className="px-4 py-3 border-b border-gray-200 min-w-[150px]">Keterangan</th>
-                                <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap">Status</th>
-                                <th className="px-4 py-3 border-b border-gray-200 whitespace-nowrap text-right">Actions</th>
+                                <th className="px-5 py-4 border-b border-ch-soft whitespace-nowrap">No</th>
+                                <th className="px-5 py-4 border-b border-ch-soft whitespace-nowrap w-32">Status Client</th>
+                                <th className="px-5 py-4 border-b border-ch-soft whitespace-nowrap w-48">Client Name</th>
+                                <th className="px-5 py-4 border-b border-ch-soft whitespace-nowrap">Sales</th>
+                                <th className="px-5 py-4 border-b border-ch-soft whitespace-nowrap">Services</th>
+                                <th className="px-5 py-4 border-b border-ch-soft min-w-[200px]">Detail Request</th>
+                                <th className="px-5 py-4 border-b border-ch-soft whitespace-nowrap">Due Date</th>
+                                <th className="px-5 py-4 border-b border-ch-soft whitespace-nowrap">Req Barang</th>
+                                <th className="px-5 py-4 border-b border-ch-soft whitespace-nowrap">Req Jasa</th>
+                                <th className="px-5 py-4 border-b border-ch-soft min-w-[150px]">Keterangan</th>
+                                <th className="px-5 py-4 border-b border-ch-soft whitespace-nowrap">Status</th>
+                                <th className="px-5 py-4 border-b border-ch-soft whitespace-nowrap text-right">Actions</th>
                             </tr>
                         </thead>
                         
                         {isGrouped ? (
-                            <>
-                                {groupedWOs['New Client'].length > 0 && (
-                                    <tbody className="divide-y divide-gray-100 border-b border-gray-200">
-                                        <tr className="bg-purple-50/50">
-                                            <td colSpan="13" className="px-4 py-2 font-bold text-purple-800 border-l-4 border-purple-400">
-                                                New Client ({groupedWOs['New Client'].length})
+                            <tbody className="divide-y divide-ch-soft border-b border-ch-soft">
+                                {paginatedClientNames.map((clientName, index) => (
+                                    <React.Fragment key={clientName}>
+                                        <tr className={`${index % 2 === 0 ? 'bg-ch-soft/50' : 'bg-ch-light/50'}`}>
+                                            <td colSpan="13" className={`px-5 py-2 font-extrabold ${index % 2 === 0 ? 'text-ch-dark border-l-4 border-ch-primary' : 'text-ch-dark border-l-4 border-ch-primary'}`}>
+                                                {clientName} <span className="text-ch-primary text-[10px] ml-2 font-bold tracking-widest uppercase bg-white px-2 py-0.5 rounded shadow-sm border border-ch-soft">({groupedWOs[clientName].length} orders)</span>
                                             </td>
                                         </tr>
-                                        {renderRows(groupedWOs['New Client'])}
-                                    </tbody>
-                                )}
-                                {groupedWOs['Existing'].length > 0 && (
-                                    <tbody className="divide-y divide-gray-100 border-b border-gray-200">
-                                        <tr className="bg-blue-50/50">
-                                            <td colSpan="13" className="px-4 py-2 font-bold text-blue-800 border-l-4 border-blue-400">
-                                                Existing Client ({groupedWOs['Existing'].length})
-                                            </td>
-                                        </tr>
-                                        {renderRows(groupedWOs['Existing'])}
-                                    </tbody>
-                                )}
-                                {groupedWOs['Other'].length > 0 && (
-                                    <tbody className="divide-y divide-gray-100 border-b border-gray-200">
-                                        <tr className="bg-gray-50/50">
-                                            <td colSpan="13" className="px-4 py-2 font-bold text-gray-700 border-l-4 border-gray-400">
-                                                Other ({groupedWOs['Other'].length})
-                                            </td>
-                                        </tr>
-                                        {renderRows(groupedWOs['Other'])}
-                                    </tbody>
-                                )}
-                            </>
+                                        {renderRows(groupedWOs[clientName])}
+                                    </React.Fragment>
+                                ))}
+                            </tbody>
                         ) : (
-                            <tbody className="divide-y divide-gray-100">
-                                {workOrders.length === 0 ? (
+                            <tbody className="divide-y divide-ch-soft border-b border-ch-soft">
+                                {paginatedWorkOrders.length === 0 ? (
                                     <tr>
-                                        <td colSpan="13" className="px-4 py-8 text-center text-gray-400">
+                                        <td colSpan="13" className="px-5 py-8 text-center font-medium text-ch-primary">
                                             No work orders match your search.
                                         </td>
                                     </tr>
                                 ) : (
-                                    renderRows(workOrders)
+                                    renderRows(paginatedWorkOrders)
                                 )}
                             </tbody>
                         )}
@@ -290,86 +292,82 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                 </div>
 
                 {/* Mobile Expandable Card View */}
-                <div className="md:hidden flex flex-col gap-3 p-4 bg-gray-50/50">
-                    {workOrders.map((wo) => (
-                        <div key={wo._id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="md:hidden flex flex-col gap-4 p-4 bg-ch-light/50">
+                    {(isGrouped ? paginatedClientNames.flatMap(name => groupedWOs[name]) : paginatedWorkOrders).map((wo) => (
+                        <div key={wo._id} className={`bg-white rounded-2xl shadow-sm border transition-all duration-300 overflow-hidden ${expandedId === wo._id ? 'border-ch-soft shadow-md ring-1 ring-ch-soft/50' : 'border-ch-soft hover:border-ch-soft hover:shadow-md'}`}>
                              {/* Card Header / Preview */}
                              <div 
-                                className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                                className="p-4 cursor-pointer relative"
                                 onClick={() => setExpandedId(expandedId === wo._id ? null : wo._id)}
                             >
-                                <div className="flex justify-between items-start gap-3">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${
+                                <div className="flex justify-between items-start gap-4">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1.5">
+                                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold tracking-wider uppercase border shadow-sm ${
                                                 wo.clientStatus === 'New Client' 
-                                                    ? 'bg-purple-50 text-purple-700 border-purple-100' 
-                                                    : (wo.clientStatus === 'Existing' ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-gray-50 text-gray-600 border-gray-100')
+                                                    ? 'bg-purple-50 text-purple-700 border-purple-200' 
+                                                    : (wo.clientStatus === 'Existing' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-ch-light text-ch-dark border-ch-soft')
                                             }`}>
                                                 {wo.clientStatus === 'New Client' ? 'New' : 'Ex'}
                                             </span>
-                                            <h4 className="font-bold text-gray-800 text-sm truncate">{wo.clientName}</h4>
+                                            <h4 className="font-extrabold text-ch-dark text-sm truncate">{wo.clientName}</h4>
                                         </div>
                                         
                                         {/* Preview: Detail Request (Truncated) */}
-                                        <div className="text-xs text-gray-600 flex items-start gap-1">
-                                             <span className="text-gray-400 shrink-0">📝</span>
-                                             <span className="line-clamp-2 opacity-80">
+                                        <div className="text-xs text-ch-primary flex items-start gap-1.5 mt-2">
+                                             <span className="text-ch-primary shrink-0 mt-0.5">📝</span>
+                                             <span className="line-clamp-2 font-medium leading-relaxed">
                                                 {wo.detailRequest || '-'}
                                              </span>
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-col items-end gap-1">
-                                        <StatusCell 
-                                            value={wo.status} 
-                                            type="status" 
-                                            onUpdate={(val) => onStatusUpdate(wo._id, 'status', val)}
-                                        />
+                                    <div className="flex flex-col items-end gap-2 shrink-0">
+                                        <div onClick={(e) => e.stopPropagation()}>
+                                            <StatusCell 
+                                                value={wo.status} 
+                                                type="status" 
+                                                onUpdate={(val) => onStatusUpdate(wo._id, 'status', val)}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="flex justify-center mt-1">
-                                    <span className={`text-gray-300 text-[10px] transform transition-transform ${expandedId === wo._id ? 'rotate-180' : ''}`}>▼</span>
+                                <div className="flex justify-center mt-3 border-t border-ch-light pt-2">
+                                    <span className={`text-ch-soft text-[10px] transform transition-transform duration-300 flex items-center justify-center w-6 h-6 rounded-full bg-ch-light ${expandedId === wo._id ? 'rotate-180 bg-ch-soft text-ch-primary' : ''}`}>▼</span>
                                 </div>
                             </div>
 
                             {/* Expanded Details */}
                             {expandedId === wo._id && (
-                                <div className="px-4 pb-4 pt-0 border-t border-gray-50 bg-gray-50/30 animate-slide-down">
-                                    <div className="flex flex-col gap-3 mt-3">
+                                <div className="px-5 pb-5 pt-2 border-t border-ch-light bg-ch-light/50 animate-slide-down">
+                                    <div className="flex flex-col gap-4 mt-2">
                                         
-                                        <div className="grid grid-cols-2 gap-2 text-xs">
-                                            <div className="bg-white p-2 rounded border border-gray-100">
-                                                <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">No WO</span>
-                                                <span className="font-mono text-gray-700">{wo.quarterSequence || '-'}</span>
-                                            </div>
-                                             <div className="bg-white p-2 rounded border border-gray-100">
-                                                <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Due Date</span>
-                                                <span className="font-mono text-gray-700">{formatDate(wo.dueDate)}</span>
-                                            </div>
+                                        <div className="flex justify-between text-xs font-bold text-ch-primary">
+                                            <span>📅 {formatDate(wo.dueDate)}</span>
+                                            <span className="bg-ch-soft text-ch-dark px-2 py-0.5 rounded-md shadow-sm">No: {wo.quarterSequence || '-'}</span>
                                         </div>
 
-                                        <div className="bg-white p-2 rounded border border-gray-100">
-                                            <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Full Detail Request</span>
-                                            <div className="text-xs text-gray-700 whitespace-pre-wrap">
+                                        <div className="bg-white p-3 rounded-xl border border-ch-soft shadow-sm mt-1">
+                                            <span className="text-[10px] font-extrabold text-ch-primary uppercase tracking-widest block mb-2">Full Detail Request</span>
+                                            <div className="text-xs text-ch-dark font-medium whitespace-pre-wrap leading-relaxed">
                                                 {wo.detailRequest || '-'}
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-2 text-xs">
-                                            <div className="bg-white p-2 rounded border border-gray-100">
-                                                <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Service</span>
-                                                <span className="text-gray-700">{wo.services || '-'}</span>
+                                        <div className="grid grid-cols-2 gap-3 text-xs">
+                                            <div className="bg-white p-3 rounded-xl border border-ch-soft shadow-sm">
+                                                <span className="text-[10px] font-extrabold text-ch-primary uppercase tracking-widest block mb-2">Service</span>
+                                                <span className="text-ch-dark font-bold bg-ch-light px-2 py-1 border border-ch-soft rounded-md inline-block">{wo.services || '-'}</span>
                                             </div>
-                                            <div className="bg-white p-2 rounded border border-gray-100">
-                                                <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Sales</span>
-                                                <span className="text-gray-700">{wo.sales || '-'}</span>
+                                            <div className="bg-white p-3 rounded-xl border border-ch-soft shadow-sm">
+                                                <span className="text-[10px] font-extrabold text-ch-primary uppercase tracking-widest block mb-1">Sales</span>
+                                                <span className="text-ch-primary font-bold">{wo.sales || '-'}</span>
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-2 text-xs">
-                                            <div className="bg-white p-2 rounded border border-gray-100 flex flex-col justify-between">
-                                                <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Req Barang</span>
+                                        <div className="grid grid-cols-2 gap-3 text-xs mb-1">
+                                            <div className="bg-white p-3 rounded-xl border border-ch-soft shadow-sm flex flex-col justify-between">
+                                                <span className="text-[10px] font-extrabold text-ch-primary uppercase tracking-widest block mb-2">Req Barang</span>
                                                 <div className="self-start">
                                                     <StatusCell 
                                                         value={wo.requestBarang} 
@@ -378,8 +376,8 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                                                     />
                                                 </div>
                                             </div>
-                                            <div className="bg-white p-2 rounded border border-gray-100 flex flex-col justify-between">
-                                                <span className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Req Jasa</span>
+                                            <div className="bg-white p-3 rounded-xl border border-ch-soft shadow-sm flex flex-col justify-between">
+                                                <span className="text-[10px] font-extrabold text-ch-primary uppercase tracking-widest block mb-2">Req Jasa</span>
                                                 <div className="self-start">
                                                     <StatusCell 
                                                         value={wo.requestJasa} 
@@ -391,21 +389,21 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                                         </div>
                                         
                                         {wo.keterangan && (
-                                            <div className="bg-orange-50 p-2 rounded border border-orange-100">
-                                                <span className="text-[10px] font-bold text-orange-600 uppercase block mb-1">Keterangan</span>
-                                                <span className="text-xs text-orange-800 italic">{wo.keterangan}</span>
+                                            <div className="bg-amber-50 p-3 rounded-xl border border-amber-100 shadow-sm">
+                                                <span className="text-[10px] font-extrabold text-amber-600 uppercase tracking-widest block mb-2">Keterangan</span>
+                                                <span className="text-xs text-amber-800 font-medium italic">{wo.keterangan}</span>
                                             </div>
                                         )}
 
-                                        <div className="flex gap-2 mt-2 pt-3 border-t border-gray-100">
+                                        <div className="flex gap-2 mt-2 pt-4 border-t border-ch-soft">
                                              <button
-                                                className="flex-1 py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
+                                                className="flex-1 py-2 bg-white text-ch-dark border border-ch-soft rounded-xl text-[11px] font-bold hover:text-ch-primary hover:bg-ch-light transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
                                                 onClick={(e) => { e.stopPropagation(); onEdit(wo); }}
                                             >
                                                 ✏️ Edit
                                             </button>
                                             <button
-                                                className="flex-1 py-2 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors"
+                                                className="flex-1 py-2 bg-white text-ch-primary border border-ch-soft rounded-xl text-[11px] font-bold hover:text-red-600 hover:bg-red-50 transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
                                                 onClick={(e) => { e.stopPropagation(); onDelete(wo._id); }}
                                             >
                                                 🗑️ Delete
@@ -417,6 +415,61 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                         </div>
                     ))}
                 </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-between px-5 py-4 bg-white md:bg-ch-light/50 border-t border-ch-soft rounded-b-2xl relative z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:shadow-none pb-safe">
+                        <div className="flex flex-1 justify-between sm:hidden">
+                            <button
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className="relative inline-flex items-center px-4 py-2 border border-ch-soft text-xs font-bold rounded-xl text-ch-dark bg-white hover:bg-ch-light hover:border-ch-soft disabled:opacity-50 transition-all shadow-sm active:scale-95 disabled:active:scale-100"
+                            >
+                                Previous
+                            </button>
+                            <span className="text-xs text-ch-primary font-bold uppercase tracking-widest flex items-center justify-center">
+                                Page {currentPage} of {totalPages}
+                            </span>
+                            <button
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                                className="ml-3 relative inline-flex items-center px-4 py-2 border border-ch-soft text-xs font-bold rounded-xl text-ch-dark bg-white hover:bg-ch-light hover:border-ch-soft disabled:opacity-50 transition-all shadow-sm active:scale-95 disabled:active:scale-100"
+                            >
+                                Next
+                            </button>
+                        </div>
+                        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                            <div>
+                                <p className="text-xs text-ch-primary font-medium">
+                                    Showing <span className="font-extrabold text-ch-dark">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-extrabold text-ch-dark">{Math.min(currentPage * itemsPerPage, totalItems)}</span> of <span className="font-extrabold text-ch-dark">{totalItems}</span> {isGrouped ? 'clients' : 'entries'}
+                                </p>
+                            </div>
+                            <div>
+                                <nav className="relative z-0 inline-flex rounded-xl shadow-sm space-x-1" aria-label="Pagination">
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPage === 1}
+                                        className="relative inline-flex items-center px-3 py-2 rounded-lg border border-ch-soft bg-white text-xs font-bold text-ch-primary hover:bg-ch-light hover:text-ch-dark disabled:opacity-50 transition-all active:scale-95 disabled:active:scale-100"
+                                    >
+                                        <span className="sr-only">Previous</span>
+                                        <span className="px-1 text-sm tracking-tighter">&laquo;</span>
+                                    </button>
+                                    <span className="relative inline-flex items-center px-4 py-2 border border-ch-soft bg-ch-light rounded-lg text-xs font-extrabold text-ch-dark shadow-inner">
+                                        Page {currentPage} of {totalPages}
+                                    </span>
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className="relative inline-flex items-center px-3 py-2 rounded-lg border border-ch-soft bg-white text-xs font-bold text-ch-primary hover:bg-ch-light hover:text-ch-dark disabled:opacity-50 transition-all active:scale-95 disabled:active:scale-100"
+                                    >
+                                        <span className="sr-only">Next</span>
+                                        <span className="px-1 text-sm tracking-tighter">&raquo;</span>
+                                    </button>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                )}
         </div>
     );
 }

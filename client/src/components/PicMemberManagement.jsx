@@ -89,13 +89,13 @@ export default function PicMemberManagement({ isOpen, onClose }) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={(e) => e.target === e.currentTarget && onClose()}>
             <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl glass overflow-hidden flex flex-col animate-scale-in">
-                <div className="px-6 py-4 border-b border-gray-100 bg-white/50 backdrop-blur-md flex items-center justify-between">
-                    <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <div className="px-6 py-4 border-b border-ch-soft bg-white/50 backdrop-blur-md flex items-center justify-between">
+                    <h2 className="text-xl font-bold text-ch-dark flex items-center gap-2">
                         <span className="text-cyan-500">👥</span>
                         Manage PIC Members
                     </h2>
                     <button 
-                        className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-gray-400 hover:text-gray-600 hover:bg-gray-100 border border-gray-200 transition-all shadow-sm"
+                        className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-ch-primary hover:text-ch-dark hover:bg-ch-soft border border-ch-soft transition-all shadow-sm"
                         onClick={onClose}
                     >
                         &times;
@@ -117,7 +117,7 @@ export default function PicMemberManagement({ isOpen, onClose }) {
                             value={newMemberName}
                             onChange={(e) => setNewMemberName(e.target.value)}
                             placeholder="Enter new PIC member name..."
-                            className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all text-sm"
+                            className="flex-1 px-4 py-2.5 bg-ch-light border border-ch-soft rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all text-sm"
                             disabled={loading}
                         />
                         <button 
@@ -132,17 +132,17 @@ export default function PicMemberManagement({ isOpen, onClose }) {
                     {/* PIC member list */}
                     <div className="space-y-2">
                         {loading && picMembers.length === 0 ? (
-                            <div className="text-center py-8 text-gray-400">
+                            <div className="text-center py-8 text-ch-primary">
                                 <div className="w-8 h-8 border-4 border-cyan-100 border-t-cyan-500 rounded-full animate-spin mx-auto mb-2"></div>
                                 Loading PIC members...
                             </div>
                         ) : picMembers.length === 0 ? (
-                            <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-gray-400 text-sm">
+                            <div className="text-center py-8 bg-ch-light rounded-xl border border-dashed border-ch-soft text-ch-primary text-sm">
                                 No PIC members found
                             </div>
                         ) : (
                             picMembers.map((member) => (
-                                <div key={member._id} className="group flex items-center justify-between p-3 bg-white border border-gray-100 rounded-xl hover:shadow-md hover:border-cyan-100 transition-all duration-200">
+                                <div key={member._id} className="group flex items-center justify-between p-3 bg-white border border-ch-soft rounded-xl hover:shadow-md hover:border-cyan-100 transition-all duration-200">
                                     {editingId === member._id ? (
                                         <div className="flex-1 flex items-center gap-2">
                                             <input
@@ -160,7 +160,7 @@ export default function PicMemberManagement({ isOpen, onClose }) {
                                                 Save
                                             </button>
                                             <button
-                                                className="px-3 py-1.5 bg-gray-200 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-300 transition-colors"
+                                                className="px-3 py-1.5 bg-ch-soft text-ch-dark rounded-lg text-xs font-bold hover:bg-gray-300 transition-colors"
                                                 onClick={handleCancelEdit}
                                             >
                                                 Cancel
@@ -172,11 +172,11 @@ export default function PicMemberManagement({ isOpen, onClose }) {
                                                 <div className="w-8 h-8 rounded-lg bg-cyan-50 text-cyan-500 flex items-center justify-center text-sm font-bold">
                                                     {member.name.charAt(0).toUpperCase()}
                                                 </div>
-                                                <span className="font-medium text-gray-700">{member.name}</span>
+                                                <span className="font-medium text-ch-dark">{member.name}</span>
                                             </div>
                                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button
-                                                    className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg transition-colors"
+                                                    className="w-8 h-8 flex items-center justify-center text-ch-primary hover:text-cyan-600 hover:bg-cyan-50 rounded-lg transition-colors"
                                                     onClick={() => handleStartEdit(member)}
                                                     disabled={loading}
                                                     title="Edit"
@@ -184,7 +184,7 @@ export default function PicMemberManagement({ isOpen, onClose }) {
                                                     ✏️
                                                 </button>
                                                 <button
-                                                    className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    className="w-8 h-8 flex items-center justify-center text-ch-primary hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                     onClick={() => handleDelete(member._id)}
                                                     disabled={loading}
                                                     title="Delete"
@@ -200,9 +200,9 @@ export default function PicMemberManagement({ isOpen, onClose }) {
                     </div>
                 </div>
 
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+                <div className="px-6 py-4 bg-ch-light border-t border-ch-soft flex justify-end">
                     <button 
-                        className="px-6 py-2 bg-gray-200 text-gray-700 font-bold text-sm rounded-xl hover:bg-gray-300 transition-colors"
+                        className="px-6 py-2 bg-ch-soft text-ch-dark font-bold text-sm rounded-xl hover:bg-gray-300 transition-colors"
                         onClick={onClose}
                     >
                         Close
