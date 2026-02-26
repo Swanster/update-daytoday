@@ -174,139 +174,173 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
             <html>
             <head>
                 <title>Report - ${apiType === 'daily' ? 'Daily Activity' : (apiType === 'wo' ? 'Work Order' : 'Project')}</title>
+                <link rel="preconnect" href="https://fonts.googleapis.com">
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
                 <style>
                     * { margin: 0; padding: 0; box-sizing: border-box; }
                     body { 
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+                        font-family: 'Lexend', sans-serif; 
                         padding: 40px;
-                        color: #333;
+                        color: #112d4e;
+                        background-color: white;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
                     }
                     .report-header {
                         text-align: center;
-                        border-bottom: 3px solid #ff5757;
-                        padding-bottom: 20px;
-                        margin-bottom: 30px;
+                        border-bottom: 4px solid #3f72af;
+                        padding-bottom: 25px;
+                        margin-bottom: 35px;
                     }
                     .report-header h1 {
-                        font-size: 24px;
-                        color: #1a1a2e;
-                        margin-bottom: 5px;
+                        font-size: 26px;
+                        color: #112d4e;
+                        margin-bottom: 8px;
+                        text-transform: uppercase;
+                        letter-spacing: -0.02em;
                     }
                     .report-header h2 {
                         font-size: 18px;
-                        color: #ff5757;
-                        font-weight: normal;
+                        color: #3f72af;
+                        font-weight: 700;
                     }
                     .report-header p {
-                        color: #666;
-                        margin-top: 10px;
+                        color: #3f72af;
+                        margin-top: 12px;
+                        font-weight: 500;
                     }
                     .summary-cards {
                         display: flex;
                         justify-content: space-around;
-                        background: #f8f9fa;
-                        padding: 20px;
-                        border-radius: 8px;
+                        background: #f9f7f7 !important;
+                        padding: 25px;
+                        border-radius: 24px;
                         margin-bottom: 30px;
+                        border: 1px solid #dbe2ef !important;
                     }
                     .summary-card {
                         text-align: center;
                         padding: 15px 20px;
                     }
                     .summary-card .value {
-                        font-size: 32px;
-                        font-weight: bold;
+                        font-size: 36px;
+                        font-weight: 800;
+                        color: #112d4e;
                     }
                     .summary-card .percent {
                         font-size: 14px;
-                        color: #666;
+                        color: #3f72af;
+                        font-weight: 600;
                     }
                     .summary-card .label {
-                        font-size: 12px;
-                        color: #888;
+                        font-size: 11px;
+                        color: #3f72af;
                         text-transform: uppercase;
+                        font-weight: 700;
+                        letter-spacing: 0.1em;
+                        margin-top: 4px;
                     }
                     .summary-card.done .value { color: #22c55e; }
                     .summary-card.progress .value { color: #f59e0b; }
                     .summary-card.hold .value { color: #ef4444; }
                     .chart-container {
                         background: #fff;
-                        border: 1px solid #e5e7eb;
-                        border-radius: 8px;
-                        padding: 20px;
-                        margin-bottom: 20px;
+                        border: 1px solid #dbe2ef;
+                        border-radius: 24px;
+                        padding: 24px;
+                        margin-bottom: 24px;
                     }
                     .chart-container h4 {
-                        margin-bottom: 15px;
-                        color: #374151;
+                        margin-bottom: 20px;
+                        color: #112d4e;
+                        font-weight: 700;
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
                     }
                     .bar-chart { margin-bottom: 20px; }
                     .bar-item {
                         display: flex;
                         align-items: center;
-                        margin-bottom: 8px;
+                        margin-bottom: 12px;
                     }
                     .bar-label {
-                        width: 100px;
+                        width: 130px;
                         font-size: 12px;
-                        font-weight: 500;
+                        font-weight: 600;
+                        color: #112d4e;
                     }
                     .bar-track {
                         flex: 1;
-                        height: 20px;
-                        background: #f1f5f9;
-                        border-radius: 4px;
+                        height: 24px;
+                        background: #f9f7f7 !important;
+                        border-radius: 12px;
                         overflow: hidden;
+                        border: 1px solid #dbe2ef !important;
                     }
                     .bar-fill {
-                        height: 100%;
-                        border-radius: 4px;
+                        border-radius: 12px;
                     }
-                    .bar-fill.done { background: #22c55e; }
-                    .bar-fill.progress { background: #f59e0b; }
-                    .bar-fill.hold { background: #ef4444; }
-                    .bar-fill.total { background: #6366f1; }
+                    .bar-chart .bar-fill { height: 100%; }
+                    .chart-container .bar-fill { width: 100%; }
+                    .bar-fill.done { background: #22c55e !important; }
+                    .bar-fill.progress { background: #f59e0b !important; }
+                    .bar-fill.hold { background: #ef4444 !important; }
+                    .bar-fill.total { background: #3f72af !important; }
                     .bar-value {
-                        width: 40px;
+                        width: 45px;
                         text-align: right;
                         font-size: 12px;
-                        font-weight: 600;
-                        margin-left: 8px;
+                        font-weight: 700;
+                        margin-left: 10px;
+                        color: #112d4e;
                     }
                     table {
                         width: 100%;
-                        border-collapse: collapse;
+                        border-collapse: separate;
+                        border-spacing: 0;
                         font-size: 11px;
-                        margin-top: 10px;
+                        margin-top: 15px;
+                        border-radius: 16px;
+                        overflow: hidden;
+                        border: 1px solid #dbe2ef;
                     }
                     th {
-                        background: #1a1a2e;
+                        background: #112d4e;
                         color: white;
-                        padding: 10px 8px;
+                        padding: 14px 12px;
                         text-align: left;
-                        font-weight: 600;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
                     }
                     td {
-                        padding: 8px;
-                        border-bottom: 1px solid #e0e0e0;
+                        padding: 12px;
+                        border-bottom: 1px solid #dbe2ef;
                         vertical-align: top;
+                        color: #112d4e;
                     }
-                    tr:nth-child(even) { background: #f8f9fa; }
-                    .status-done { color: #22c55e; font-weight: 600; }
-                    .status-progress { color: #f59e0b; font-weight: 600; }
-                    .status-hold { color: #ef4444; font-weight: 600; }
+                    tr:last-child td { border-bottom: none; }
+                    tr:nth-child(even) { background: #f9f7f7; }
+                    .status-done { color: #22c55e; font-weight: 700; }
+                    .status-progress { color: #f59e0b; font-weight: 700; }
+                    .status-hold { color: #ef4444; font-weight: 700; }
                     .footer {
-                        margin-top: 30px;
+                        margin-top: 40px;
                         text-align: center;
-                        color: #999;
+                        color: #3f72af;
                         font-size: 11px;
-                        border-top: 1px solid #e0e0e0;
-                        padding-top: 15px;
+                        border-top: 1px solid #dbe2ef;
+                        padding-top: 20px;
+                        font-weight: 500;
                     }
                     @media print {
-                        body { padding: 20px; }
-                        .summary-cards { page-break-inside: avoid; }
-                        .chart-container { page-break-inside: avoid; }
+                        body { padding: 0.5cm; }
+                        .summary-cards { page-break-inside: avoid; border: 1px solid #dbe2ef !important; }
+                        .chart-container { page-break-inside: avoid; border: 1px solid #dbe2ef !important; }
+                        table { page-break-inside: auto; }
+                        tr { page-break-inside: avoid; page-break-after: auto; }
                     }
                 </style>
             </head>
@@ -356,28 +390,28 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
         const entries = Object.entries(data || {}).sort((a, b) => b[1].total - a[1].total).slice(0, 8);
         
         return (
-            <div className="space-y-3">
+            <div className="bar-chart space-y-3">
                 {entries.map(([label, stats]) => (
-                    <div key={label} className="flex items-center gap-3">
-                        <span className="w-24 text-xs font-medium text-ch-dark truncate" title={label}>{label}</span>
-                        <div className="flex-1 h-3 bg-ch-soft rounded-full overflow-hidden flex">
+                    <div key={label} className="bar-item flex items-center gap-3">
+                        <span className="bar-label w-24 text-xs font-medium text-ch-dark truncate" title={label}>{label}</span>
+                        <div className="bar-track flex-1 h-3 bg-ch-soft rounded-full overflow-hidden flex">
                             {showStatus ? (
                                 <>
                                     {stats.done > 0 && (
-                                        <div className="bg-green-500 h-full" style={{ width: `${(stats.done / maxValue) * 100}%` }} />
+                                        <div className="bar-fill done bg-green-500 h-full" style={{ width: `${(stats.done / maxValue) * 100}%` }} />
                                     )}
                                     {stats.progress > 0 && (
-                                        <div className="bg-amber-400 h-full" style={{ width: `${(stats.progress / maxValue) * 100}%` }} />
+                                        <div className="bar-fill progress bg-amber-400 h-full" style={{ width: `${(stats.progress / maxValue) * 100}%` }} />
                                     )}
                                     {stats.hold > 0 && (
-                                        <div className="bg-red-500 h-full" style={{ width: `${(stats.hold / maxValue) * 100}%` }} />
+                                        <div className="bar-fill hold bg-red-500 h-full" style={{ width: `${(stats.hold / maxValue) * 100}%` }} />
                                     )}
                                 </>
                             ) : (
-                                <div className="bg-ch-primary h-full" style={{ width: `${(stats.total / maxValue) * 100}%` }} />
+                                <div className="bar-fill total bg-ch-primary h-full" style={{ width: `${(stats.total / maxValue) * 100}%` }} />
                             )}
                         </div>
-                        <span className="w-8 text-right text-xs font-bold text-ch-dark">{stats.total}</span>
+                        <span className="bar-value w-8 text-right text-xs font-bold text-ch-dark">{stats.total}</span>
                     </div>
                 ))}
             </div>
@@ -391,26 +425,26 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
         const maxTotal = Math.max(...reportData.quarterlyTrend.map(q => q.total), 1);
 
         return (
-            <div className="bg-white rounded-xl border border-ch-soft p-6 col-span-full shadow-sm">
+            <div className="chart-container bg-white rounded-xl border border-ch-soft p-6 col-span-full shadow-sm">
                 <h4 className="text-ch-dark font-bold mb-4 flex items-center gap-2">
                     <span>📈</span> Quarterly Trend - {selectedYear}
                 </h4>
                 <div className="flex items-end justify-between h-48 pt-4 pb-2 px-2 gap-4">
                     {reportData.quarterlyTrend.map(q => (
                         <div key={q.quarter} className="flex flex-col items-center flex-1 gap-2 group cursor-default">
-                           <div className="w-full max-w-[60px] flex flex-col-reverse h-full bg-ch-light rounded-lg overflow-hidden relative">
+                           <div className="bar-track w-full max-w-[60px] flex flex-col-reverse h-full bg-ch-light rounded-lg overflow-hidden relative">
                                 <div 
-                                    className="bg-green-500 w-full transition-all duration-500" 
+                                    className="bar-fill done bg-green-500 w-full transition-all duration-500" 
                                     style={{ height: `${maxTotal > 0 ? (q.done / maxTotal) * 100 : 0}%` }}
                                     title={`Done: ${q.done}`}
                                 />
                                 <div 
-                                    className="bg-amber-400 w-full transition-all duration-500" 
+                                    className="bar-fill progress bg-amber-400 w-full transition-all duration-500" 
                                     style={{ height: `${maxTotal > 0 ? (q.progress / maxTotal) * 100 : 0}%` }}
                                     title={`Progress: ${q.progress}`}
                                 />
                                 <div 
-                                    className="bg-red-500 w-full transition-all duration-500" 
+                                    className="bar-fill hold bg-red-500 w-full transition-all duration-500" 
                                     style={{ height: `${maxTotal > 0 ? (q.hold / maxTotal) * 100 : 0}%` }}
                                     title={`Hold: ${q.hold}`}
                                 />
@@ -522,33 +556,33 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
                             </div>
                         ) : reportData ? (
                             <div className="p-8">
-                                <div className="text-center border-b-[3px] border-[#ff5757] pb-6 mb-8">
+                                <div className="report-header text-center border-b-[3px] border-[#ff5757] pb-6 mb-8">
                                     <h1 className="text-2xl font-bold text-[#1a1a2e] mb-1 tracking-wide">{apiType === 'daily' ? 'DAILY ACTIVITY' : (apiType === 'wo' ? 'WORK ORDER' : 'PROJECT')} INFRASTRUCTURE ENGINEER</h1>
                                     <h2 className="text-lg text-[#ff5757] font-medium">{isYearly ? `Year ${selectedYear}` : selectedQuarter}</h2>
                                     <p className="text-ch-primary text-sm mt-2">Generated on {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                                 </div>
 
                                 {/* Summary Cards */}
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 bg-ch-light p-6 rounded-xl">
-                                    <div className="text-center p-4 bg-white rounded-xl shadow-sm border border-ch-soft">
-                                        <div className="text-3xl font-bold text-ch-primary mb-1">{reportData.summary.total}</div>
-                                        <div className="text-xs font-medium text-ch-dark mb-1">100%</div>
-                                        <div className="text-[10px] uppercase tracking-wider text-ch-primary font-bold">Total</div>
+                                <div className="summary-cards grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 bg-ch-light p-6 rounded-xl">
+                                    <div className="summary-card text-center p-4 bg-white rounded-xl shadow-sm border border-ch-soft">
+                                        <div className="value text-3xl font-bold text-ch-primary mb-1">{reportData.summary.total}</div>
+                                        <div className="percent text-xs font-medium text-ch-dark mb-1">100%</div>
+                                        <div className="label text-[10px] uppercase tracking-wider text-ch-primary font-bold">Total</div>
                                     </div>
-                                    <div className="text-center p-4 bg-white rounded-xl shadow-sm border border-ch-soft">
-                                        <div className="text-3xl font-bold text-green-500 mb-1">{reportData.summary.done}</div>
-                                        <div className="text-xs font-medium text-ch-dark mb-1">{reportData.summary.donePercent || 0}%</div>
-                                        <div className="text-[10px] uppercase tracking-wider text-ch-primary font-bold">Done</div>
+                                    <div className="summary-card done text-center p-4 bg-white rounded-xl shadow-sm border border-ch-soft">
+                                        <div className="value text-3xl font-bold text-green-500 mb-1">{reportData.summary.done}</div>
+                                        <div className="percent text-xs font-medium text-ch-dark mb-1">{reportData.summary.donePercent || 0}%</div>
+                                        <div className="label text-[10px] uppercase tracking-wider text-ch-primary font-bold">Done</div>
                                     </div>
-                                    <div className="text-center p-4 bg-white rounded-xl shadow-sm border border-ch-soft">
-                                        <div className="text-3xl font-bold text-amber-500 mb-1">{reportData.summary.progress}</div>
-                                        <div className="text-xs font-medium text-ch-dark mb-1">{reportData.summary.progressPercent || 0}%</div>
-                                        <div className="text-[10px] uppercase tracking-wider text-ch-primary font-bold">Progress</div>
+                                    <div className="summary-card progress text-center p-4 bg-white rounded-xl shadow-sm border border-ch-soft">
+                                        <div className="value text-3xl font-bold text-amber-500 mb-1">{reportData.summary.progress}</div>
+                                        <div className="percent text-xs font-medium text-ch-dark mb-1">{reportData.summary.progressPercent || 0}%</div>
+                                        <div className="label text-[10px] uppercase tracking-wider text-ch-primary font-bold">Progress</div>
                                     </div>
-                                    <div className="text-center p-4 bg-white rounded-xl shadow-sm border border-ch-soft">
-                                        <div className="text-3xl font-bold text-red-500 mb-1">{reportData.summary.hold}</div>
-                                        <div className="text-xs font-medium text-ch-dark mb-1">{reportData.summary.holdPercent || 0}%</div>
-                                        <div className="text-[10px] uppercase tracking-wider text-ch-primary font-bold">Hold</div>
+                                    <div className="summary-card hold text-center p-4 bg-white rounded-xl shadow-sm border border-ch-soft">
+                                        <div className="value text-3xl font-bold text-red-500 mb-1">{reportData.summary.hold}</div>
+                                        <div className="percent text-xs font-medium text-ch-dark mb-1">{reportData.summary.holdPercent || 0}%</div>
+                                        <div className="label text-[10px] uppercase tracking-wider text-ch-primary font-bold">Hold</div>
                                     </div>
                                 </div>
 
@@ -557,7 +591,7 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
                                         {/* Charts */}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                                             {/* Service Breakdown */}
-                                            <div className="bg-white rounded-xl border border-ch-soft p-6 shadow-sm">
+                                            <div className="chart-container bg-white rounded-xl border border-ch-soft p-6 shadow-sm">
                                                 <h4 className="text-ch-dark font-bold mb-4 flex items-center gap-2">
                                                     <span>🏷️</span> Service Breakdown
                                                 </h4>
@@ -570,7 +604,7 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
 
                                             {/* PIC Team Performance (Hide for WO if not needed, or replace with Client Status) */}
                                             {apiType === 'wo' ? (
-                                                <div className="bg-white rounded-xl border border-ch-soft p-6 shadow-sm">
+                                                <div className="chart-container bg-white rounded-xl border border-ch-soft p-6 shadow-sm">
                                                     <h4 className="text-ch-dark font-bold mb-4 flex items-center gap-2">
                                                         <span>🏢</span> Client Status
                                                     </h4>
@@ -581,7 +615,7 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
                                                     )}
                                                 </div>
                                             ) : (
-                                                <div className="bg-white rounded-xl border border-ch-soft p-6 shadow-sm">
+                                                <div className="chart-container bg-white rounded-xl border border-ch-soft p-6 shadow-sm">
                                                     <h4 className="text-ch-dark font-bold mb-4 flex items-center gap-2">
                                                         <span>👥</span> PIC Team Workload
                                                     </h4>
@@ -677,8 +711,8 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
                                                                         <td className="py-3 px-4 text-ch-primary">{idx + 1}</td>
                                                                         <td className="py-3 px-4 text-ch-dark font-medium">{Array.isArray(item.services) ? item.services.join(', ') : item.services || '-'}</td>
                                                                         <td className="py-3 px-4 text-ch-dark font-mono text-xs">{formatDate(item.date || item.dueDate)}</td>
-                                                                        <td className="py-3 px-4 text-ch-dark truncate max-w-[150px]">{apiType === 'wo' ? item.clientStatus : (Array.isArray(item.picTeam) ? item.picTeam.join(', ') : item.picTeam || '-')}</td>
-                                                                        <td className="py-3 px-4 text-ch-dark text-xs min-w-[200px]">{apiType === 'daily' ? item.detailAction : (apiType === 'wo' ? item.detailRequest : item.progress || '-')}</td>
+                                                                        <td className="py-3 px-4 text-ch-dark break-words">{apiType === 'wo' ? item.clientStatus : (Array.isArray(item.picTeam) ? item.picTeam.join(', ') : item.picTeam || '-')}</td>
+                                                                        <td className="py-3 px-4 text-ch-dark text-xs min-w-[200px] whitespace-normal break-words">{apiType === 'daily' ? item.detailAction : (apiType === 'wo' ? item.detailRequest : item.progress || '-')}</td>
                                                                         <td className={`py-3 px-4 text-xs ${getStatusClass(item.status)}`}>{item.status || '-'}</td>
                                                                     </tr>
                                                                 ))}
