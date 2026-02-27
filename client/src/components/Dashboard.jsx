@@ -151,45 +151,13 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
         }
     };
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const ITEMS_PER_PAGE = 10;
-    
-    // Work Order Pagination
-    const [woPage, setWoPage] = useState(1);
-    const WO_ITEMS_PER_PAGE = 5;
-
-    // Filter Progress Work Orders and Sort by Due Date (Ascending: Overdue/Nearest first)
+    // List View for Progress Work Orders and Sort by Due Date (Ascending: Overdue/Nearest first)
     const progressWOs = workOrders
         .filter(wo => wo.status === 'Progress')
         .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
 
     const doneWOsCount = workOrders.filter(wo => wo.status === 'Done' || wo.status === 'Complete').length;
 
-    // Calculate WO pagination
-    const totalWOPages = Math.ceil(progressWOs.length / WO_ITEMS_PER_PAGE);
-    const paginatedWOs = progressWOs.slice(
-        (woPage - 1) * WO_ITEMS_PER_PAGE,
-        woPage * WO_ITEMS_PER_PAGE
-    );
-
-    // Calculate pagination for Overdue Projects
-    const totalPages = Math.ceil(overdue.length / ITEMS_PER_PAGE);
-    const paginatedOverdue = overdue.slice(
-        (currentPage - 1) * ITEMS_PER_PAGE,
-        currentPage * ITEMS_PER_PAGE
-    );
-
-    const handlePageChange = (newPage) => {
-        if (newPage >= 1 && newPage <= totalPages) {
-            setCurrentPage(newPage);
-        }
-    };
-
-    const handleWOPageChange = (newPage) => {
-        if (newPage >= 1 && newPage <= totalWOPages) {
-            setWoPage(newPage);
-        }
-    };
 
     if (loading) {
         return (
@@ -377,7 +345,7 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-ch-soft">
-                                            {paginatedOverdue.map((item) => (
+                                            {overdue.map((item) => (
                                                 <tr key={item._id} className={`hover:bg-ch-light transition-colors ${item.isOverdue ? 'bg-red-50/20' : ''}`}>
                                                     <td className="px-5 py-4 font-bold text-ch-dark">
                                                         {item.name}
@@ -440,7 +408,7 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
 
                                 {/* Mobile Card View */}
                                 <div className="md:hidden flex flex-col gap-4 p-4 bg-ch-light/50">
-                                    {paginatedOverdue.map((item) => (
+                                    {overdue.map((item) => (
                                         <div key={item._id} className="bg-white p-5 rounded-2xl shadow-sm border border-ch-soft flex flex-col gap-4">
                                             <div className="flex justify-between items-start">
                                                 <div>
@@ -490,28 +458,6 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
                                     ))}
                                 </div>
 
-                                {/* Pagination Controls */}
-                                {totalPages > 1 && (
-                                    <div className="px-5 py-4 border-t border-ch-soft flex items-center justify-between bg-white md:bg-ch-light/50 sticky bottom-0 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:shadow-none">
-                                        <button
-                                            onClick={() => handlePageChange(currentPage - 1)}
-                                            disabled={currentPage === 1}
-                                            className="px-4 py-2 rounded-xl text-xs font-bold bg-white border border-ch-soft text-ch-dark hover:bg-ch-light hover:border-ch-soft disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
-                                        >
-                                            Previous
-                                        </button>
-                                        <span className="text-xs text-ch-primary font-bold uppercase tracking-widest">
-                                            Page {currentPage} of {totalPages}
-                                        </span>
-                                        <button
-                                            onClick={() => handlePageChange(currentPage + 1)}
-                                            disabled={currentPage === totalPages}
-                                            className="px-4 py-2 rounded-xl text-xs font-bold bg-white border border-ch-soft text-ch-dark hover:bg-ch-light hover:border-ch-soft disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
-                                        >
-                                            Next
-                                        </button>
-                                    </div>
-                                )}
                             </div>
                         )}
                     </div>
@@ -535,7 +481,7 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
                         ) : (
                             <>
                                 <div className="space-y-4 flex-1 flex flex-col">
-                                    {paginatedWOs.map((wo) => (
+                                    {progressWOs.map((wo) => (
                                         <div key={wo._id} className="flex gap-4 items-start p-4 hover:bg-ch-light/80 rounded-2xl transition-all duration-300 border border-ch-soft shadow-sm hover:shadow-md">
                                             <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-2xl bg-ch-soft border border-ch-soft">
                                                 🛠️
@@ -563,28 +509,6 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
                                     ))}
                                 </div>
 
-                                {/* WO Pagination Controls */}
-                                {totalWOPages > 1 && (
-                                    <div className="mt-5 pt-4 border-t border-ch-soft flex items-center justify-between">
-                                        <button
-                                            onClick={() => handleWOPageChange(woPage - 1)}
-                                            disabled={woPage === 1}
-                                            className="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-white border border-ch-soft text-ch-dark hover:bg-ch-light hover:border-ch-soft disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
-                                        >
-                                            Prev
-                                        </button>
-                                        <span className="text-[11px] text-ch-primary font-bold uppercase tracking-widest">
-                                            {woPage} / {totalWOPages}
-                                        </span>
-                                        <button
-                                            onClick={() => handleWOPageChange(woPage + 1)}
-                                            disabled={woPage === totalWOPages}
-                                            className="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-white border border-ch-soft text-ch-dark hover:bg-ch-light hover:border-ch-soft disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
-                                        >
-                                            Next
-                                        </button>
-                                    </div>
-                                )}
                             </>
                         )}
                     </div>

@@ -81,18 +81,8 @@ export default function SpreadsheetTable({ projects, onEdit, onDelete, selectedI
 
     const projectNames = Object.keys(groupedProjects);
 
-    // Pagination
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
-    const totalPages = Math.ceil(projectNames.length / itemsPerPage);
-
-    // Reset to page 1 if data changes
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [projects]);
-
-    const paginatedProjectNames = projectNames.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-    let rowNumber = (currentPage - 1) * itemsPerPage;
+    const paginatedProjectNames = projectNames;
+    let rowNumber = 0;
 
     return (
         <div className="flex flex-col gap-4">
@@ -470,60 +460,6 @@ export default function SpreadsheetTable({ projects, onEdit, onDelete, selectedI
                     })}
                 </div>
 
-                {/* Pagination Controls */}
-                {totalPages > 1 && (
-                    <div className="flex items-center justify-between px-5 py-4 bg-white md:bg-ch-light/50 border-t border-ch-soft rounded-b-2xl relative z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:shadow-none pb-safe">
-                        <div className="flex flex-1 justify-between sm:hidden">
-                            <button
-                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                disabled={currentPage === 1}
-                                className="relative inline-flex items-center px-4 py-2 border border-ch-soft text-xs font-bold rounded-xl text-ch-dark bg-white hover:bg-ch-light hover:border-ch-soft disabled:opacity-50 transition-all shadow-sm active:scale-95 disabled:active:scale-100"
-                            >
-                                Previous
-                            </button>
-                            <span className="text-xs text-ch-primary font-bold uppercase tracking-widest flex items-center justify-center">
-                                Page {currentPage} of {totalPages}
-                            </span>
-                            <button
-                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                disabled={currentPage === totalPages}
-                                className="ml-3 relative inline-flex items-center px-4 py-2 border border-ch-soft text-xs font-bold rounded-xl text-ch-dark bg-white hover:bg-ch-light hover:border-ch-soft disabled:opacity-50 transition-all shadow-sm active:scale-95 disabled:active:scale-100"
-                            >
-                                Next
-                            </button>
-                        </div>
-                        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                            <div>
-                                <p className="text-xs text-ch-primary font-medium">
-                                    Showing <span className="font-extrabold text-ch-dark">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-extrabold text-ch-dark">{Math.min(currentPage * itemsPerPage, projectNames.length)}</span> of <span className="font-extrabold text-ch-dark">{projectNames.length}</span> projects
-                                </p>
-                            </div>
-                            <div>
-                                <nav className="relative z-0 inline-flex rounded-xl shadow-sm space-x-1" aria-label="Pagination">
-                                    <button
-                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                        disabled={currentPage === 1}
-                                        className="relative inline-flex items-center px-3 py-2 rounded-lg border border-ch-soft bg-white text-xs font-bold text-ch-primary hover:bg-ch-light hover:text-ch-dark disabled:opacity-50 transition-all active:scale-95 disabled:active:scale-100"
-                                    >
-                                        <span className="sr-only">Previous</span>
-                                        <span className="px-1 text-sm tracking-tighter">&laquo;</span>
-                                    </button>
-                                    <span className="relative inline-flex items-center px-4 py-2 border border-ch-soft bg-ch-light rounded-lg text-xs font-extrabold text-ch-dark shadow-inner">
-                                        Page {currentPage} of {totalPages}
-                                    </span>
-                                    <button
-                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                        disabled={currentPage === totalPages}
-                                        className="relative inline-flex items-center px-3 py-2 rounded-lg border border-ch-soft bg-white text-xs font-bold text-ch-primary hover:bg-ch-light hover:text-ch-dark disabled:opacity-50 transition-all active:scale-95 disabled:active:scale-100"
-                                    >
-                                        <span className="sr-only">Next</span>
-                                        <span className="px-1 text-sm tracking-tighter">&raquo;</span>
-                                    </button>
-                                </nav>
-                            </div>
-                        </div>
-                    </div>
-                )}
                 
                 {/* Attachment Viewer Modal */}
                 <AttachmentViewer

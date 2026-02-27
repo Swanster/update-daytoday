@@ -61,43 +61,36 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
         );
     }
 
-    const [isGrouped, setIsGrouped] = useState(true);
+    const [groupMode, setGroupMode] = useState('client'); // 'none', 'client', 'status'
 
-    // Group work orders by client name
-    const groupedWOs = {};
+    // Group work orders
+    const groupedData = {};
 
-    if (isGrouped) {
+    if (groupMode === 'client') {
         workOrders.forEach(wo => {
-            const clientName = wo.clientName || 'Unknown';
-            if (!groupedWOs[clientName]) {
-                groupedWOs[clientName] = [];
+            const groupKey = wo.clientName || 'Unknown';
+            if (!groupedData[groupKey]) {
+                groupedData[groupKey] = [];
             }
-            groupedWOs[clientName].push(wo);
+            groupedData[groupKey].push(wo);
+        });
+    } else if (groupMode === 'status') {
+        workOrders.forEach(wo => {
+            const groupKey = wo.clientStatus || 'Unknown Status';
+            if (!groupedData[groupKey]) {
+                groupedData[groupKey] = [];
+            }
+            groupedData[groupKey].push(wo);
         });
     }
 
-    // Pagination
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
-
-    // Reset page if grouping changes or data changes
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [isGrouped, workOrders]);
-
-    const clientNames = Object.keys(groupedWOs).sort();
-    
-    // Calculate total pages based on view mode
-    const totalItems = isGrouped ? clientNames.length : workOrders.length;
-    const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
-
-    // Slice for current page
-    const paginatedClientNames = isGrouped ? clientNames.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) : [];
-    const paginatedWorkOrders = !isGrouped ? workOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) : [];
+    const groupKeys = Object.keys(groupedData).sort();
+    const paginatedClientNames = groupMode !== 'none' ? groupKeys : [];
+    const paginatedWorkOrders = groupMode === 'none' ? workOrders : [];
 
     const renderRows = (orders) => {
         return orders.map((wo, index) => (
-            <tr key={wo._id} className={`hover:bg-ch-soft/80 transition-colors duration-300 group relative ${selectedIds.includes(wo._id) ? 'bg-ch-soft/60' : (index % 2 === 0 && !isGrouped ? 'bg-white' : 'bg-ch-light/50')}`}>
+            <tr key={wo._id} className={`hover:bg-ch-soft/80 transition-colors duration-300 group relative ${selectedIds.includes(wo._id) ? 'bg-ch-soft/60' : (index % 2 === 0 && groupMode === 'none' ? 'bg-white' : 'bg-ch-light/50')}`}>
                 {/* Selection Highlight bar on left */}
                 {selectedIds.includes(wo._id) && (
                     <td className="absolute left-0 top-0 bottom-0 w-1 bg-ch-primary rounded-r z-10 pointer-events-none"></td>
@@ -214,24 +207,38 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                     <div className="flex-1"></div>
                 )}
 
-                <button
-                    onClick={() => setIsGrouped(!isGrouped)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm active:scale-95 border ${
-                        isGrouped 
-                            ? 'bg-ch-soft text-ch-dark border-ch-soft hover:bg-ch-soft hover:border-ch-primary' 
-                            : 'bg-white text-ch-dark border-ch-soft hover:bg-ch-light hover:border-ch-soft'
-                    }`}
-                >
-                    {isGrouped ? (
-                        <>
-                            <span>📂</span> Grouped by Client
-                        </>
-                    ) : (
-                        <>
-                            <span>📄</span> List View
-                        </>
-                    )}
-                </button>
+                <div className="flex bg-white/50 p-1 rounded-2xl border border-ch-soft shadow-sm overflow-hidden">
+                    <button
+                        onClick={() => setGroupMode('none')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold transition-all ${
+                            groupMode === 'none' 
+                                ? 'bg-ch-primary text-white shadow-md' 
+                                : 'text-ch-dark hover:bg-ch-light'
+                        }`}
+                    >
+                        <span>📄</span> List
+                    </button>
+                    <button
+                        onClick={() => setGroupMode('client')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold transition-all ${
+                            groupMode === 'client' 
+                                ? 'bg-ch-primary text-white shadow-md' 
+                                : 'text-ch-dark hover:bg-ch-light'
+                        }`}
+                    >
+                        <span>📂</span> By Client
+                    </button>
+                    <button
+                        onClick={() => setGroupMode('status')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold transition-all ${
+                            groupMode === 'status' 
+                                ? 'bg-ch-primary text-white shadow-md' 
+                                : 'text-ch-dark hover:bg-ch-light'
+                        }`}
+                    >
+                        <span>📊</span> By Status
+                    </button>
+                </div>
              </div>
 
                 <div className="hidden md:block overflow-x-auto bg-white/95 rounded-2xl shadow-custom overflow-hidden border border-ch-soft mt-2">
@@ -262,16 +269,16 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                             </tr>
                         </thead>
                         
-                        {isGrouped ? (
+                        {groupMode !== 'none' ? (
                             <tbody className="divide-y divide-ch-soft border-b border-ch-soft">
-                                {paginatedClientNames.map((clientName, index) => (
-                                    <React.Fragment key={clientName}>
+                                {paginatedClientNames.map((groupKey, index) => (
+                                    <React.Fragment key={groupKey}>
                                         <tr className={`${index % 2 === 0 ? 'bg-ch-soft/50' : 'bg-ch-light/50'}`}>
-                                            <td colSpan="13" className={`px-5 py-2 font-extrabold ${index % 2 === 0 ? 'text-ch-dark border-l-4 border-ch-primary' : 'text-ch-dark border-l-4 border-ch-primary'}`}>
-                                                {clientName} <span className="text-ch-primary text-[10px] ml-2 font-bold tracking-widest uppercase bg-white px-2 py-0.5 rounded shadow-sm border border-ch-soft">({groupedWOs[clientName].length} orders)</span>
+                                            <td colSpan="13" className={`px-5 py-2 font-extrabold text-ch-dark border-l-4 border-ch-primary`}>
+                                                {groupKey} <span className="text-ch-primary text-[10px] ml-2 font-bold tracking-widest uppercase bg-white px-2 py-0.5 rounded shadow-sm border border-ch-soft">({groupedData[groupKey].length} orders)</span>
                                             </td>
                                         </tr>
-                                        {renderRows(groupedWOs[clientName])}
+                                        {renderRows(groupedData[groupKey])}
                                     </React.Fragment>
                                 ))}
                             </tbody>
@@ -291,9 +298,8 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                     </table>
                 </div>
 
-                {/* Mobile Expandable Card View */}
                 <div className="md:hidden flex flex-col gap-4 p-4 bg-ch-light/50">
-                    {(isGrouped ? paginatedClientNames.flatMap(name => groupedWOs[name]) : paginatedWorkOrders).map((wo) => (
+                    {(groupMode !== 'none' ? paginatedClientNames.flatMap(name => groupedData[name]) : paginatedWorkOrders).map((wo) => (
                         <div key={wo._id} className={`bg-white rounded-2xl shadow-sm border transition-all duration-300 overflow-hidden ${expandedId === wo._id ? 'border-ch-soft shadow-md ring-1 ring-ch-soft/50' : 'border-ch-soft hover:border-ch-soft hover:shadow-md'}`}>
                              {/* Card Header / Preview */}
                              <div 
@@ -416,60 +422,6 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                     ))}
                 </div>
 
-                {/* Pagination Controls */}
-                {totalPages > 1 && (
-                    <div className="flex items-center justify-between px-5 py-4 bg-white md:bg-ch-light/50 border-t border-ch-soft rounded-b-2xl relative z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:shadow-none pb-safe">
-                        <div className="flex flex-1 justify-between sm:hidden">
-                            <button
-                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                disabled={currentPage === 1}
-                                className="relative inline-flex items-center px-4 py-2 border border-ch-soft text-xs font-bold rounded-xl text-ch-dark bg-white hover:bg-ch-light hover:border-ch-soft disabled:opacity-50 transition-all shadow-sm active:scale-95 disabled:active:scale-100"
-                            >
-                                Previous
-                            </button>
-                            <span className="text-xs text-ch-primary font-bold uppercase tracking-widest flex items-center justify-center">
-                                Page {currentPage} of {totalPages}
-                            </span>
-                            <button
-                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                disabled={currentPage === totalPages}
-                                className="ml-3 relative inline-flex items-center px-4 py-2 border border-ch-soft text-xs font-bold rounded-xl text-ch-dark bg-white hover:bg-ch-light hover:border-ch-soft disabled:opacity-50 transition-all shadow-sm active:scale-95 disabled:active:scale-100"
-                            >
-                                Next
-                            </button>
-                        </div>
-                        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                            <div>
-                                <p className="text-xs text-ch-primary font-medium">
-                                    Showing <span className="font-extrabold text-ch-dark">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-extrabold text-ch-dark">{Math.min(currentPage * itemsPerPage, totalItems)}</span> of <span className="font-extrabold text-ch-dark">{totalItems}</span> {isGrouped ? 'clients' : 'entries'}
-                                </p>
-                            </div>
-                            <div>
-                                <nav className="relative z-0 inline-flex rounded-xl shadow-sm space-x-1" aria-label="Pagination">
-                                    <button
-                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                        disabled={currentPage === 1}
-                                        className="relative inline-flex items-center px-3 py-2 rounded-lg border border-ch-soft bg-white text-xs font-bold text-ch-primary hover:bg-ch-light hover:text-ch-dark disabled:opacity-50 transition-all active:scale-95 disabled:active:scale-100"
-                                    >
-                                        <span className="sr-only">Previous</span>
-                                        <span className="px-1 text-sm tracking-tighter">&laquo;</span>
-                                    </button>
-                                    <span className="relative inline-flex items-center px-4 py-2 border border-ch-soft bg-ch-light rounded-lg text-xs font-extrabold text-ch-dark shadow-inner">
-                                        Page {currentPage} of {totalPages}
-                                    </span>
-                                    <button
-                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                        disabled={currentPage === totalPages}
-                                        className="relative inline-flex items-center px-3 py-2 rounded-lg border border-ch-soft bg-white text-xs font-bold text-ch-primary hover:bg-ch-light hover:text-ch-dark disabled:opacity-50 transition-all active:scale-95 disabled:active:scale-100"
-                                    >
-                                        <span className="sr-only">Next</span>
-                                        <span className="px-1 text-sm tracking-tighter">&raquo;</span>
-                                    </button>
-                                </nav>
-                            </div>
-                        </div>
-                    </div>
-                )}
         </div>
     );
 }
