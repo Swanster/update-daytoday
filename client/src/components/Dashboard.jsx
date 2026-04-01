@@ -19,23 +19,19 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
     const [markingDone, setMarkingDone] = useState(null); // tracks which item is being marked
     const [newProject, setNewProject] = useState({ projectName: '', services: '', picTeam: '', dueDate: '', status: 'Done' });
 
-    // Get current quarter logic (same as App.jsx)
-    const getCurrentQuarter = () => {
-        const now = new Date();
-        const month = now.getMonth();
-        const year = now.getFullYear();
-        const quarter = Math.floor(month / 3) + 1;
-        return { quarter: `Q${quarter}-${year}`, year };
+    // Get current year
+    const getCurrentYear = () => {
+        return new Date().getFullYear();
     };
 
     const fetchDashboardData = useCallback(async () => {
         try {
-            const currentQ = getCurrentQuarter();
-            
+            const currentYear = getCurrentYear();
+
             const [statsData, overdueData, workOrdersData, topClientsData] = await Promise.all([
                 dashboardApi.getStats(),
-                dashboardApi.getOverdue(),
-                workOrdersApi.getAll(currentQ.quarter, currentQ.year), // Fetch current quarter WOs
+                dashboardApi.getOverdue(currentYear), // Fetch progress projects for current year
+                workOrdersApi.getAll(null, currentYear, true), // Fetch all WOs for current year (yearly mode)
                 dashboardApi.getTopClients()
             ]);
             setStats(statsData);

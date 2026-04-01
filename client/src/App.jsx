@@ -63,9 +63,11 @@ function App() {
     const [dailySelectedQuarter, setDailySelectedQuarter] = useState(null);
     const [woSelectedQuarter, setWOSelectedQuarter] = useState(null);
     
-    // Yearly view state - default to yearly view
+    // Yearly view state - default to yearly view (separate for each tab)
     const [isYearlyView, setIsYearlyView] = useState(true);
-    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [projectSelectedYear, setProjectSelectedYear] = useState(new Date().getFullYear());
+    const [dailySelectedYear, setDailySelectedYear] = useState(new Date().getFullYear());
+    const [woSelectedYear, setWOSelectedYear] = useState(new Date().getFullYear());
     
     // Available years for year selector (dynamically from data)
     const [availableYears, setAvailableYears] = useState([]);
@@ -150,6 +152,10 @@ function App() {
     // Get current quarter/quarters based on active tab
     const selectedQuarter = activeTab === 'project' ? projectSelectedQuarter : (activeTab === 'wo' ? woSelectedQuarter : dailySelectedQuarter);
     const quarters = activeTab === 'project' ? projectQuarters : (activeTab === 'wo' ? woQuarters : dailyQuarters);
+    
+    // Get selected year based on active tab
+    const selectedYear = activeTab === 'project' ? projectSelectedYear : (activeTab === 'wo' ? woSelectedYear : dailySelectedYear);
+    const setSelectedYear = activeTab === 'project' ? setProjectSelectedYear : (activeTab === 'wo' ? setWOSelectedYear : setDailySelectedYear);
 
     // Fetch data when tab or quarter changes
     useEffect(() => {
@@ -186,6 +192,7 @@ function App() {
             setAvailableYears(years);
             
             // Set selectedYear to first available year if current selection is not available
+            // Use the setter for the current active tab
             if (isYearlyView && years.length > 0 && !years.includes(selectedYear)) {
                 setSelectedYear(years[0]);
             }

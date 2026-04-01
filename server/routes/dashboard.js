@@ -93,7 +93,14 @@ router.get('/stats', auth, adminOrSuperuser, async (req, res) => {
 router.get('/overdue', auth, adminOrSuperuser, async (req, res) => {
     try {
         const now = new Date();
+        const { year } = req.query;
         
+        // Build match stage for year filter
+        const matchStage = { status: 'Progress' };
+        if (year) {
+            matchStage.year = parseInt(year);
+        }
+
         // Aggregate projects in progress, grouped by projectName
         // Shows only one entry per client/project with latest status
         const groupedProjects = await Project.aggregate([
@@ -113,12 +120,13 @@ router.get('/overdue', auth, adminOrSuperuser, async (req, res) => {
                     status: { $first: '$status' },
                     updatedAt: { $first: '$updatedAt' },
                     createdAt: { $first: '$createdAt' },
+                    year: { $first: '$year' },
                     // Count total entries for this project name
                     entryCount: { $sum: 1 }
                 }
             },
-            // Match only projects where latest status is Progress
-            { $match: { status: 'Progress' } },
+            // Match only projects where latest status is Progress (and year if specified)
+            { $match: matchStage },
             // Sort by due date (nulls last), then by createdAt
             { $sort: { dueDate: 1, createdAt: -1 } },
             // Limit results
@@ -129,7 +137,7 @@ router.get('/overdue', auth, adminOrSuperuser, async (req, res) => {
         const projectsWithDays = groupedProjects.map(p => {
             let daysInfo = null;
             let isOverdue = false;
-            
+
             if (p.dueDate) {
                 const diffMs = new Date(p.dueDate) - now;
                 const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
@@ -141,7 +149,7 @@ router.get('/overdue', auth, adminOrSuperuser, async (req, res) => {
                     isOverdue = false;
                 }
             }
-            
+
             return {
                 _id: p.latestId,
                 type: 'project',
@@ -153,7 +161,8 @@ router.get('/overdue', auth, adminOrSuperuser, async (req, res) => {
                 dueDate: p.dueDate,
                 daysUntilDue: daysInfo,
                 isOverdue: isOverdue,
-                entryCount: p.entryCount
+                entryCount: p.entryCount,
+                year: p.year
             };
         });
 

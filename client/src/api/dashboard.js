@@ -9,9 +9,10 @@ export const dashboardApi = {
         return response.data;
     },
 
-    // Get overdue items
-    getOverdue: async () => {
-        const response = await api.get(`${API_URL}/overdue`);
+    // Get overdue items (progress projects)
+    getOverdue: async (year) => {
+        const params = year ? { year } : {};
+        const response = await api.get(`${API_URL}/overdue`, { params });
         return response.data;
     },
 
