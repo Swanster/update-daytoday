@@ -3,10 +3,13 @@ import api from './axiosConfig';
 const API_URL = '/api/dailies';
 
 export const dailiesApi = {
-    // Get all daily entries (optionally filtered by quarter)
-    getAll: async (quarter = null, year = null) => {
+    // Get all daily entries (optionally filtered by quarter/year or yearly)
+    getAll: async (quarter = null, year = null, yearly = false) => {
         const params = {};
-        if (quarter && year) {
+        if (yearly && year) {
+            params.yearly = yearly.toString();
+            params.year = year;
+        } else if (quarter && year) {
             params.quarter = quarter;
             params.year = year;
         }

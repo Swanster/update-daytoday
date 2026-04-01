@@ -1,13 +1,26 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// JWT Secret - MUST be set in .env file for production
+// JWT Secret - MUST be set in .env file
+// This is a CRITICAL security requirement - NO fallback for production safety
 const JWT_SECRET = process.env.JWT_SECRET;
+
 if (!JWT_SECRET) {
-    console.warn('⚠️  WARNING: JWT_SECRET not set in environment variables!');
-    console.warn('   Using a default development secret. DO NOT use in production!');
+    console.error('❌ CRITICAL ERROR: JWT_SECRET is not set in environment variables!');
+    console.error('   Please set JWT_SECRET in your .env file before running the server.');
+    console.error('   Generate a secure secret using:');
+    console.error('   node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"');
+    process.exit(1); // Exit immediately - DO NOT run without JWT_SECRET
 }
-const SECRET = JWT_SECRET || 'dev-only-secret-do-not-use-in-production';
+
+// Validate JWT_SECRET strength
+if (JWT_SECRET.length < 32) {
+    console.warn('⚠️  WARNING: JWT_SECRET is less than 32 characters.');
+    console.warn('   For production use, generate a stronger secret using:');
+    console.warn('   node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"');
+}
+
+const SECRET = JWT_SECRET;
 
 // Authentication middleware
 const auth = async (req, res, next) => {

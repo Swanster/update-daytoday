@@ -5,7 +5,11 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "node index.js"
+    "dev": "node index.js",
+    "test": "jest --detectOpenHandles --forceExit --verbose",
+    "test:memory": "TEST_DB=memory jest --detectOpenHandles --forceExit --verbose",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --detectOpenHandles --forceExit"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -19,5 +23,10 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.0.3",
     "multer": "^2.0.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "mongodb-memory-server": "^9.1.6"
   }
 }

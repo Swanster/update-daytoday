@@ -24,13 +24,16 @@ function getCurrentQuarter() {
     return { quarter: `Q${quarter}-${year}`, year, quarterNum: quarter };
 }
 
-// Get all projects (optionally filtered by quarter)
+// Get all projects (optionally filtered by quarter/year or yearly)
 router.get('/', quarterQueryValidation, async (req, res) => {
     try {
-        const { quarter, year } = req.query;
+        const { quarter, year, yearly } = req.query;
         let query = {};
 
-        if (quarter && year) {
+        if (yearly === 'true' && year) {
+            // Get all data for the year
+            query = { year: parseInt(year) };
+        } else if (quarter && year) {
             query = { quarter, year: parseInt(year) };
         }
 

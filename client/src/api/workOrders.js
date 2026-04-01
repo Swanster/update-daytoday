@@ -3,9 +3,12 @@ import api from './axiosConfig';
 const API_URL = '/api/work-orders';
 
 export const workOrdersApi = {
-    getAll: async (quarter, year) => {
+    getAll: async (quarter, year, yearly = false) => {
         const params = {};
-        if (quarter && year) {
+        if (yearly && year) {
+            params.yearly = yearly.toString();
+            params.year = year;
+        } else if (quarter && year) {
             params.quarter = quarter;
             params.year = year;
         }
@@ -13,8 +16,8 @@ export const workOrdersApi = {
         return response.data;
     },
 
-    getReport: async (quarter, year, isYearly) => {
-        const params = { quarter, year, isYearly };
+    getReport: async (quarter, year, yearly = false) => {
+        const params = { quarter, year, yearly: yearly.toString() };
         const response = await api.get(`${API_URL}/report`, { params });
         return response.data;
     },

@@ -9,7 +9,7 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
     const [reportData, setReportData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [selectedQuarter, setSelectedQuarter] = useState('');
-    const [isYearly, setIsYearly] = useState(false);
+    const [isYearly, setIsYearly] = useState(true); // Default to yearly view
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [viewMode, setViewMode] = useState('summary'); // 'summary' or 'detail'
     const printRef = useRef(null);
@@ -18,11 +18,13 @@ export default function ReportModal({ isOpen, onClose, apiType = 'project', quar
     const years = [...new Set(quarters.map(q => q.year))].sort((a, b) => b - a);
 
     useEffect(() => {
-        if (quarters.length > 0 && !selectedQuarter) {
-            setSelectedQuarter(quarters[0].quarter);
+        if (quarters.length > 0) {
             setSelectedYear(quarters[0].year);
+            if (!isYearly && !selectedQuarter) {
+                setSelectedQuarter(quarters[0].quarter);
+            }
         }
-    }, [quarters]);
+    }, [quarters, isYearly]);
 
     useEffect(() => {
         if (isOpen && (selectedQuarter || isYearly)) {

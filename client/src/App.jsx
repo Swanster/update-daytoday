@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import SpreadsheetTable from './components/SpreadsheetTable';
 import DailyTable from './components/DailyTable';
 import EntryForm from './components/EntryForm';
@@ -62,6 +62,13 @@ function App() {
     const [projectSelectedQuarter, setProjectSelectedQuarter] = useState(null);
     const [dailySelectedQuarter, setDailySelectedQuarter] = useState(null);
     const [woSelectedQuarter, setWOSelectedQuarter] = useState(null);
+    
+    // Yearly view state - default to yearly view
+    const [isYearlyView, setIsYearlyView] = useState(true);
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    
+    // Available years for year selector (dynamically from data)
+    const [availableYears, setAvailableYears] = useState([]);
     
     // Delete Modal State
     const [deleteModal, setDeleteModal] = useState({
@@ -147,11 +154,11 @@ function App() {
     // Fetch data when tab or quarter changes
     useEffect(() => {
         const quarter = activeTab === 'project' ? projectSelectedQuarter : (activeTab === 'wo' ? woSelectedQuarter : dailySelectedQuarter);
-        if (quarter && user) {
+        if ((quarter || isYearlyView) && user) {
             fetchData();
             fetchQuarters();
         }
-    }, [activeTab, projectSelectedQuarter, dailySelectedQuarter, woSelectedQuarter, user]);
+    }, [activeTab, projectSelectedQuarter, dailySelectedQuarter, woSelectedQuarter, user, isYearlyView, selectedYear]);
 
     const fetchQuarters = async () => {
         try {
@@ -167,6 +174,22 @@ function App() {
                 data.unshift(current);
             }
 
+            // Extract unique years from quarters and sort descending
+            const years = [...new Set(data.map(q => q.year))].sort((a, b) => b - a);
+            
+            // Ensure current year is present
+            const currentYear = new Date().getFullYear();
+            if (!years.includes(currentYear)) {
+                years.unshift(currentYear);
+            }
+            
+            setAvailableYears(years);
+            
+            // Set selectedYear to first available year if current selection is not available
+            if (isYearlyView && years.length > 0 && !years.includes(selectedYear)) {
+                setSelectedYear(years[0]);
+            }
+
             if (activeTab === 'project') {
                 setProjectQuarters(data);
             } else if (activeTab === 'wo') {
@@ -179,27 +202,30 @@ function App() {
         }
     };
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
 
             if (activeTab === 'project') {
                 const data = await projectsApi.getAll(
-                    selectedQuarter?.quarter,
-                    selectedQuarter?.year
+                    isYearlyView ? null : selectedQuarter?.quarter,
+                    isYearlyView ? selectedYear : selectedQuarter?.year,
+                    isYearlyView
                 );
                 setProjects(data);
             } else if (activeTab === 'wo') {
                 const data = await workOrdersApi.getAll(
-                    selectedQuarter?.quarter,
-                    selectedQuarter?.year
+                    isYearlyView ? null : selectedQuarter?.quarter,
+                    isYearlyView ? selectedYear : selectedQuarter?.year,
+                    isYearlyView
                 );
                 setWorkOrders(data);
             } else {
                 const data = await dailiesApi.getAll(
-                    selectedQuarter?.quarter,
-                    selectedQuarter?.year
+                    isYearlyView ? null : selectedQuarter?.quarter,
+                    isYearlyView ? selectedYear : selectedQuarter?.year,
+                    isYearlyView
                 );
                 setDailies(data);
             }
@@ -209,7 +235,7 @@ function App() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [activeTab, isYearlyView, selectedYear, selectedQuarter]);
 
     const handleLogin = (userData, authToken) => {
         setUser(userData);
@@ -633,21 +659,62 @@ function App() {
                 </h1>
 
                 <div className="flex items-center gap-4">
-                    {/* Quarter Selector */}
-                    <div className="flex items-center gap-2 bg-ch-soft hover:bg-ch-soft transition-colors rounded-xl px-3 py-1.5 border border-ch-soft/50">
-                        <label className="hidden md:block text-sm font-semibold text-ch-dark">Quarter:</label>
-                        <select
-                            className="bg-transparent border-none text-ch-dark text-sm font-bold focus:ring-0 cursor-pointer outline-none"
-                            value={selectedQuarter ? `${selectedQuarter.quarter}|${selectedQuarter.year}` : ''}
-                            onChange={handleQuarterChange}
-                        >
-                            {quarters.map((q, idx) => (
-                                <option key={idx} value={`${q.quarter}|${q.year}`}>
-                                    {q.quarter}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    {/* Yearly/Quarterly Toggle */}
+                    {activeTab === 'project' || activeTab === 'daily' || activeTab === 'wo' ? (
+                        <div className="flex items-center gap-2 bg-ch-soft hover:bg-ch-soft transition-colors rounded-xl px-3 py-1.5 border border-ch-soft/50">
+                            <label className="text-xs font-bold text-ch-dark">View:</label>
+                            <button
+                                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${isYearlyView ? 'bg-ch-primary text-white shadow-sm' : 'bg-white text-ch-dark hover:bg-ch-soft'}`}
+                                onClick={() => setIsYearlyView(true)}
+                            >
+                                Yearly
+                            </button>
+                            <button
+                                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${!isYearlyView ? 'bg-ch-primary text-white shadow-sm' : 'bg-white text-ch-dark hover:bg-ch-soft'}`}
+                                onClick={() => setIsYearlyView(false)}
+                            >
+                                Quarterly
+                            </button>
+                        </div>
+                    ) : null}
+                    
+                    {/* Year Selector - Only show when in Yearly mode */}
+                    {isYearlyView && (activeTab === 'project' || activeTab === 'daily' || activeTab === 'wo') && (
+                        <div className="flex items-center gap-2 bg-ch-soft hover:bg-ch-soft transition-colors rounded-xl px-3 py-1.5 border border-ch-soft/50">
+                            <label className="hidden md:block text-sm font-semibold text-ch-dark">Year:</label>
+                            <select
+                                className="bg-transparent border-none text-ch-dark text-sm font-bold focus:ring-0 cursor-pointer outline-none"
+                                value={selectedYear}
+                                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                            >
+                                {availableYears.length > 0 ? (
+                                    availableYears.map(year => (
+                                        <option key={year} value={year}>{year}</option>
+                                    ))
+                                ) : (
+                                    <option value={new Date().getFullYear()}>{new Date().getFullYear()}</option>
+                                )}
+                            </select>
+                        </div>
+                    )}
+                    
+                    {/* Quarter Selector - Only show when in Quarterly mode */}
+                    {!isYearlyView && (
+                        <div className="flex items-center gap-2 bg-ch-soft hover:bg-ch-soft transition-colors rounded-xl px-3 py-1.5 border border-ch-soft/50">
+                            <label className="hidden md:block text-sm font-semibold text-ch-dark">Quarter:</label>
+                            <select
+                                className="bg-transparent border-none text-ch-dark text-sm font-bold focus:ring-0 cursor-pointer outline-none"
+                                value={selectedQuarter ? `${selectedQuarter.quarter}|${selectedQuarter.year}` : ''}
+                                onChange={handleQuarterChange}
+                            >
+                                {quarters.map((q, idx) => (
+                                    <option key={idx} value={`${q.quarter}|${q.year}`}>
+                                        {q.quarter}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
 
                     {(activeTab === 'project' || activeTab === 'daily' || activeTab === 'wo') && (
                         <>

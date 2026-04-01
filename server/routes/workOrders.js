@@ -3,13 +3,15 @@ const router = express.Router();
 const WorkOrder = require('../models/WorkOrder');
 const { auth } = require('../middleware/auth');
 
-// Get all work orders (filtered by quarter/year if provided)
+// Get all work orders (filtered by quarter/year or yearly if provided)
 router.get('/', auth, async (req, res) => {
     try {
-        const { quarter, year } = req.query;
+        const { quarter, year, yearly } = req.query;
         let query = {};
-        
-        if (quarter && year) {
+
+        if (yearly === 'true' && year) {
+            query.year = parseInt(year);
+        } else if (quarter && year) {
             query.quarter = quarter;
             query.year = parseInt(year);
         }
@@ -49,10 +51,13 @@ router.get('/quarters', auth, async (req, res) => {
 // Get report data
 router.get('/report', auth, async (req, res) => {
     try {
-        const { quarter, year, isYearly } = req.query;
+        // Support both 'yearly' (consistent with other routes) and 'isYearly' (legacy)
+        const { quarter, year, yearly, isYearly } = req.query;
+        const useYearly = (yearly === 'true' || isYearly === 'true');
+        
         let query = {};
 
-        if (isYearly === 'true' && year) {
+        if (useYearly && year) {
             query.year = parseInt(year);
         } else if (quarter && year) {
             query.quarter = quarter;
@@ -112,7 +117,7 @@ router.get('/report', auth, async (req, res) => {
 
         // Quarterly trend (if yearly)
         let quarterlyTrend = [];
-        if (isYearly === 'true') {
+        if (useYearly && year) {
             const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
             for (const q of quarters) {
                 const qKey = `${q}-${year}`;

@@ -8,15 +8,24 @@ const { auth, adminOrSuperuser } = require('../middleware/auth');
 // GET /api/dashboard/stats - Get aggregated dashboard statistics
 router.get('/stats', auth, adminOrSuperuser, async (req, res) => {
     try {
+        const { yearly, year } = req.query;
         const now = new Date();
         const month = now.getMonth();
-        const year = now.getFullYear();
-        const quarter = Math.floor(month / 3) + 1;
-        const currentQuarter = `Q${quarter}-${year}`;
+        const queryYear = year ? parseInt(year) : now.getFullYear();
+        
+        let quarterInfo;
+        if (yearly === 'true') {
+            // For yearly view, get all quarters
+            quarterInfo = { year: queryYear, quarters: ['Q1', 'Q2', 'Q3', 'Q4'] };
+        } else {
+            // For quarterly view, use current quarter
+            const quarterNum = Math.floor(month / 3) + 1;
+            quarterInfo = { quarter: `Q${quarterNum}-${queryYear}`, year: queryYear, quarterNum };
+        }
 
         // Get start of current month
-        const startOfMonth = new Date(year, month, 1);
-        const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
+        const startOfMonth = new Date(queryYear, month, 1);
+        const endOfMonth = new Date(queryYear, month + 1, 0, 23, 59, 59, 999);
 
         // Active projects (latest status = Progress)
         const activeProjectsCount = await Project.aggregate([
@@ -30,18 +39,23 @@ router.get('/stats', auth, adminOrSuperuser, async (req, res) => {
         ]);
         const activeProjects = activeProjectsCount.length > 0 ? activeProjectsCount[0].count : 0;
 
-        // Completed projects this quarter (latest status = Done)
+        // Completed projects this quarter/year
+        const completedQuery = { latestStatus: 'Done' };
+        if (yearly === 'true') {
+            completedQuery.latestYear = queryYear;
+        } else {
+            completedQuery.latestQuarter = quarterInfo.quarter;
+        }
+
         const completedCount = await Project.aggregate([
             { $sort: { createdAt: -1 } },
             { $group: {
                 _id: "$projectName",
                 latestStatus: { $first: "$status" },
-                latestQuarter: { $first: "$quarter" }
+                latestQuarter: { $first: "$quarter" },
+                latestYear: { $first: "$year" }
             }},
-            { $match: { 
-                latestStatus: 'Done',
-                latestQuarter: currentQuarter
-            }},
+            { $match: completedQuery },
             { $count: "count" }
         ]);
         const completedThisQuarter = completedCount.length > 0 ? completedCount[0].count : 0;
@@ -49,18 +63,6 @@ router.get('/stats', auth, adminOrSuperuser, async (req, res) => {
         // Daily entries this month
         const dailiesThisMonth = await Daily.countDocuments({
             date: { $gte: startOfMonth, $lte: endOfMonth }
-        });
-
-        // Overdue projects (dueDate passed, status not Done)
-        const overdueProjects = await Project.countDocuments({
-            dueDate: { $lt: now, $ne: null },
-            status: { $ne: 'Done' }
-        });
-
-        // Overdue dailies
-        const overdueDailies = await Daily.countDocuments({
-            dueDate: { $lt: now, $ne: null },
-            status: { $ne: 'Done' }
         });
 
         // On hold count
@@ -75,12 +77,11 @@ router.get('/stats', auth, adminOrSuperuser, async (req, res) => {
             activeProjects,
             completedThisQuarter,
             dailiesThisMonth,
-            overdueTotal: overdueProjects + overdueDailies,
-            overdueProjects,
-            overdueDailies,
             onHold: onHoldProjects + onHoldDailies,
             pendingUsers,
-            currentQuarter
+            currentQuarter: quarterInfo.quarter || `Year-${queryYear}`,
+            isYearly: yearly === 'true',
+            year: queryYear
         });
     } catch (error) {
         console.error('Dashboard stats error:', error);
