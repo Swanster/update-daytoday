@@ -37,7 +37,7 @@ router.get('/', quarterQueryValidation, async (req, res) => {
             query = { quarter, year: parseInt(year) };
         }
 
-        const projects = await Project.find(query).sort({ quarterSequence: 1, createdAt: 1 });
+        const projects = await Project.find(query).sort({ date: 1, quarterSequence: 1 });
         res.json(projects);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -295,7 +295,7 @@ function levenshteinDistance(str1, str2) {
 // Get grouped projects for display
 router.get('/grouped', async (req, res) => {
     try {
-        const projects = await Project.find().sort({ quarterSequence: 1, createdAt: 1 });
+        const projects = await Project.find().sort({ date: 1, quarterSequence: 1 });
 
         // Group by project name
         const grouped = {};

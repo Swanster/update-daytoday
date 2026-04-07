@@ -567,6 +567,9 @@ function App() {
                     return (a.status || '').localeCompare(b.status || '');
                 case 'sequence':
                 default:
+                    // Sort by date first, then by quarterSequence for entries on same date
+                    const dateCompare = new Date(a.date || 0) - new Date(b.date || 0);
+                    if (dateCompare !== 0) return dateCompare;
                     return (a.quarterSequence || 0) - (b.quarterSequence || 0);
             }
         });

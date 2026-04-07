@@ -365,16 +365,16 @@ router.patch('/mark-done', auth, async (req, res) => {
 // POST /api/dashboard/quick-project - Create a quick project entry
 router.post('/quick-project', auth, async (req, res) => {
     try {
-        const { projectName, services, dueDate, picTeam, status } = req.body;
+        const { projectName, services, dueDate, date, picTeam, status } = req.body;
 
         if (!projectName || !projectName.trim()) {
             return res.status(400).json({ message: 'Project name is required' });
         }
 
-        // Auto-assign quarter based on current date
-        const now = new Date();
-        const month = now.getMonth();
-        const year = now.getFullYear();
+        // Auto-assign quarter based on provided date or current date
+        const entryDate = date ? new Date(date) : new Date();
+        const month = entryDate.getMonth();
+        const year = entryDate.getFullYear();
         const quarterNum = Math.floor(month / 3) + 1;
         const quarter = `Q${quarterNum}-${year}`;
 
@@ -388,7 +388,7 @@ router.post('/quick-project', auth, async (req, res) => {
             projectName: projectName.trim(),
             services: services || [],
             dueDate: dueDate || null,
-            date: now,
+            date: entryDate,
             picTeam: picTeam || [],
             progress: '',
             status: status || 'Progress',
