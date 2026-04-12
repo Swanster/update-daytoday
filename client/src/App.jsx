@@ -19,10 +19,13 @@ import { useToast } from './components/ToastProvider';
 import { projectsApi } from './api/projects';
 import { dailiesApi } from './api/dailies';
 import { workOrdersApi } from './api/workOrders';
+import { briefingsApi } from './api/briefings';
 import VersionCheck from './components/VersionCheck';
 import DeleteConfirmationModal from './components/DeleteConfirmationModal';
 import WOTable from './components/WOTable';
 import WOEntryForm from './components/WOEntryForm';
+import BriefingTable from './components/BriefingTable';
+import BriefingEntryForm from './components/BriefingEntryForm';
 
 
 function App() {
@@ -33,6 +36,7 @@ function App() {
     const [projects, setProjects] = useState([]);
     const [dailies, setDailies] = useState([]);
     const [workOrders, setWorkOrders] = useState([]);
+    const [briefings, setBriefings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isActivityOpen, setIsActivityOpen] = useState(false);
@@ -44,6 +48,7 @@ function App() {
     const [isPicMemberMgmtOpen, setIsPicMemberMgmtOpen] = useState(false);
     const [editData, setEditData] = useState(null);
     const [error, setError] = useState(null);
+    const [syncingBriefings, setSyncingBriefings] = useState(false);
 
     // Quick Add Modal state
     const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
@@ -54,6 +59,7 @@ function App() {
     const [selectedProjectIds, setSelectedProjectIds] = useState([]);
     const [selectedDailyIds, setSelectedDailyIds] = useState([]);
     const [selectedWOIds, setSelectedWOIds] = useState([]);
+    const [selectedBriefingIds, setSelectedBriefingIds] = useState([]);
 
     // Quarterly state - separate for each tab
     const [projectQuarters, setProjectQuarters] = useState([]);
@@ -228,6 +234,9 @@ function App() {
                     isYearlyView
                 );
                 setWorkOrders(data);
+            } else if (activeTab === 'briefing') {
+                const data = await briefingsApi.getAll();
+                setBriefings(data);
             } else {
                 const data = await dailiesApi.getAll(
                     isYearlyView ? null : selectedQuarter?.quarter,
@@ -298,6 +307,8 @@ function App() {
              confirmDelete(id, name, 'Project', (id) => executeDelete(id, projectsApi, 'Project deleted successfully', 'Failed to delete project'));
         } else if (activeTab === 'wo') {
              confirmDelete(id, name, 'Work Order', (id) => executeDelete(id, workOrdersApi, 'Work Order deleted successfully', 'Failed to delete work order'));
+        } else if (activeTab === 'briefing') {
+             confirmDelete(id, name, 'Briefing', (id) => executeDelete(id, briefingsApi, 'Briefing deleted successfully', 'Failed to delete briefing'));
         } else {
              confirmDelete(id, name, 'Daily Entry', (id) => executeDelete(id, dailiesApi, 'Daily entry deleted successfully', 'Failed to delete daily entry'));
         }
@@ -320,6 +331,12 @@ function App() {
                     await workOrdersApi.update(editData._id, formData);
                 } else {
                     await workOrdersApi.create(formData);
+                }
+            } else if (activeTab === 'briefing') {
+                if (isEdit) {
+                    await briefingsApi.update(editData._id, formData);
+                } else {
+                    await briefingsApi.create(formData);
                 }
             } else {
                 if (isEdit) {
@@ -495,6 +512,69 @@ function App() {
         }
     };
 
+    // Handle individual Briefing status update (field update)
+    const handleBriefingStatusUpdate = async (id, value) => {
+        try {
+            await briefingsApi.update(id, { status: value });
+            toast.success('Status updated successfully');
+            await fetchData();
+        } catch (err) {
+            console.error('Briefing status update error:', err);
+            toast.error('Failed to update status');
+        }
+    };
+
+    // Handle briefing batch status update
+    const handleBriefingBatchStatusUpdate = async (status) => {
+        if (selectedBriefingIds.length === 0) return;
+
+        try {
+            const result = await briefingsApi.batchUpdateStatus(selectedBriefingIds, status);
+            toast.success(result.message);
+            setSelectedBriefingIds([]);
+        } catch (err) {
+            console.error('Batch status update error:', err);
+            toast.error('Failed to update status. Please try again.');
+            return;
+        }
+
+        // Refresh data after success
+        try {
+            await fetchData();
+        } catch (err) {
+            console.error('Error refreshing data:', err);
+        }
+    };
+
+    // Handle sync from Google Sheets
+    const handleSyncFromSheet = async () => {
+        setSyncingBriefings(true);
+        try {
+            const result = await briefingsApi.syncFromSheet();
+            toast.success(result.message);
+            await fetchData();
+        } catch (err) {
+            console.error('Sync from sheet error:', err);
+            toast.error('Failed to sync from Google Sheet. Please check credentials.');
+        } finally {
+            setSyncingBriefings(false);
+        }
+    };
+
+    // Handle sync to Google Sheets
+    const handleSyncToSheet = async () => {
+        setSyncingBriefings(true);
+        try {
+            const result = await briefingsApi.syncToSheet();
+            toast.success(result.message);
+            await fetchData();
+        } catch (err) {
+            console.error('Sync to sheet error:', err);
+            toast.error('Failed to sync to Google Sheet. Please check credentials.');
+        } finally {
+            setSyncingBriefings(false);
+        }
+    };
 
 
     // Handle client click from dashboard - navigate to Client tab
@@ -650,6 +730,29 @@ function App() {
 
         return result;
     }, [dailies, searchTerm, sortBy]);
+
+    // Filter and sort Briefings
+    const filteredBriefings = useMemo(() => {
+        let result = [...briefings];
+
+        // Filter by search term
+        if (searchTerm.trim()) {
+            const term = searchTerm.toLowerCase();
+            result = result.filter(b =>
+                b.lokasi?.toLowerCase().includes(term) ||
+                b.pekerjaan?.toLowerCase().includes(term) ||
+                b.pic?.toLowerCase().includes(term) ||
+                b.catatan?.toLowerCase().includes(term)
+            );
+        }
+
+        // Sort by date (newest first)
+        result.sort((a, b) => {
+            return new Date(b.tanggal || 0) - new Date(a.tanggal || 0);
+        });
+
+        return result;
+    }, [briefings, searchTerm]);
 
     // Show login if not authenticated
     if (!user) {
@@ -808,6 +911,13 @@ function App() {
                 >
                     📅 Daily
                 </button>
+                <button
+                    className={`px-6 py-2.5 rounded-full font-bold text-sm transition-colors flex items-center gap-2
+                        ${activeTab === 'briefing' ? 'bg-ch-dark text-white shadow-md shadow-ch-dark/20' : 'bg-white text-ch-primary border border-ch-soft hover:bg-ch-soft hover:text-ch-dark'}`}
+                    onClick={() => { setActiveTab('briefing'); setSearchTerm(''); }}
+                >
+                    📝 Briefing Infra
+                </button>
             </div>
 
             {/* Search and Sort Controls */}
@@ -817,7 +927,7 @@ function App() {
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ch-primary group-focus-within:text-ch-dark transition-colors">🔍</span>
                         <input
                             type="text"
-                            placeholder={activeTab === 'project' ? 'Search projects...' : (activeTab === 'wo' ? 'Search work orders...' : 'Search daily activities...')}
+                            placeholder={activeTab === 'project' ? 'Search projects...' : (activeTab === 'wo' ? 'Search work orders...' : (activeTab === 'briefing' ? 'Search briefings...' : 'Search daily activities...'))}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-12 pr-10 py-3 border border-ch-soft rounded-full text-sm focus:outline-none focus:border-ch-primary focus:ring-4 focus:ring-ch-primary/20 transition-all bg-ch-light focus:bg-white text-ch-dark shadow-sm"
@@ -883,6 +993,24 @@ function App() {
                                      <button className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-ch-dark hover:bg-ch-light hover:text-accent-coral hover:border-accent-coral transition-all shrink-0 flex items-center gap-1" onClick={handleCarryForward}>
                                         📥 <span className="hidden sm:inline">Carry Fwd</span>
                                     </button>
+                                )}
+                                {activeTab === 'briefing' && (
+                                    <>
+                                        <button 
+                                            className="px-3 py-1.5 bg-white border border-ch-soft rounded-lg text-sm font-medium text-ch-dark hover:bg-ch-soft hover:border-ch-primary transition-all shrink-0 flex items-center gap-1 disabled:opacity-50" 
+                                            onClick={handleSyncFromSheet}
+                                            disabled={syncingBriefings}
+                                        >
+                                            {syncingBriefings ? '⏳' : '📥'} <span className="hidden sm:inline">{syncingBriefings ? 'Syncing...' : 'Sync From Sheet'}</span>
+                                        </button>
+                                        <button 
+                                            className="px-3 py-1.5 bg-white border border-ch-soft rounded-lg text-sm font-medium text-ch-dark hover:bg-ch-soft hover:border-ch-primary transition-all shrink-0 flex items-center gap-1 disabled:opacity-50" 
+                                            onClick={handleSyncToSheet}
+                                            disabled={syncingBriefings}
+                                        >
+                                            {syncingBriefings ? '⏳' : '📤'} <span className="hidden sm:inline">{syncingBriefings ? 'Syncing...' : 'Sync To Sheet'}</span>
+                                        </button>
+                                    </>
                                 )}
                                 <button className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-ch-dark hover:bg-ch-light hover:text-accent-coral hover:border-accent-coral transition-all shrink-0 flex items-center gap-1" onClick={() => setIsCSVImportOpen(true)}>
                                     📤 <span className="hidden sm:inline">Import</span>
@@ -957,14 +1085,28 @@ function App() {
                         onStatusUpdate={handleProjectStatusUpdate}
                     />
                 ) : activeTab === 'wo' ? (
-                     <WOTable 
-                        workOrders={filteredWorkOrders} 
+                     <WOTable
+                        workOrders={filteredWorkOrders}
                         onEdit={handleEditWO}
                         onDelete={handleDeleteWO}
                         selectedIds={selectedWOIds}
                         onSelectionChange={setSelectedWOIds}
                         onBatchStatusUpdate={handleWOBatchStatusUpdate}
                         onStatusUpdate={handleStatusUpdate}
+                    />
+                ) : activeTab === 'briefing' ? (
+                    <BriefingTable
+                        briefings={filteredBriefings}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        selectedIds={selectedBriefingIds}
+                        onSelectionChange={setSelectedBriefingIds}
+                        onBatchStatusUpdate={handleBriefingBatchStatusUpdate}
+                        onAddEntry={handleAddClick}
+                        onStatusUpdate={handleBriefingStatusUpdate}
+                        onSyncFromSheet={handleSyncFromSheet}
+                        onSyncToSheet={handleSyncToSheet}
+                        syncing={syncingBriefings}
                     />
                 ) : (
                     <DailyTable
@@ -1014,12 +1156,19 @@ function App() {
                     <span className="text-xl mb-0.5">🛠️</span>
                     <span className="text-[10px] font-bold">WO</span>
                 </button>
-                <button 
+                <button
                     className={`flex flex-col items-center p-2 rounded-xl transition-colors ${activeTab === 'daily' ? 'text-ch-primary bg-ch-soft' : 'hover:text-ch-primary'}`}
                     onClick={() => { setActiveTab('daily'); setSearchTerm(''); }}
                 >
                     <span className="text-xl mb-0.5">📅</span>
                     <span className="text-[10px] font-bold">Daily</span>
+                </button>
+                <button
+                    className={`flex flex-col items-center p-2 rounded-xl transition-colors ${activeTab === 'briefing' ? 'text-ch-primary bg-ch-soft' : 'hover:text-ch-primary'}`}
+                    onClick={() => { setActiveTab('briefing'); setSearchTerm(''); }}
+                >
+                    <span className="text-xl mb-0.5">📝</span>
+                    <span className="text-[10px] font-bold">Briefing</span>
                 </button>
                  {isAdminOrSuper() && (
                      <button 
@@ -1055,6 +1204,16 @@ function App() {
 
             {activeTab === 'wo' && (
                 <WOEntryForm
+                    isOpen={isFormOpen}
+                    onClose={handleFormClose}
+                    onSave={handleSave}
+                    editData={editData}
+                    user={user}
+                />
+            )}
+
+            {activeTab === 'briefing' && (
+                <BriefingEntryForm
                     isOpen={isFormOpen}
                     onClose={handleFormClose}
                     onSave={handleSave}

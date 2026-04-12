@@ -16,6 +16,7 @@ const picMemberRoutes = require('./routes/picMembers');
 const dashboardRoutes = require('./routes/dashboard');
 const clientRoutes = require('./routes/clients');
 const workOrderRoutes = require('./routes/workOrders');
+const briefingRoutes = require('./routes/briefings');
 const { sanitizeInput } = require('./middleware/sanitize');
 
 const app = express();
@@ -140,6 +141,7 @@ app.use('/api/pic-members', picMemberRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/work-orders', workOrderRoutes);
+app.use('/api/briefings', briefingRoutes);
 
 // Health check (no rate limiting for health checks)
 app.get('/api/health', (req, res) => {
