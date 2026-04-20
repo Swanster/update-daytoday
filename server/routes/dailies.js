@@ -37,7 +37,7 @@ router.get('/', quarterQueryValidation, async (req, res) => {
             query = { quarter, year: parseInt(year) };
         }
 
-        const dailies = await Daily.find(query).sort({ quarterSequence: 1, createdAt: 1 });
+        const dailies = await Daily.find(query).sort({ date: -1, createdAt: -1 });
         res.json(dailies);
     } catch (error) {
         res.status(500).json({ message: error.message });

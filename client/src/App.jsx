@@ -713,18 +713,18 @@ function App() {
             );
         }
 
-        // Sort
+        // Sort - default by date (newest first)
         result.sort((a, b) => {
             switch (sortBy) {
                 case 'name':
                     return (a.clientName || '').localeCompare(b.clientName || '');
-                case 'date':
-                    return new Date(b.date || 0) - new Date(a.date || 0);
                 case 'status':
                     return (a.status || '').localeCompare(b.status || '');
                 case 'sequence':
-                default:
                     return (a.quarterSequence || 0) - (b.quarterSequence || 0);
+                case 'date':
+                default:
+                    return new Date(b.date || 0) - new Date(a.date || 0);
             }
         });
 
