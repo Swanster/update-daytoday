@@ -247,13 +247,27 @@ router.post('/sync-from-sheet', auth, async (req, res) => {
         continue;
       }
 
+      // Map Indonesian status to English for consistency
+      let normalizedStatus = Status || 'Pending';
+      const statusMap = {
+        'selesai': 'Done',
+        'proses': 'Progress',
+        'antrian': 'Pending',
+        'tunda': 'Hold'
+      };
+      
+      const lowerStatus = (Status || '').toLowerCase().trim();
+      if (statusMap[lowerStatus]) {
+        normalizedStatus = statusMap[lowerStatus];
+      }
+
       // Create new briefing (full replace mode)
       const briefingData = {
         tanggal: new Date(parsedDate),
         lokasi: Lokasi || '',
         pekerjaan: Pekerjaan || '',
         pic: PIC || '',
-        status: Status || 'Pending',
+        status: normalizedStatus,
         checklist: Checklist || '',
         catatan: Catatan || '',
         googleSheetRowId: _rowIndex,
@@ -269,8 +283,12 @@ router.post('/sync-from-sheet', auth, async (req, res) => {
       stats: { deleted: deleteResult.deletedCount, created, skipped }
     });
   } catch (error) {
-    console.error('Error syncing from Google Sheet:', error);
-    res.status(500).json({ message: error.message });
+    console.error('❌ Error syncing from Google Sheet:', error);
+    res.status(500).json({ 
+      message: `Failed to sync from Google Sheet: ${error.message}`,
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 

@@ -22,7 +22,7 @@ const briefingSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Progress', 'Done', 'Hold', 'Pending', ''],
+    enum: ['Progress', 'Done', 'Hold', 'Pending', 'Selesai', 'Proses', 'Antrian', 'Tunda', ''],
     default: 'Pending'
   },
   checklist: {
