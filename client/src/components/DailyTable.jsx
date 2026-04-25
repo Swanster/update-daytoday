@@ -16,7 +16,7 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
 
     const getStatusBadgeClass = (status) => {
         if (!status) return '';
-        const baseClasses = "inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase border";
+        const baseClasses = "inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border shadow-sm";
         const statusLower = status.toLowerCase();
         
         if (statusLower.includes('done') || statusLower.includes('complete')) {
@@ -32,7 +32,7 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
 
     const getActionBadgeClass = (action) => {
         if (!action) return '';
-        const baseClasses = "inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase border";
+        const baseClasses = "inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border shadow-sm";
         const actionLower = action.toLowerCase();
         
         if (actionLower === 'remote') {
@@ -47,7 +47,7 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
 
     const getActivityBadgeClass = (activity) => {
         if (!activity) return '';
-        const baseClasses = "inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase border";
+        const baseClasses = "inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border shadow-sm";
         const actLower = activity.toLowerCase();
         
         if (actLower === 'installation') {
@@ -150,8 +150,8 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
             <div className="bg-white/95 rounded-2xl shadow-custom overflow-hidden border border-ch-soft">
                 {/* Desktop Table View */}
                 <div className="hidden md:block overflow-x-auto">
-                    <table className="w-full text-xs text-left border-collapse table-fixed">
-                        <thead className="bg-ch-light text-ch-primary font-bold uppercase text-[9px] tracking-widest sticky top-0 z-10">
+                    <table className="w-full text-sm text-left border-collapse table-fixed">
+                        <thead className="bg-ch-light text-ch-primary font-bold uppercase text-[10px] tracking-widest sticky top-0 z-10">
                             <tr>
                                 <th className="p-2 w-10 border-b border-ch-soft">
                                     <input
@@ -212,7 +212,7 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
                                         </td>
 
                                         {/* Row Number */}
-                                        <td className="px-2 py-2 text-center text-ch-primary font-bold border-r border-ch-soft/50 text-[11px]">
+                                        <td className="px-2 py-2 text-center text-ch-primary font-bold border-r border-ch-soft/50 text-xs">
                                             {index + 1}
                                         </td>
 
@@ -220,7 +220,7 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
                                         <td className="px-2 py-2 whitespace-nowrap text-ch-dark font-medium text-[11px] font-mono">{formatDate(entry.date)}</td>
 
                                         {/* Client Name */}
-                                        <td className="px-2 py-2 font-bold text-ch-dark text-[11px] truncate" title={entry.clientName}>
+                                        <td className="px-2 py-2 font-extrabold text-ch-dark truncate" title={entry.clientName}>
                                             {entry.clientName}
                                         </td>
 
@@ -229,7 +229,7 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
                                             <div className="flex flex-wrap gap-1">
                                                 {entry.caseIssue && (Array.isArray(entry.caseIssue) ? entry.caseIssue.length > 0 : entry.caseIssue) ? (
                                                     (Array.isArray(entry.caseIssue) ? entry.caseIssue : [entry.caseIssue]).map((ct, idx) => (
-                                                        <span key={idx} className="bg-ch-soft text-ch-dark border border-ch-soft px-1.5 py-0.5 rounded text-[9px] font-bold">{ct}</span>
+                                                        <span key={idx} className="bg-ch-soft text-ch-dark border border-ch-soft px-1.5 py-0.5 rounded text-[10px] font-extrabold tracking-widest uppercase shadow-sm">{ct}</span>
                                                     ))
                                                 ) : <span className="text-ch-soft">-</span>}
                                             </div>
@@ -258,7 +258,7 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
                                             <div className="flex flex-wrap gap-1">
                                                 {entry.picTeam && entry.picTeam.length > 0 ? (
                                                     entry.picTeam.map((member, idx) => (
-                                                        <span key={idx} className="bg-ch-dark text-ch-soft border border-ch-dark px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wide">{member}</span>
+                                                        <span key={idx} className="bg-purple-50 text-purple-700 border border-purple-100 px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-widest shadow-sm">{member}</span>
                                                     ))
                                                 ) : <span className="text-ch-soft">-</span>}
                                             </div>
@@ -266,7 +266,7 @@ export default function DailyTable({ dailies, onEdit, onDelete, selectedIds = []
 
                                         {/* Detail Action */}
                                         <td className="px-2 py-2 max-w-0">
-                                            <div className="text-[11px] text-ch-dark font-medium leading-snug truncate" title={entry.detailAction || ''}>
+                                            <div className="text-xs text-ch-dark leading-relaxed font-medium truncate" title={entry.detailAction || ''}>
                                                 {entry.detailAction || <span className="text-ch-soft">-</span>}
                                             </div>
                                         </td>

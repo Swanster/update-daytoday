@@ -16,7 +16,7 @@ export default function BriefingEntryForm({ isOpen, onClose, onSave, editData, u
     useEffect(() => {
         if (editData) {
             setFormData({
-                tanggal: editData.tanggal ? editData.tanggal.split('T')[0] : '',
+                tanggal: editData.tanggal ? editData.tanggal.split('T')[0] : new Date().toISOString().split('T')[0],
                 lokasi: editData.lokasi || '',
                 pekerjaan: editData.pekerjaan || '',
                 pic: editData.pic || '',
@@ -130,26 +130,8 @@ export default function BriefingEntryForm({ isOpen, onClose, onSave, editData, u
                 <div className="p-8 overflow-y-auto max-h-[70vh]">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Row 1: Tanggal & PIC */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-sm font-bold text-ch-dark mb-2">
-                                    📅 Tanggal <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="date"
-                                    name="tanggal"
-                                    value={formData.tanggal}
-                                    onChange={handleChange}
-                                    className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-4 transition-all ${
-                                        errors.tanggal 
-                                            ? 'border-red-300 bg-red-50 focus:ring-red-300/30' 
-                                            : 'border-ch-soft bg-ch-light focus:bg-white focus:border-ch-primary focus:ring-ch-primary/30'
-                                    }`}
-                                />
-                                {errors.tanggal && (
-                                    <p className="text-red-500 text-xs mt-1 font-medium">{errors.tanggal}</p>
-                                )}
-                            </div>
+                        <div className="grid grid-cols-1 gap-6">
+                            {/* Tanggal is hidden but maintained in state */}
 
                             <div>
                                 <label className="block text-sm font-bold text-ch-dark mb-2">
@@ -176,14 +158,14 @@ export default function BriefingEntryForm({ isOpen, onClose, onSave, editData, u
                         {/* Row 2: Lokasi */}
                         <div>
                             <label className="block text-sm font-bold text-ch-dark mb-2">
-                                📍 Lokasi / Site <span className="text-red-500">*</span>
+                                🏢 Client Name <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
                                 name="lokasi"
                                 value={formData.lokasi}
                                 onChange={handleChange}
-                                placeholder="Lokasi site atau property"
+                                placeholder="Client Name"
                                 className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-4 transition-all ${
                                     errors.lokasi 
                                         ? 'border-red-300 bg-red-50 focus:ring-red-300/30' 
@@ -198,7 +180,7 @@ export default function BriefingEntryForm({ isOpen, onClose, onSave, editData, u
                         {/* Row 3: Pekerjaan */}
                         <div>
                             <label className="block text-sm font-bold text-ch-dark mb-2">
-                                🔧 Pekerjaan <span className="text-red-500">*</span>
+                                💼 Case <span className="text-red-500">*</span>
                             </label>
                             <textarea
                                 name="pekerjaan"
@@ -218,7 +200,7 @@ export default function BriefingEntryForm({ isOpen, onClose, onSave, editData, u
                         </div>
 
                         {/* Row 4: Status & Checklist */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 gap-6">
                             <div>
                                 <label className="block text-sm font-bold text-ch-dark mb-2">
                                     📊 Status
@@ -235,35 +217,6 @@ export default function BriefingEntryForm({ isOpen, onClose, onSave, editData, u
                                     <option value="Hold">Hold</option>
                                 </select>
                             </div>
-
-                            <div>
-                                <label className="block text-sm font-bold text-ch-dark mb-2">
-                                    ✓ Checklist
-                                </label>
-                                <input
-                                    type="text"
-                                    name="checklist"
-                                    value={formData.checklist}
-                                    onChange={handleChange}
-                                    placeholder="Status checklist"
-                                    className="w-full px-4 py-3 border border-ch-soft bg-ch-light focus:bg-white focus:border-ch-primary rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-ch-primary/30 transition-all"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Row 5: Catatan */}
-                        <div>
-                            <label className="block text-sm font-bold text-ch-dark mb-2">
-                                📝 Catatan
-                            </label>
-                            <textarea
-                                name="catatan"
-                                value={formData.catatan}
-                                onChange={handleChange}
-                                placeholder="Catatan tambahan, detail pekerjaan, atau informasi lainnya"
-                                rows={4}
-                                className="w-full px-4 py-3 border border-ch-soft bg-ch-light focus:bg-white focus:border-ch-primary rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-ch-primary/30 transition-all resize-none"
-                            />
                         </div>
                     </form>
                 </div>

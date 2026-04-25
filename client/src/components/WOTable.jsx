@@ -103,7 +103,7 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                         className="rounded border-ch-soft text-ch-primary focus:ring-ch-primary focus:ring-offset-0 w-4 h-4 cursor-pointer transition-all"
                     />
                 </td>
-                <td className="px-5 py-3 text-center text-ch-primary font-bold border-r border-ch-soft/50">{wo.quarterSequence}</td>
+                <td className="px-5 py-3 text-center text-ch-primary font-bold border-r border-ch-soft/50 text-xs">{wo.quarterSequence}</td>
                 <td className="px-5 py-3 text-center">
                     <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest border shadow-sm ${
                         wo.clientStatus === 'New Client' 
@@ -121,7 +121,7 @@ export default function WOTable({ workOrders, onEdit, onDelete, selectedIds = []
                     </span>
                 </td>
                 <td className="px-5 py-3 text-ch-dark text-xs font-medium leading-relaxed max-w-sm whitespace-pre-wrap">{wo.detailRequest || '-'}</td>
-                <td className="px-5 py-3 whitespace-nowrap text-ch-dark font-medium text-xs font-mono">{formatDate(wo.dueDate)}</td>
+                <td className="px-5 py-3 whitespace-nowrap text-ch-dark font-mono text-[11px] font-bold">{formatDate(wo.dueDate)}</td>
                 <td className="px-5 py-3 text-ch-dark text-xs text-center border-l border-ch-soft/50">
                     <StatusCell 
                         value={wo.requestBarang} 

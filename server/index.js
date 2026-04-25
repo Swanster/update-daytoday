@@ -18,6 +18,7 @@ const clientRoutes = require('./routes/clients');
 const workOrderRoutes = require('./routes/workOrders');
 const briefingRoutes = require('./routes/briefings');
 const { sanitizeInput } = require('./middleware/sanitize');
+const { initTelegramBot } = require('./services/telegramService');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,10 +28,10 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/projec
 // RATE LIMITING CONFIGURATION
 // ============================================
 
-// General API rate limiter - 100 requests per 15 minutes
+// General API rate limiter - 1000 requests per 15 minutes
 const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
+    max: 1000, // Limit each IP to 1000 requests per windowMs
     message: {
         message: 'Too many requests from this IP, please try again after 15 minutes'
     },
@@ -161,6 +162,8 @@ if (process.env.NODE_ENV !== 'test') {
             console.log('✅ Connected to MongoDB');
             app.listen(PORT, () => {
                 console.log(`🚀 Server running on http://localhost:${PORT}`);
+                // Initialize Telegram Bot and Cron Jobs
+                initTelegramBot();
             });
         })
         .catch((error) => {

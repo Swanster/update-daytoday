@@ -1,15 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { dashboardApi } from '../api/dashboard';
-import { workOrdersApi } from '../api/workOrders'; // Import workOrdersApi
+import { workOrdersApi } from '../api/workOrders';
+import { briefingsApi } from '../api/briefings';
 import { toast } from 'react-toastify';
 // import './Dashboard.css'; // Removed custom CSS
 
 const REFRESH_INTERVAL = 30000; // 30 seconds
 
-function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, onNavigateToDaily }) {
+function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, onNavigateToDaily, onNavigateToBriefing }) {
     const [stats, setStats] = useState(null);
     const [overdue, setOverdue] = useState([]);
-    const [workOrders, setWorkOrders] = useState([]); // Add workOrders state
+    const [briefings, setBriefings] = useState([]);
     const [topClients, setTopClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -28,15 +29,15 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
         try {
             const currentYear = getCurrentYear();
 
-            const [statsData, overdueData, workOrdersData, topClientsData] = await Promise.all([
+            const [statsData, overdueData, briefingsData, topClientsData] = await Promise.all([
                 dashboardApi.getStats(),
                 dashboardApi.getOverdue(currentYear), // Fetch progress projects for current year
-                workOrdersApi.getAll(null, currentYear, true), // Fetch all WOs for current year (yearly mode)
+                briefingsApi.getAll(), // Fetch all Briefings
                 dashboardApi.getTopClients()
             ]);
             setStats(statsData);
             setOverdue(overdueData);
-            setWorkOrders(workOrdersData);
+            setBriefings(briefingsData);
             setTopClients(topClientsData);
             setLastUpdated(new Date());
             setError(null);
@@ -48,15 +49,9 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
         }
     }, []);
 
-    // Initial fetch and auto-refresh
+    // Initial fetch
     useEffect(() => {
         fetchDashboardData();
-
-        const interval = setInterval(() => {
-            fetchDashboardData();
-        }, REFRESH_INTERVAL);
-
-        return () => clearInterval(interval);
     }, [fetchDashboardData]);
 
     const formatDate = (dateString) => {
@@ -147,12 +142,12 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
         }
     };
 
-    // List View for Progress Work Orders and Sort by Due Date (Ascending: Overdue/Nearest first)
-    const progressWOs = workOrders
-        .filter(wo => wo.status === 'Progress')
-        .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+    // List View for Pending Briefings
+    const pendingBriefings = briefings
+        .filter(b => b.status !== 'Done' && b.status !== 'Selesai')
+        .sort((a, b) => new Date(b.tanggal || b.createdAt) - new Date(a.tanggal || a.createdAt));
 
-    const doneWOsCount = workOrders.filter(wo => wo.status === 'Done' || wo.status === 'Complete').length;
+    const doneBriefingsCount = briefings.filter(b => b.status === 'Done' || b.status === 'Selesai').length;
 
 
     if (loading) {
@@ -244,7 +239,7 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
                         </div>
                     )}
                     <div className="text-[10px] font-bold text-ch-primary uppercase tracking-widest mr-1">
-                        Auto-refresh: 30s
+                        Manual Refresh
                     </div>
                 </div>
             </div>
@@ -287,21 +282,21 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
                     </div>
                 </div>
 
-                <div onClick={() => onNavigateToWO?.('Progress')} className="bg-white rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-custom-lg hover:-translate-y-1 transition-[transform,box-shadow] duration-300 border border-ch-soft/50 relative overflow-hidden group cursor-pointer">
-                    <div className="absolute -top-6 -right-6 p-4 opacity-[0.03] group-hover:scale-125 group-hover:opacity-10 transition-all duration-500 text-8xl">🛠️</div>
+                <div onClick={() => onNavigateToBriefing?.('Pending')} className="bg-white rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-custom-lg hover:-translate-y-1 transition-[transform,box-shadow] duration-300 border border-ch-soft/50 relative overflow-hidden group cursor-pointer">
+                    <div className="absolute -top-6 -right-6 p-4 opacity-[0.03] group-hover:scale-125 group-hover:opacity-10 transition-all duration-500 text-8xl">📋</div>
                     <div className="absolute top-0 left-0 w-1 h-full bg-orange-500 rounded-l-2xl"></div>
                     <div className="relative z-10 pl-2">
-                        <div className="text-4xl md:text-5xl font-black text-ch-dark mb-2 tracking-tight">{progressWOs.length}</div>
-                        <div className="text-xs text-orange-600 font-bold uppercase tracking-widest bg-orange-50 inline-block px-2 py-1 rounded-md">Onprogress WO</div>
+                        <div className="text-4xl md:text-5xl font-black text-ch-dark mb-2 tracking-tight">{pendingBriefings.length}</div>
+                        <div className="text-xs text-orange-600 font-bold uppercase tracking-widest bg-orange-50 inline-block px-2 py-1 rounded-md">Briefing To Do</div>
                     </div>
                 </div>
 
-                <div onClick={() => onNavigateToWO?.('Done')} className="bg-white rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-custom-lg hover:-translate-y-1 transition-[transform,box-shadow] duration-300 border border-ch-soft/50 relative overflow-hidden group cursor-pointer">
+                <div onClick={() => onNavigateToBriefing?.('Done')} className="bg-white rounded-3xl p-5 md:p-6 shadow-sm hover:shadow-custom-lg hover:-translate-y-1 transition-[transform,box-shadow] duration-300 border border-ch-soft/50 relative overflow-hidden group cursor-pointer">
                     <div className="absolute -top-6 -right-6 p-4 opacity-[0.03] group-hover:scale-125 group-hover:opacity-10 transition-all duration-500 text-8xl">✔️</div>
                     <div className="absolute top-0 left-0 w-1 h-full bg-teal-500 rounded-l-2xl"></div>
                     <div className="relative z-10 pl-2">
-                        <div className="text-4xl md:text-5xl font-black text-ch-dark mb-2 tracking-tight">{doneWOsCount}</div>
-                        <div className="text-xs text-teal-600 font-bold uppercase tracking-widest bg-teal-50 inline-block px-2 py-1 rounded-md">Done WO</div>
+                        <div className="text-4xl md:text-5xl font-black text-ch-dark mb-2 tracking-tight">{doneBriefingsCount}</div>
+                        <div className="text-xs text-teal-600 font-bold uppercase tracking-widest bg-teal-50 inline-block px-2 py-1 rounded-md">Done Briefing</div>
                     </div>
                 </div>
             </div>
@@ -459,52 +454,51 @@ function Dashboard({ user, onClientClick, onNavigateToWO, onNavigateToProject, o
                     </div>
                 </div>
 
-                {/* Progress Work Orders Section */}
+                {/* Briefing To Do Section */}
                 <div className="xl:col-span-1 flex flex-col gap-4 h-full">
                     <div className="flex items-center justify-between">
                         <h3 className="text-xl font-extrabold text-ch-dark flex items-center gap-2">
-                             🛠️ Progress Work Orders
-                            <span className="bg-ch-soft text-ch-dark text-xs px-2.5 py-0.5 rounded-full font-bold ml-1">{progressWOs.length}</span>
+                             📋 Briefing To Do
+                            <span className="bg-ch-soft text-ch-dark text-xs px-2.5 py-0.5 rounded-full font-bold ml-1">{pendingBriefings.length}</span>
                         </h3>
                     </div>
                     
                     <div className="bg-white rounded-2xl shadow-custom p-5 border border-ch-soft flex-1 overflow-y-auto">
-                         {progressWOs.length === 0 ? (
+                         {pendingBriefings.length === 0 ? (
                             <div className="text-center text-ch-primary py-12 h-full flex flex-col items-center justify-center">
-                                <span className="text-4xl mb-3 opacity-40">🛠️</span>
-                                <p className="font-semibold">No work orders in progress.</p>
+                                <span className="text-4xl mb-3 opacity-40">📋</span>
+                                <p className="font-semibold">No briefings to do.</p>
                             </div>
                         ) : (
                             <>
                                 <div className="space-y-4 flex-1 flex flex-col">
-                                    {progressWOs.map((wo) => (
-                                        <div key={wo._id} className="flex gap-4 items-start p-4 hover:bg-ch-light/80 rounded-2xl transition-all duration-300 border border-ch-soft shadow-sm hover:shadow-md">
+                                    {pendingBriefings.map((briefing) => (
+                                        <div key={briefing._id} className="flex gap-4 items-start p-4 hover:bg-ch-light/80 rounded-2xl transition-all duration-300 border border-ch-soft shadow-sm hover:shadow-md">
                                             <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-2xl bg-ch-soft border border-ch-soft">
-                                                🛠️
+                                                📋
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="font-bold text-ch-dark text-sm truncate">{wo.clientName}</p>
+                                                <p className="font-bold text-ch-dark text-sm truncate">{briefing.lokasi || 'Unknown Client'}</p>
                                                 <div className="flex items-center gap-2 mt-1.5">
                                                      <span className="bg-ch-soft text-ch-dark px-2 py-0.5 rounded-md text-[10px] font-bold border border-ch-soft truncate max-w-[120px]">
-                                                        {wo.services || 'No Service'}
+                                                        {briefing.pic || 'No PIC'}
                                                     </span>
                                                 </div>
-                                                {wo.detailRequest && (
-                                                    <p className="text-xs text-ch-primary mt-2 line-clamp-2 leading-relaxed italic">"{wo.detailRequest}"</p>
+                                                {briefing.pekerjaan && (
+                                                    <p className="text-xs text-ch-primary mt-2 line-clamp-2 leading-relaxed italic">"{briefing.pekerjaan}"</p>
                                                 )}
                                                 <div className="flex items-center gap-2 mt-3 text-xs font-bold text-ch-primary">
-                                                    <span>📅 Due: {formatDate(wo.dueDate)}</span>
+                                                    <span>📅 {formatDate(briefing.tanggal)}</span>
                                                 </div>
                                             </div>
                                             <div className="shrink-0 flex items-center">
                                                  <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border bg-amber-50 text-amber-700 border-amber-200">
-                                                    {wo.status}
+                                                    {briefing.status || 'Pending'}
                                                 </span>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
-
                             </>
                         )}
                     </div>

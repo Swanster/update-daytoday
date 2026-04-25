@@ -746,13 +746,22 @@ function App() {
             );
         }
 
-        // Sort by date (newest first)
+        // Sort by date (newest first) by default
         result.sort((a, b) => {
             return new Date(b.tanggal || 0) - new Date(a.tanggal || 0);
         });
 
+        // Apply sorting based on sortBy state for flat display
+        if (sortBy === 'name') {
+            result.sort((a, b) => (a.lokasi || '').localeCompare(b.lokasi || ''));
+        } else if (sortBy === 'status') {
+            result.sort((a, b) => (a.status || '').localeCompare(b.status || ''));
+        } else if (sortBy === 'date') {
+            result.sort((a, b) => new Date(b.tanggal || 0) - new Date(a.tanggal || 0));
+        }
+
         return result;
-    }, [briefings, searchTerm]);
+    }, [briefings, searchTerm, sortBy]);
 
     // Show login if not authenticated
     if (!user) {
@@ -880,22 +889,7 @@ function App() {
                         📊 Dashboard
                     </button>
                 )}
-                {isAdminOrSuper() && (
-                    <button
-                        className={`px-6 py-2.5 rounded-full font-bold text-sm transition-colors flex items-center gap-2
-                            ${activeTab === 'client' ? 'bg-ch-dark text-white shadow-md shadow-ch-dark/20' : 'bg-white text-ch-primary border border-ch-soft hover:bg-ch-soft hover:text-ch-dark'}`}
-                        onClick={() => { setActiveTab('client'); setSearchTerm(''); setSelectedClientName(null); }}
-                    >
-                        🏢 Client
-                    </button>
-                )}
-                <button
-                    className={`px-6 py-2.5 rounded-full font-bold text-sm transition-colors flex items-center gap-2
-                        ${activeTab === 'wo' ? 'bg-ch-dark text-white shadow-md shadow-ch-dark/20' : 'bg-white text-ch-primary border border-ch-soft hover:bg-ch-soft hover:text-ch-dark'}`}
-                    onClick={() => { setActiveTab('wo'); setSearchTerm(''); }}
-                >
-                    🛠️ WO
-                </button>
+
                 <button
                     className={`px-6 py-2.5 rounded-full font-bold text-sm transition-colors flex items-center gap-2
                         ${activeTab === 'project' ? 'bg-ch-dark text-white shadow-md shadow-ch-dark/20' : 'bg-white text-ch-primary border border-ch-soft hover:bg-ch-soft hover:text-ch-dark'}`}
@@ -1050,6 +1044,9 @@ function App() {
                         onNavigateToDaily={() => {
                             setActiveTab('daily');
                         }}
+                        onNavigateToBriefing={() => {
+                            setActiveTab('briefing');
+                        }}
                     />
                 ) : activeTab === 'client' ? (
                     <ClientTab
@@ -1107,6 +1104,7 @@ function App() {
                         onSyncFromSheet={handleSyncFromSheet}
                         onSyncToSheet={handleSyncToSheet}
                         syncing={syncingBriefings}
+                        sortBy={sortBy}
                     />
                 ) : (
                     <DailyTable
