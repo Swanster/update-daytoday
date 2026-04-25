@@ -11,8 +11,17 @@ export default function BriefingTable({
     onSyncFromSheet,
     onSyncToSheet,
     syncing = false,
-    sortBy = 'name'
+    sortBy = 'name',
+    onSort,
+    onStatusUpdate
 }) {
+    const renderSortIcon = (field) => {
+        if (sortBy === field) {
+            return <span className="ml-1 text-ch-primary">↓</span>;
+        }
+        return <span className="ml-1 text-ch-soft group-hover/sort:text-ch-primary/50 transition-colors">↕</span>;
+    };
+
     const getStatusBadgeClass = (status) => {
         if (!status) return '';
         const baseClasses = "inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border shadow-sm";
@@ -289,9 +298,19 @@ export default function BriefingTable({
                                 <th className="w-12 px-4 py-4 text-center">
                                     {/* Column left empty for checkboxes */}
                                 </th>
-                                <th className="px-4 py-4 text-[10px] font-bold text-ch-primary/70 uppercase tracking-widest">Case Details</th>
+                                <th className="px-4 py-4 text-[10px] font-bold text-ch-primary/70 uppercase tracking-widest cursor-pointer group/sort hover:text-ch-primary transition-colors" onClick={() => onSort && onSort('name')}>
+                                    <div className="flex items-center">
+                                        Case Details
+                                        {renderSortIcon('name')}
+                                    </div>
+                                </th>
                                 <th className="px-4 py-4 text-[10px] font-bold text-ch-primary/70 uppercase tracking-widest w-48">PIC</th>
-                                <th className="px-4 py-4 text-[10px] font-bold text-ch-primary/70 uppercase tracking-widest w-40 text-center">Status</th>
+                                <th className="px-4 py-4 text-[10px] font-bold text-ch-primary/70 uppercase tracking-widest w-40 text-center cursor-pointer group/sort hover:text-ch-primary transition-colors" onClick={() => onSort && onSort('status')}>
+                                    <div className="flex items-center justify-center">
+                                        Status
+                                        {renderSortIcon('status')}
+                                    </div>
+                                </th>
                                 <th className="px-4 py-4 text-[10px] font-bold text-ch-primary/70 uppercase tracking-widest w-24 text-center">Actions</th>
                             </tr>
                         </thead>
@@ -334,12 +353,17 @@ export default function BriefingTable({
 
                                                 {/* Case Name */}
                                                 <td className="px-4 py-3 align-middle">
-                                                    <div className="flex flex-col gap-1">
+                                                    <div className="flex flex-col gap-0.5">
+                                                        {sortBy !== 'name' && (
+                                                            <span className="text-[10px] font-extrabold text-ch-primary/50 uppercase tracking-widest truncate" title={group.clientName}>
+                                                                {group.clientName}
+                                                            </span>
+                                                        )}
                                                         <span className="text-sm font-bold text-ch-dark line-clamp-2" title={group.caseName}>
                                                             {group.caseName}
                                                         </span>
                                                         {group.allIds.length > 1 && (
-                                                            <span className="text-[10px] font-bold text-ch-primary bg-ch-primary/10 px-2 py-0.5 rounded w-max">
+                                                            <span className="text-[10px] font-bold text-ch-primary bg-ch-primary/10 px-2 py-0.5 rounded w-max mt-1">
                                                                 {group.allIds.length} Entries Merged
                                                             </span>
                                                         )}

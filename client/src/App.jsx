@@ -1105,6 +1105,7 @@ function App() {
                         onSyncToSheet={handleSyncToSheet}
                         syncing={syncingBriefings}
                         sortBy={sortBy}
+                        onSort={setSortBy}
                     />
                 ) : (
                     <DailyTable
