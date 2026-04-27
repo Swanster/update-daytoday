@@ -1,7 +1,7 @@
 {
-  "name": "Daily Activity Infrastructure Engineer",
-  "short_name": "Daily Activity",
-  "description": "Daily Activity Infrastructure Engineer Management System",
+  "name": "Activity Infrastructure & Edge Operations",
+  "short_name": "Activity & Edge Ops",
+  "description": "Activity Infrastructure & Edge Operations Management System",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",

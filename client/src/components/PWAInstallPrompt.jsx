@@ -89,7 +89,7 @@ function PWAInstallPrompt() {
                         </svg>
                     </div>
 
-                    <h3 className="text-xl font-bold text-ch-dark mb-2">Install Daily Activity App</h3>
+                    <h3 className="text-xl font-bold text-ch-dark mb-2">Install Activity Infrastructure App</h3>
                     
                     {isIOS ? (
                         <div className="text-left bg-ch-light rounded-xl p-4 my-4 border border-ch-soft">

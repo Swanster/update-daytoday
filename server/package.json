@@ -1,7 +1,7 @@
 {
   "name": "project-tracker-server",
   "version": "1.0.0",
-  "description": "Backend server for Daily Activity Infrastructure Engineer",
+  "description": "Backend server for Activity Infrastructure & Edge Operations",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

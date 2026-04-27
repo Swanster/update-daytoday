@@ -75,7 +75,7 @@ export default function LoginForm({ onLogin }) {
                     <div className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md shadow-inner border border-white/30 transform hover:scale-110 transition-transform duration-300">
                         <span className="text-3xl filter drop-shadow-md">📊</span>
                     </div>
-                    <h1 className="text-3xl font-extrabold text-white tracking-tight drop-shadow-sm mb-2">Daily Activity</h1>
+                    <h1 className="text-3xl font-extrabold text-white tracking-tight drop-shadow-sm mb-2 leading-tight">Activity Infrastructure &<br/>Edge Operations</h1>
                     <p className="text-white/80 font-medium text-sm">{isRegister ? 'Create your account' : 'Sign in to continue'}</p>
                 </div>
 

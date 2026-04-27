@@ -776,8 +776,8 @@ function App() {
                 <header className="px-6 py-4 flex justify-between items-center w-full">
                 <h1 className="text-xl md:text-2xl font-extrabold flex items-center gap-3 truncate text-ch-dark tracking-tight">
                     <span className="text-2xl bg-ch-soft p-2 rounded-xl text-ch-primary">📊</span> 
-                    <span className="hidden md:inline bg-gradient-to-r from-ch-primary to-ch-primary bg-clip-text text-transparent">Daily Activity Infrastructure Engineer</span>
-                    <span className="md:hidden bg-gradient-to-r from-ch-primary to-ch-primary bg-clip-text text-transparent">Daily Activity</span>
+                    <span className="hidden md:inline bg-gradient-to-r from-ch-primary to-ch-primary bg-clip-text text-transparent">Activity Infrastructure & Edge Operations</span>
+                    <span className="md:hidden bg-gradient-to-r from-ch-primary to-ch-primary bg-clip-text text-transparent">Activity & Edge Ops</span>
                 </h1>
 
                 <div className="flex items-center gap-4">

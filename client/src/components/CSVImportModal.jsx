@@ -76,7 +76,7 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess, apiType = '
                 <div className="px-6 py-4 border-b border-ch-soft bg-white/50 backdrop-blur-md flex items-center justify-between">
                     <h2 className="text-xl font-bold text-ch-dark flex items-center gap-2">
                         <span className="text-green-500">📊</span>
-                        Import TSV - {apiType === 'daily' ? 'Daily Activity' : 'Project'}
+                        Import TSV - {apiType === 'daily' ? 'Activity & Edge Ops' : 'Project'}
                     </h2>
                     <button 
                         className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-ch-primary hover:text-ch-dark hover:bg-ch-soft border border-ch-soft transition-all shadow-sm"
